@@ -8,7 +8,7 @@ Ver [authors.txt](https://raw.githubusercontent.com/facundolaffont/PAW-2026-Inte
 A continuación se detallará la información sobre cada entrega requerida.
 
 ### 1era entrega (27/3)
-* Propuesta general de la aplicación a desarrollar en forma de presupuesto funcional y temporal. → [Enlace](https://raw.githubusercontent.com/facundolaffont/PAW-2026-Integrador/main/Propuesta%20del%20integrador.pdf).
+* Propuesta general de la aplicación a desarrollar en forma de presupuesto funcional y temporal. → [Propuesta](https://raw.githubusercontent.com/facundolaffont/PAW-2026-Integrador/main/Propuesta%20del%20integrador.pdf) + [Anexo A - Gantt](https://github.com/facundolaffont/PAW-2026-Integrador/raw/refs/heads/main/Propuesta%20del%20integrador%20-%20Anexo%20A%20-%20Gantt.ods).
 * Planteo del sitemap del sitio web (mínimo 5 secciones). → [Enlace](https://raw.githubusercontent.com/facundolaffont/PAW-2026-Integrador/refs/heads/main/Sitemap.png).
 
 ### 2da entrega (10/4)
