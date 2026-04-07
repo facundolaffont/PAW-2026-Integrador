@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNO Argentino - Partida</title>
+  <link rel="stylesheet" href="partida.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-logo">UNO Argentino</div>
+    <div class="navbar-info">Ronda 3</div>
+    <div class="navbar-links">
+      <a href="#" class="navbar-link">Reglas</a>
+      <a href="#" class="navbar-link">Salir</a>
+    </div>
+  </nav>
+
+  <!-- MESA PRINCIPAL -->
+  <div class="mesa">
+
+    <!-- JUGADOR 3 (arriba) -->
+    <div class="area-jugador-arriba">
+      <div class="mano-horizontal">
+        <div class="carta"></div>
+        <div class="carta"></div>
+        <div class="carta"></div>
+        <div class="carta"></div>
+        <div class="carta"></div>
+        <div class="carta"></div>
+        <div class="carta"></div>
+      </div>
+      <div class="info-jugador">
+        <div class="puntaje">&#9733; 0</div>
+        <span>JUGADOR 3</span>
+      </div>
+    </div>
+
+    <!-- ZONA CENTRAL -->
+    <div class="zona-central">
+
+      <!-- JUGADOR 2 (izquierda) -->
+      <div class="area-jugador-lateral izquierda">
+        <div class="nombre-lateral">
+          <div class="puntaje">&#9733; 0</div>
+          JUGADOR 2
+        </div>
+        <div class="mano-lateral">
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+        </div>
+      </div>
+
+      <!-- TABLERO CENTRAL -->
+      <div class="tablero-central">
+
+        <div class="indicador-direccion">↺</div>
+
+        <div class="mazo">
+          <div class="carta"></div>
+        </div>
+
+        <div class="carta-descarte">
+          <div class="carta cara-arriba">8</div>
+        </div>
+
+        <div class="indicador-direccion">↻</div>
+
+      </div>
+
+      <!-- JUGADOR 4 (derecha) -->
+      <div class="area-jugador-lateral derecha">
+        <div class="nombre-lateral">
+          JUGADOR 4
+          <div class="puntaje">&#9733; 0</div>
+        </div>
+        <div class="mano-lateral">
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+          <div class="carta"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- JUGADOR 1 (abajo - jugador local) -->
+    <div class="area-jugador-abajo">
+      <div class="info-jugador">
+        <span>JUGADOR 1</span>
+        <div class="puntaje">0 &#9733;</div>
+      </div>
+      <div class="mano-horizontal">
+        <div class="carta cara-arriba">0</div>
+        <div class="carta cara-arriba">7</div>
+        <div class="carta cara-arriba">C</div>
+        <div class="carta cara-arriba">9</div>
+        <div class="carta cara-arriba">C</div>
+        <div class="carta cara-arriba">+</div>
+        <div class="carta cara-arriba">+3</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

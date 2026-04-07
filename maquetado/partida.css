@@ -1,0 +1,204 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #2e6da4;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  color: white;
+  overflow: hidden;
+}
+
+/* ─── NAVBAR ─── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #1a4971;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.navbar-logo {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.navbar-info {
+  font-size: 14px;
+  color: #a8c8e8;
+  letter-spacing: 1px;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 16px;
+}
+
+.navbar-link {
+  color: #a8c8e8;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.navbar-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+/* ─── LAYOUT PRINCIPAL ─── */
+.mesa {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── JUGADORES ARRIBA Y ABAJO ─── */
+.area-jugador-arriba,
+.area-jugador-abajo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.area-jugador-abajo {
+  padding-bottom: 16px;
+}
+
+.info-jugador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #cdd8e3;
+}
+
+.puntaje {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── ZONA CENTRAL ─── */
+.zona-central {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ─── JUGADORES LATERALES ─── */
+.area-jugador-lateral {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.area-jugador-lateral.derecha {
+  flex-direction: row-reverse;
+}
+
+.nombre-lateral {
+  writing-mode: vertical-rl;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #cdd8e3;
+}
+
+.izquierda .nombre-lateral {
+  transform: rotate(180deg);
+}
+
+.mano-lateral {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.mano-lateral .carta {
+  margin-top: -52px;
+  flex-shrink: 0;
+}
+
+.mano-lateral .carta:first-child {
+  margin-top: 0;
+}
+
+/* ─── TABLERO CENTRAL ─── */
+.tablero-central {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.mazo,
+.carta-descarte {
+  display: flex;
+  align-items: center;
+}
+
+/* ─── MANOS HORIZONTALES (arriba y abajo) ─── */
+.mano-horizontal {
+  display: flex;
+  max-width: 80vw;
+  overflow: hidden;
+}
+
+.mano-horizontal .carta {
+  margin-left: -18px;
+  flex-shrink: 0;
+}
+
+.mano-horizontal .carta:first-child {
+  margin-left: 0;
+}
+
+/* ─── CARTA ─── */
+.carta {
+  width: 64px;
+  height: 90px;
+  background-color: #111;
+  border-radius: 8px;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.carta.cara-arriba {
+  border-color: #888;
+}
+
+/* ─── DIRECCIÓN ─── */
+.indicador-direccion {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.3);
+}
