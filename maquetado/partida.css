@@ -14,27 +14,46 @@ body {
   overflow: hidden;
 }
 
-/* ─── HEADER ─── */
-.encabezado {
+/* ─── NAVBAR ─── */
+.navbar {
   display: flex;
-  justify-content: flex-end;
-  padding: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #1a4971;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
 }
 
-.boton-menu {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+.navbar-logo {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
-.boton-menu span {
-  display: block;
-  width: 28px;
-  height: 3px;
-  background-color: white;
+.navbar-info {
+  font-size: 14px;
+  color: #a8c8e8;
+  letter-spacing: 1px;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 16px;
+}
+
+.navbar-link {
+  color: #a8c8e8;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.navbar-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
 /* ─── LAYOUT PRINCIPAL ─── */
