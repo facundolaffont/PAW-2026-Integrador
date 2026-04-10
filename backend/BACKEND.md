@@ -11,20 +11,23 @@
 
 ```
 backend/
-├── server.js
+├── server.js                          # Clase Servidor (Express + WebSocket)
 └── src/
     ├── rutas/
-    │   ├── auth.js
-    │   ├── partidas.js
-    │   └── puntajes.js
+    │   ├── AuthController.js          # Registro e ingreso de jugadores
+    │   ├── PartidasController.js      # CRUD de partidas
+    │   └── PuntajesController.js      # Tabla global de puntajes
     ├── ws/
-    │   ├── manejadorPartida.js
-    │   └── acciones.js
+    │   └── ManejadorPartida.js        # Conexiones WebSocket y acciones de juego
+    ├── db/
+    │   └── Persistencia.js            # Almacenamiento en memoria (singleton)
     └── juego/
-        ├── almacen.js
-        ├── Mazo.js
-        ├── SalaDeJuego.js
-        └── BotLLM.js
+        ├── Carta.js                   # Modelo de carta (valor, validación)
+        ├── Jugador.js                 # Jugador registrado (puntaje global)
+        ├── JugadorEnSala.js           # Jugador dentro de una partida (mano, UNO)
+        ├── Mazo.js                    # Mazo de cartas (crear, mezclar, robar)
+        ├── SalaDeJuego.js             # Lógica de la partida (turnos, rondas)
+        └── BotLLM.js                  # Bot con IA (Gemini 1.5 Flash)
 ```
 
 ---

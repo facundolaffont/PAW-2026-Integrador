@@ -1,60 +1,60 @@
-const { v4: uuidv4 } = require('uuid');
+const Carta = require('./Carta');
 
-const COLORES = ['rojo', 'amarillo', 'verde', 'azul'];
-const ESPECIALES = ['roba-dos', 'reversa', 'salta'];
+class Mazo {
+  constructor(cartas = []) {
+    this.cartas = [...cartas];
+  }
 
-function valorCarta(carta) {
-  if (carta.tipo === 'numero') return carta.numero;
+  static crearCompleto() {
+    const cartas = [];
 
-  if (ESPECIALES.includes(carta.tipo)) return 20;
+    for (const color of Carta.COLORES) {
+      cartas.push(new Carta(color, 'numero', 0));
 
-  return 50;
-}
+      for (let n = 1; n <= 9; n++) {
+        cartas.push(new Carta(color, 'numero', n));
+        cartas.push(new Carta(color, 'numero', n));
+      }
 
-function crearMazo() {
-  const cartas = [];
-
-  for (const color of COLORES) {
-    // 0 (una sola)
-    cartas.push({ id: uuidv4(), color, tipo: 'numero', numero: 0 });
-
-    // 1-9 (dos de cada uno)
-    for (let n = 1; n <= 9; n++) {
-      cartas.push({ id: uuidv4(), color, tipo: 'numero', numero: n });
-
-      cartas.push({ id: uuidv4(), color, tipo: 'numero', numero: n });
+      for (const tipo of Carta.ESPECIALES) {
+        cartas.push(new Carta(color, tipo));
+        cartas.push(new Carta(color, tipo));
+      }
     }
 
-    // Especiales x2
-    for (const tipo of ESPECIALES) {
-      cartas.push({ id: uuidv4(), color, tipo });
+    for (let i = 0; i < 4; i++) {
+      cartas.push(new Carta(null, 'comodin'));
+      cartas.push(new Carta(null, 'roba-cuatro'));
+      cartas.push(new Carta(null, 'roba-tres'));
+    }
 
-      cartas.push({ id: uuidv4(), color, tipo });
+    const mazo = new Mazo(cartas);
+    mazo.mezclar();
+    return mazo;
+  }
+
+  mezclar() {
+    for (let i = this.cartas.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.cartas[i], this.cartas[j]] = [this.cartas[j], this.cartas[i]];
     }
   }
 
-  // Comodines x4
-  for (let i = 0; i < 4; i++) {
-    cartas.push({ id: uuidv4(), color: null, tipo: 'comodin' });
-
-    cartas.push({ id: uuidv4(), color: null, tipo: 'roba-cuatro' });
-
-    cartas.push({ id: uuidv4(), color: null, tipo: 'roba-tres' });
+  robar(cantidad = 1) {
+    return this.cartas.splice(0, cantidad);
   }
 
-  return mezclar(cartas);
-}
-
-function mezclar(cartas) {
-  const arr = [...cartas];
-
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  agregar(carta) {
+    this.cartas.push(carta);
   }
 
-  return arr;
+  get cantidad() {
+    return this.cartas.length;
+  }
+
+  get estaVacio() {
+    return this.cartas.length === 0;
+  }
 }
 
-module.exports = { crearMazo, valorCarta, mezclar };
+module.exports = Mazo;

@@ -4,58 +4,74 @@ const express = require('express');
 const { WebSocketServer } = require('ws');
 const { URL } = require('url');
 
-const authRutas = require('./src/rutas/auth');
-const partidasRutas = require('./src/rutas/partidas');
-const puntajesRutas = require('./src/rutas/puntajes');
-const { manejarConexion } = require('./src/ws/manejadorPartida');
+const ManejadorPartida = require('./src/ws/ManejadorPartida');
+const AuthController = require('./src/rutas/AuthController');
+const PartidasController = require('./src/rutas/PartidasController');
+const PuntajesController = require('./src/rutas/PuntajesController');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+class Servidor {
+  constructor(puerto) {
+    this.puerto = puerto;
+    this.app = express();
+    this.server = http.createServer(this.app);
+    this.wss = new WebSocketServer({ noServer: true });
+    this.manejador = new ManejadorPartida();
 
-app.use(express.json());
-
-// CORS simple para desarrollo
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-});
-
-// Frontend estático
-app.use(express.static('public'));
-
-// Rutas HTTP
-app.use('/api', authRutas);
-app.use('/api/partidas', partidasRutas);
-app.use('/api/puntajes', puntajesRutas);
-
-
-// Servidor HTTP compartido con WebSocket
-const server = http.createServer(app);
-const wss = new WebSocketServer({ noServer: true });
-
-server.on('upgrade', (req, socket, head) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const jugadorId = url.searchParams.get('jugadorId');
-  const partidaId = url.searchParams.get('partidaId');
-
-  if (!jugadorId || !partidaId) {
-    socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
-
-    socket.destroy();
-
-    return;
+    this._configurarMiddleware();
+    this._configurarRutas();
+    this._configurarWebSocket();
   }
 
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    manejarConexion(ws, jugadorId, partidaId);
-  });
-});
+  _configurarMiddleware() {
+    this.app.use(express.json());
 
-server.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    this.app.use((req, res, next) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      if (req.method === 'OPTIONS') return res.sendStatus(204);
+      next();
+    });
 
-  console.log(`WebSocket disponible en ws://localhost:${PORT}/ws?jugadorId=X&partidaId=Y`);
-});
+    this.app.use(express.static('public'));
+  }
+
+  _configurarRutas() {
+    const auth = new AuthController();
+    const partidas = new PartidasController();
+    const puntajes = new PuntajesController();
+
+    this.app.use('/api', auth.router);
+    this.app.use('/api/partidas', partidas.router);
+    this.app.use('/api/puntajes', puntajes.router);
+  }
+
+  _configurarWebSocket() {
+    this.server.on('upgrade', (req, socket, head) => {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const jugadorId = url.searchParams.get('jugadorId');
+      const partidaId = url.searchParams.get('partidaId');
+
+      if (!jugadorId || !partidaId) {
+        socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
+      this.wss.handleUpgrade(req, socket, head, (ws) => {
+        this.manejador.manejarConexion(ws, jugadorId, partidaId);
+      });
+    });
+  }
+
+  iniciar() {
+    this.server.listen(this.puerto, () => {
+      console.log(`Servidor escuchando en http://localhost:${this.puerto}`);
+      console.log(`WebSocket disponible en ws://localhost:${this.puerto}/ws?jugadorId=X&partidaId=Y`);
+    });
+  }
+}
+
+const puerto = process.env.PORT || 3000;
+const servidor = new Servidor(puerto);
+servidor.iniciar();

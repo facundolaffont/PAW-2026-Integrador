@@ -1,23 +1,23 @@
 const { v4: uuidv4 } = require('uuid');
-const { crearMazo, valorCarta, mezclar } = require('./Mazo');
-
-const TIPOS_ACUMULABLES = new Set(['roba-dos', 'roba-tres', 'roba-cuatro']);
+const Carta = require('./Carta');
+const Mazo = require('./Mazo');
+const JugadorEnSala = require('./JugadorEnSala');
 
 class SalaDeJuego {
   constructor(partidaId, creadorId, maxJugadores) {
     this.partidaId = partidaId;
     this.creadorId = creadorId;
-    this.maxJugadores = maxJugadores; // 2-4
-    this.estado = 'esperando'; // esperando | jugando | terminada
+    this.maxJugadores = maxJugadores;
+    this.estado = 'esperando';
 
-    this.jugadores = []; // [{ jugadorId, nombreUsuario, mano, puntajeRonda }]
-    this.mazo = [];
+    this.jugadores = [];
+    this.mazo = new Mazo();
     this.descarte = [];
     this.turnoIdx = 0;
-    this.sentido = 1; // 1 = horario, -1 = antihorario
-    this.penalidad = 0; // cartas acumuladas por +2/+3/+4
-    this.tipoPenalidad = null; // tipo de carta que inició la acumulación
-    this.puntajesRonda = {}; // jugadorId -> puntos acumulados en rondas
+    this.sentido = 1;
+    this.penalidad = 0;
+    this.tipoPenalidad = null;
+    this.puntajesRonda = {};
   }
 
   // ─── Sala ────────────────────────────────────────────────────────────────
@@ -26,15 +26,8 @@ class SalaDeJuego {
     if (this.jugadores.length >= this.maxJugadores) return null;
 
     const botId = `bot-${uuidv4()}`;
-
-    this.jugadores.push({
-      jugadorId: botId,
-      nombreUsuario: nombreBot,
-      mano: [],
-      cantóUno: false,
-      esBot: true,
-    });
-
+    const bot = new JugadorEnSala(botId, nombreBot, true);
+    this.jugadores.push(bot);
     this.puntajesRonda[botId] = 0;
 
     return botId;
@@ -42,14 +35,12 @@ class SalaDeJuego {
 
   agregarJugador(jugadorId, nombreUsuario) {
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
-
     if (this.jugadores.length >= this.maxJugadores) return { error: 'Sala llena' };
-
     if (this.jugadores.find((j) => j.jugadorId === jugadorId))
       return { error: 'Ya estás en la sala' };
 
-    this.jugadores.push({ jugadorId, nombreUsuario, mano: [], cantóUno: false });
-
+    const jugador = new JugadorEnSala(jugadorId, nombreUsuario);
+    this.jugadores.push(jugador);
     this.puntajesRonda[jugadorId] = 0;
 
     return { ok: true };
@@ -69,41 +60,33 @@ class SalaDeJuego {
 
   iniciar(jugadorId) {
     if (jugadorId !== this.creadorId) return { error: 'Solo el creador puede iniciar' };
-
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
-
     if (this.jugadores.length < 2) return { error: 'Se necesitan al menos 2 jugadores' };
 
     this.estado = 'jugando';
-
     this._iniciarRonda();
 
     return { ok: true };
   }
 
   _iniciarRonda() {
-    this.mazo = crearMazo();
+    this.mazo = Mazo.crearCompleto();
     this.descarte = [];
     this.turnoIdx = 0;
     this.sentido = 1;
     this.penalidad = 0;
     this.tipoPenalidad = null;
 
-    // Repartir 7 cartas
-    for (const j of this.jugadores) {
-      j.mano = this.mazo.splice(0, 7);
-
-      j.cantóUno = false;
+    for (const jugador of this.jugadores) {
+      jugador.reiniciarMano();
+      jugador.recibirCartas(this.mazo.robar(7));
     }
 
-    // Primera carta del descarte (no puede ser comodín)
     let primera;
-
     do {
-      primera = this.mazo.shift();
-
-      if (primera.color === null) this.mazo.push(primera);
-    } while (primera.color === null);
+      [primera] = this.mazo.robar();
+      if (primera.esComodin) this.mazo.agregar(primera);
+    } while (primera.esComodin);
 
     this.descarte.push(primera);
   }
@@ -120,10 +103,11 @@ class SalaDeJuego {
 
   estadoParaBot() {
     const bot = this.jugadorEnTurno();
-    const cartaEnMesa = this.descarte[this.descarte.length - 1];
+    const cartaEnMesa = this._cartaEnMesa();
     const rivales = this.jugadores
       .filter((j) => j.jugadorId !== bot.jugadorId)
-      .map((j) => ({ nombre: j.nombreUsuario, cantidadCartas: j.mano.length }));
+      .map((j) => ({ nombre: j.nombreUsuario, cantidadCartas: j.cantidadCartas }));
+
     return {
       mano: bot.mano,
       cartaEnMesa,
@@ -133,11 +117,13 @@ class SalaDeJuego {
     };
   }
 
+  _cartaEnMesa() {
+    return this.descarte[this.descarte.length - 1];
+  }
+
   _avanzarTurno(saltar = false) {
     const n = this.jugadores.length;
-
-    let pasos = saltar ? 2 : 1;
-
+    const pasos = saltar ? 2 : 1;
     this.turnoIdx = (((this.turnoIdx + this.sentido * pasos) % n) + n) % n;
   }
 
@@ -147,67 +133,29 @@ class SalaDeJuego {
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
-
     if (jugador.jugadorId !== jugadorId) return { error: 'No es tu turno' };
 
-    const idxCarta = jugador.mano.findIndex((c) => c.id === cartaId);
+    const carta = jugador.mano.find((c) => c.id === cartaId);
+    if (!carta) return { error: 'No tenés esa carta' };
 
-    if (idxCarta === -1) return { error: 'No tenés esa carta' };
+    const enMesa = this._cartaEnMesa();
+    if (!Carta.esJugadaValida(carta, enMesa, this.penalidad, this.tipoPenalidad))
+      return { error: 'Jugada inválida' };
 
-    const carta = jugador.mano[idxCarta];
-
-    const enMesa = this.descarte[this.descarte.length - 1];
-
-    // Validar jugada
-    const valida = this._esJugadaValida(carta, enMesa);
-
-    if (!valida) return { error: 'Jugada inválida' };
-
-    // Sacar carta de la mano
-    jugador.mano.splice(idxCarta, 1);
-
-    // Asignar color si es comodín
-    if (carta.color === null) {
+    if (carta.esComodin) {
       if (!colorElegido) return { error: 'Debés elegir un color' };
-
       carta.colorElegido = colorElegido;
     }
 
+    jugador.quitarCarta(cartaId);
     this.descarte.push(carta);
 
-    // ¿Ganó la ronda?
-    if (jugador.mano.length === 0) {
+    if (jugador.gano) {
       return this._cerrarRonda(jugadorId);
     }
 
-    // Aplicar efectos
     const resultado = this._aplicarEfecto(carta);
-
     return { ok: true, carta, ...resultado };
-  }
-
-  _esJugadaValida(carta, enMesa) {
-    // Siempre se puede jugar un comodín
-    if (carta.color === null) {
-      // Si hay penalidad activa, solo se puede apilar del mismo tipo
-      if (this.penalidad > 0)
-        return TIPOS_ACUMULABLES.has(carta.tipo) && carta.tipo === this.tipoPenalidad;
-
-      return true;
-    }
-
-    // Si hay penalidad activa, solo se puede apilar
-    if (this.penalidad > 0) {
-      return TIPOS_ACUMULABLES.has(carta.tipo) && carta.tipo === this.tipoPenalidad;
-    }
-
-    const colorMesa = enMesa.colorElegido || enMesa.color;
-
-    return (
-      carta.color === colorMesa ||
-      carta.tipo === enMesa.tipo ||
-      (carta.tipo === 'numero' && enMesa.tipo === 'numero' && carta.numero === enMesa.numero)
-    );
   }
 
   _aplicarEfecto(carta) {
@@ -216,43 +164,30 @@ class SalaDeJuego {
     switch (carta.tipo) {
       case 'roba-dos':
         this.penalidad += 2;
-
         this.tipoPenalidad = 'roba-dos';
-
         saltar = true;
-
         break;
       case 'roba-tres':
         this.penalidad += 3;
-
         this.tipoPenalidad = 'roba-tres';
-
         saltar = true;
-
         break;
       case 'roba-cuatro':
         this.penalidad += 4;
-
         this.tipoPenalidad = 'roba-cuatro';
-
         saltar = true;
-
         break;
       case 'salta':
         saltar = true;
-
         break;
       case 'reversa':
         this.sentido *= -1;
-
         if (this.jugadores.length === 2) saltar = true;
-
         break;
     }
 
     this._avanzarTurno(false);
-
-    if (saltar && !TIPOS_ACUMULABLES.has(carta.tipo)) this._avanzarTurno(false);
+    if (saltar && !carta.esAcumulable) this._avanzarTurno(false);
 
     return { turnoIdx: this.turnoIdx, sentido: this.sentido };
   }
@@ -261,17 +196,13 @@ class SalaDeJuego {
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
-
     if (jugador.jugadorId !== jugadorId) return { error: 'No es tu turno' };
 
     const cantidad = this.penalidad > 0 ? this.penalidad : 1;
-
     this.penalidad = 0;
-
     this.tipoPenalidad = null;
 
     const robadas = this._robarDelMazo(jugador, cantidad);
-
     this._avanzarTurno(false);
 
     return { ok: true, cantidad, cartasRobadas: robadas, turnoIdx: this.turnoIdx };
@@ -281,48 +212,37 @@ class SalaDeJuego {
     const robadas = [];
 
     for (let i = 0; i < cantidad; i++) {
-      if (this.mazo.length === 0) {
-        // Reciclar descarte (dejar la última carta)
+      if (this.mazo.estaVacio) {
         const ultima = this.descarte.pop();
-
-        this.mazo = mezclar(this.descarte);
-
+        this.mazo = new Mazo(this.descarte);
+        this.mazo.mezclar();
         this.descarte = [ultima];
       }
-      if (this.mazo.length > 0) {
-        const carta = this.mazo.shift();
-
-        jugador.mano.push(carta);
-
+      if (!this.mazo.estaVacio) {
+        const [carta] = this.mazo.robar();
+        jugador.recibirCartas([carta]);
         robadas.push(carta);
       }
     }
+
     return robadas;
   }
 
   cantarUno(jugadorId) {
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
-
     if (!jugador) return { error: 'Jugador no encontrado' };
-
-    if (jugador.mano.length !== 1)
-      return { error: 'Solo podés cantar UNO cuando te queda 1 carta' };
+    if (!jugador.tieneUna) return { error: 'Solo podés cantar UNO cuando te queda 1 carta' };
 
     jugador.cantóUno = true;
-
     return { ok: true };
   }
 
   denunciarUno(denuncianteId, acusadoId) {
     const acusado = this.jugadores.find((j) => j.jugadorId === acusadoId);
-
     if (!acusado) return { error: 'Jugador no encontrado' };
+    if (!acusado.tieneUna || acusado.cantóUno) return { error: 'Denuncia inválida' };
 
-    if (acusado.mano.length !== 1 || acusado.cantóUno) return { error: 'Denuncia inválida' };
-
-    // El acusado roba 2
     this._robarDelMazo(acusado, 2);
-
     return { ok: true, acusado: acusado.nombreUsuario };
   }
 
@@ -333,18 +253,15 @@ class SalaDeJuego {
 
     for (const j of this.jugadores) {
       if (j.jugadorId === ganadorId) continue;
-
-      puntosGanados += j.mano.reduce((sum, c) => sum + valorCarta(c), 0);
+      puntosGanados += j.mano.reduce((sum, c) => sum + c.valor, 0);
     }
 
     this.puntajesRonda[ganadorId] = (this.puntajesRonda[ganadorId] || 0) + puntosGanados;
 
-    // ¿Alguien llegó a 500?
     if (this.puntajesRonda[ganadorId] >= 500) {
       return this._cerrarPartida(ganadorId);
     }
 
-    // Nueva ronda
     this._iniciarRonda();
 
     return {
@@ -359,7 +276,7 @@ class SalaDeJuego {
   _cerrarPartida(ganadorId) {
     this.estado = 'terminada';
 
-    // Ordenar por puntaje de ronda
+    const deltas = [50, 0, -25, -50];
     const ranking = this.jugadores
       .map((j) => ({
         jugadorId: j.jugadorId,
@@ -368,30 +285,21 @@ class SalaDeJuego {
       }))
       .sort((a, b) => b.puntaje - a.puntaje);
 
-    const deltas = [50, 0, -25, -50];
-
     ranking.forEach((r, i) => {
       r.deltaGlobal = deltas[i] || -50;
     });
 
-    return {
-      ok: true,
-      partidaTerminada: true,
-      ranking,
-    };
+    return { ok: true, partidaTerminada: true, ranking };
   }
 
   jugadorAbandonó(jugadorId) {
     this.estado = 'terminada';
-
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
-
     return { nombreUsuario: jugador?.nombreUsuario };
   }
 
-  // Vista del estado para un jugador específico
   estadoParaJugador(jugadorId) {
-    const enMesa = this.descarte[this.descarte.length - 1] || null;
+    const enMesa = this._cartaEnMesa() || null;
 
     return {
       partidaId: this.partidaId,
@@ -403,8 +311,7 @@ class SalaDeJuego {
       jugadores: this.jugadores.map((j) => ({
         jugadorId: j.jugadorId,
         nombreUsuario: j.nombreUsuario,
-        cantidadCartas: j.mano.length,
-        // solo la mano propia es visible
+        cantidadCartas: j.cantidadCartas,
         mano: j.jugadorId === jugadorId ? j.mano : undefined,
       })),
       puntajesRonda: this.puntajesRonda,
