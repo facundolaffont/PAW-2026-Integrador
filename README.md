@@ -12,8 +12,8 @@ A continuación se detallará la información sobre cada entrega requerida.
 * Planteo del sitemap del sitio web (mínimo 5 secciones). → [Enlace](https://raw.githubusercontent.com/facundolaffont/PAW-2026-Integrador/refs/heads/main/Sitemap.png).
 
 ### 2da entrega (10/4)
-* Wireframes del sitio Web (Homepage + Página de cada Aplicación + Formularios necesarios para la administración del sitio.) 
-* Definición de la arquitectura de la aplicación y diseño del modelo de objetos (back-end).
+* Wireframes del sitio Web (Homepage + Página de cada Aplicación + Formularios necesarios para la administración del sitio). → [Enlace](https://github.com/facundolaffont/PAW-2026-Integrador/raw/refs/heads/main/Wireframes.png).
+* Definición de la arquitectura de la aplicación y diseño del modelo de objetos (back-end). → [Informe de arquitectura](https://github.com/facundolaffont/PAW-2026-Integrador/raw/refs/heads/main/Informaci%C3%B3n%20de%20arquitectura/Informe%20de%20arquitectura%20(v01).pdf).
 
 ### 3ra entrega (8/5)
 * Implementación y despliegue de un conjunto de funcionalidades mínimo (end-to-end) a convenir con los docentes en la segunda entrega.
