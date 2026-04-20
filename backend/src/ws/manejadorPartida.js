@@ -7,7 +7,7 @@ class ManejadorPartida {
     this.botLLM = new BotLLM();
   }
 
-  // ─── Emisión de eventos ──────────────────────────────────────────────────
+  // ─── Emision de eventos ──────────────────────────────────────────────────
 
   _emitirATodos(sala, evento, datos) {
     for (const jugador of sala.jugadores) {
@@ -17,17 +17,19 @@ class ManejadorPartida {
 
   _emitirA(jugadorId, evento, datos) {
     const ws = this.conexiones.get(jugadorId);
+
     if (ws?.readyState === 1) {
       ws.send(JSON.stringify({ evento, ...datos }));
     }
   }
 
-  // ─── Conexión WebSocket ──────────────────────────────────────────────────
+  // ─── Conexion WebSocket ──────────────────────────────────────────────────
 
   async manejarConexion(ws, jugadorId, partidaId) {
     this.conexiones.set(jugadorId, ws);
 
     const sala = db.obtenerPartida(partidaId);
+
     if (!sala) {
       ws.send(JSON.stringify({ evento: 'error', mensaje: 'Partida no encontrada' }));
       ws.close();
@@ -35,6 +37,7 @@ class ManejadorPartida {
     }
 
     const jugador = await db.obtenerJugador(jugadorId);
+
     if (!jugador) {
       ws.send(JSON.stringify({ evento: 'error', mensaje: 'Jugador no encontrado' }));
       ws.close();
@@ -43,11 +46,13 @@ class ManejadorPartida {
 
     if (!sala.jugadores.find((j) => j.jugadorId === jugadorId)) {
       const resultado = sala.agregarJugador(jugadorId, jugador.nombreUsuario);
+
       if (resultado.error) {
         ws.send(JSON.stringify({ evento: 'error', mensaje: resultado.error }));
         ws.close();
         return;
       }
+
       this._emitirATodos(sala, 'jugador-unido', {
         jugadorId,
         nombreUsuario: jugador.nombreUsuario,
@@ -61,6 +66,7 @@ class ManejadorPartida {
 
     ws.on('message', async (raw) => {
       let mensaje;
+
       try {
         mensaje = JSON.parse(raw);
       } catch {
@@ -98,9 +104,11 @@ class ManejadorPartida {
       this.conexiones.delete(jugadorId);
 
       const salaActual = db.obtenerPartida(partidaId);
+
       if (!salaActual || salaActual.estado === 'terminada') return;
 
       const info = salaActual.jugadorAbandonó(jugadorId);
+
       this._emitirATodos(salaActual, 'jugador-abandono', {
         jugadorId,
         nombreUsuario: info.nombreUsuario,
@@ -176,6 +184,7 @@ class ManejadorPartida {
         } else {
           if (bot.mano.length === 1) {
             sala.cantarUno(bot.jugadorId);
+
             this._emitirATodos(sala, 'uno-cantado', {
               jugadorId: bot.jugadorId,
               nombreUsuario: bot.nombreUsuario,

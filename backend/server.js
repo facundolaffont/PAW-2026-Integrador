@@ -29,11 +29,11 @@ class Servidor {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+
       if (req.method === 'OPTIONS') return res.sendStatus(204);
+
       next();
     });
-
-
   }
 
   _configurarRutas() {
@@ -46,21 +46,27 @@ class Servidor {
     this.app.use('/api/puntajes', puntajes.router);
   }
 
+  // URL de conexión: ws://HOST:PORT?jugadorId=<id>&partidaId=<id>
   _configurarWebSocket() {
     this.server.on('upgrade', (req, socket, head) => {
       const url = new URL(req.url, `http://${req.headers.host}`);
+
       const jugadorId = url.searchParams.get('jugadorId');
+
       const partidaId = url.searchParams.get('partidaId');
 
       if (!jugadorId || !partidaId) {
         socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+
         socket.destroy();
+
         return;
       }
 
       this.wss.handleUpgrade(req, socket, head, (ws) => {
         this.manejador.manejarConexion(ws, jugadorId, partidaId).catch((err) => {
           console.error('[WS] Error en conexión:', err);
+
           ws.close();
         });
       });
@@ -70,11 +76,15 @@ class Servidor {
   iniciar() {
     this.server.listen(this.puerto, () => {
       console.log(`Servidor escuchando en http://localhost:${this.puerto}`);
-      console.log(`WebSocket disponible en ws://localhost:${this.puerto}/ws?jugadorId=X&partidaId=Y`);
+      console.log(
+        `WebSocket disponible en ws://localhost:${this.puerto}/ws?jugadorId=X&partidaId=Y`
+      );
     });
   }
 }
 
 const puerto = process.env.PORT || 3000;
+
 const servidor = new Servidor(puerto);
+
 servidor.iniciar();
