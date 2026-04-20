@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(json|yml|yaml|xml|toml|ini|gradle|properties|lock\\)$\")",
+      "Bash(npm install:*)",
+      "Bash(npx prettier:*)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Bash(node server.js)"
+    ]
+  }
+}
