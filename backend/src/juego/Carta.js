@@ -27,9 +27,22 @@ class Carta {
     return Carta.TIPOS_ACUMULABLES.has(this.tipo);
   }
 
+  // Determina si `carta` puede jugarse sobre `enMesa`.
+  //
+  // Regla de penalidad (roba-dos/tres/cuatro acumulados):
+  //   Cuando hay penalidad activa solo se puede jugar una carta del mismo tipo
+  //   acumulable — ya sea comodín o no. Cualquier otra carta es inválida.
+  //
+  // Comodines sin penalidad:
+  //   Se pueden jugar sobre cualquier carta; el color lo elige el jugador después.
+  //
+  // Cartas normales sin penalidad:
+  //   Válidas si comparten color, tipo, o —solo entre números— mismo número.
+  //   Para comodines en mesa se usa `colorElegido` en lugar de `color` (que es null).
   static esJugadaValida(carta, enMesa, penalidad, tipoPenalidad) {
     if (carta.esComodin) {
       if (penalidad > 0) return carta.esAcumulable && carta.tipo === tipoPenalidad;
+
       return true;
     }
 

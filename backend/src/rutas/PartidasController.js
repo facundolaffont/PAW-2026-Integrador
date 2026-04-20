@@ -21,12 +21,13 @@ class PartidasController {
     res.json(db.listarPartidasDisponibles());
   }
 
-  crear(req, res) {
+  async crear(req, res) {
     const { jugadorId, maxJugadores, cantidadBots = 0 } = req.body;
 
     if (!jugadorId) return res.status(400).json({ error: 'jugadorId requerido' });
 
-    const jugador = db.obtenerJugador(jugadorId);
+    const jugador = await db.obtenerJugador(jugadorId);
+
     if (!jugador) return res.status(404).json({ error: 'Jugador no encontrado' });
 
     const bots = parseInt(cantidadBots);
@@ -42,6 +43,7 @@ class PartidasController {
         .json({ error: 'El total de jugadores (humanos + bots) debe ser entre 2 y 4' });
 
     const partidaId = uuidv4();
+
     const sala = new SalaDeJuego(partidaId, jugadorId, max);
 
     sala.agregarJugador(jugadorId, jugador.nombreUsuario);

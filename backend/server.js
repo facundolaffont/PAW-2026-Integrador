@@ -4,7 +4,7 @@ const express = require('express');
 const { WebSocketServer } = require('ws');
 const { URL } = require('url');
 
-const ManejadorPartida = require('./src/ws/ManejadorPartida');
+const ManejadorPartida = require('./src/ws/manejadorPartida');
 const AuthController = require('./src/rutas/AuthController');
 const PartidasController = require('./src/rutas/PartidasController');
 const PuntajesController = require('./src/rutas/PuntajesController');
@@ -33,7 +33,7 @@ class Servidor {
       next();
     });
 
-    this.app.use(express.static('public'));
+
   }
 
   _configurarRutas() {
@@ -59,7 +59,10 @@ class Servidor {
       }
 
       this.wss.handleUpgrade(req, socket, head, (ws) => {
-        this.manejador.manejarConexion(ws, jugadorId, partidaId);
+        this.manejador.manejarConexion(ws, jugadorId, partidaId).catch((err) => {
+          console.error('[WS] Error en conexión:', err);
+          ws.close();
+        });
       });
     });
   }

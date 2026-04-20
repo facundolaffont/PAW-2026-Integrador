@@ -35,12 +35,16 @@ class SalaDeJuego {
 
   agregarJugador(jugadorId, nombreUsuario) {
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
+
     if (this.jugadores.length >= this.maxJugadores) return { error: 'Sala llena' };
+
     if (this.jugadores.find((j) => j.jugadorId === jugadorId))
       return { error: 'Ya estás en la sala' };
 
     const jugador = new JugadorEnSala(jugadorId, nombreUsuario);
+
     this.jugadores.push(jugador);
+
     this.puntajesRonda[jugadorId] = 0;
 
     return { ok: true };
@@ -60,10 +64,13 @@ class SalaDeJuego {
 
   iniciar(jugadorId) {
     if (jugadorId !== this.creadorId) return { error: 'Solo el creador puede iniciar' };
+
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
+
     if (this.jugadores.length < 2) return { error: 'Se necesitan al menos 2 jugadores' };
 
     this.estado = 'jugando';
+
     this._iniciarRonda();
 
     return { ok: true };
@@ -83,8 +90,10 @@ class SalaDeJuego {
     }
 
     let primera;
+
     do {
       [primera] = this.mazo.robar();
+
       if (primera.esComodin) this.mazo.agregar(primera);
     } while (primera.esComodin);
 
@@ -103,7 +112,9 @@ class SalaDeJuego {
 
   estadoParaBot() {
     const bot = this.jugadorEnTurno();
+
     const cartaEnMesa = this._cartaEnMesa();
+
     const rivales = this.jugadores
       .filter((j) => j.jugadorId !== bot.jugadorId)
       .map((j) => ({ nombre: j.nombreUsuario, cantidadCartas: j.cantidadCartas }));
@@ -144,10 +155,12 @@ class SalaDeJuego {
 
     if (carta.esComodin) {
       if (!colorElegido) return { error: 'Debés elegir un color' };
+
       carta.colorElegido = colorElegido;
     }
 
     jugador.quitarCarta(cartaId);
+
     this.descarte.push(carta);
 
     if (jugador.gano) {
@@ -155,6 +168,7 @@ class SalaDeJuego {
     }
 
     const resultado = this._aplicarEfecto(carta);
+
     return { ok: true, carta, ...resultado };
   }
 
@@ -249,6 +263,8 @@ class SalaDeJuego {
   // ─── Ronda / Partida ─────────────────────────────────────────────────────
 
   _cerrarRonda(ganadorId) {
+    let PUNTAJE_PARA_GANAR = 500;
+
     let puntosGanados = 0;
 
     for (const j of this.jugadores) {
@@ -258,7 +274,7 @@ class SalaDeJuego {
 
     this.puntajesRonda[ganadorId] = (this.puntajesRonda[ganadorId] || 0) + puntosGanados;
 
-    if (this.puntajesRonda[ganadorId] >= 500) {
+    if (this.puntajesRonda[ganadorId] >= PUNTAJE_PARA_GANAR) {
       return this._cerrarPartida(ganadorId);
     }
 
@@ -277,6 +293,7 @@ class SalaDeJuego {
     this.estado = 'terminada';
 
     const deltas = [50, 0, -25, -50];
+
     const ranking = this.jugadores
       .map((j) => ({
         jugadorId: j.jugadorId,
@@ -286,6 +303,7 @@ class SalaDeJuego {
       .sort((a, b) => b.puntaje - a.puntaje);
 
     ranking.forEach((r, i) => {
+      r.puesto = i + 1;
       r.deltaGlobal = deltas[i] || -50;
     });
 

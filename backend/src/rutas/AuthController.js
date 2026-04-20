@@ -13,27 +13,27 @@ class AuthController {
     this.router.post('/ingresar', (req, res) => this.ingresar(req, res));
   }
 
-  registrar(req, res) {
+  async registrar(req, res) {
     const { nombreUsuario } = req.body;
 
     if (!nombreUsuario?.trim()) return res.status(400).json({ error: 'nombreUsuario requerido' });
 
-    if (db.obtenerJugadorPorNombre(nombreUsuario)) {
+    if (await db.obtenerJugadorPorNombre(nombreUsuario)) {
       return res.status(409).json({ error: 'El nombre de usuario ya existe' });
     }
 
     const jugadorId = uuidv4();
-    db.registrarJugador(jugadorId, nombreUsuario.trim());
+    await db.registrarJugador(jugadorId, nombreUsuario.trim());
 
     res.status(201).json({ jugadorId, nombreUsuario: nombreUsuario.trim() });
   }
 
-  ingresar(req, res) {
+  async ingresar(req, res) {
     const { nombreUsuario } = req.body;
 
     if (!nombreUsuario?.trim()) return res.status(400).json({ error: 'nombreUsuario requerido' });
 
-    const jugador = db.obtenerJugadorPorNombre(nombreUsuario.trim());
+    const jugador = await db.obtenerJugadorPorNombre(nombreUsuario.trim());
     if (!jugador) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     res.json({ jugadorId: jugador.jugadorId, nombreUsuario: jugador.nombreUsuario });

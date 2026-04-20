@@ -24,7 +24,7 @@ class ManejadorPartida {
 
   // ─── Conexión WebSocket ──────────────────────────────────────────────────
 
-  manejarConexion(ws, jugadorId, partidaId) {
+  async manejarConexion(ws, jugadorId, partidaId) {
     this.conexiones.set(jugadorId, ws);
 
     const sala = db.obtenerPartida(partidaId);
@@ -34,7 +34,7 @@ class ManejadorPartida {
       return;
     }
 
-    const jugador = db.obtenerJugador(jugadorId);
+    const jugador = await db.obtenerJugador(jugadorId);
     if (!jugador) {
       ws.send(JSON.stringify({ evento: 'error', mensaje: 'Jugador no encontrado' }));
       ws.close();
@@ -59,7 +59,7 @@ class ManejadorPartida {
       JSON.stringify({ evento: 'estado-partida', estado: sala.estadoParaJugador(jugadorId) })
     );
 
-    ws.on('message', (raw) => {
+    ws.on('message', async (raw) => {
       let mensaje;
       try {
         mensaje = JSON.parse(raw);
@@ -69,24 +69,28 @@ class ManejadorPartida {
 
       const { accion, ...payload } = mensaje;
 
-      switch (accion) {
-        case 'iniciar-partida':
-          this._iniciarPartida(sala, jugadorId, partidaId);
-          break;
-        case 'jugar-carta':
-          this._jugarCarta(sala, jugadorId, partidaId, payload);
-          break;
-        case 'robar-carta':
-          this._robarCarta(sala, jugadorId, partidaId);
-          break;
-        case 'cantar-uno':
-          this._cantarUno(sala, jugadorId, jugador);
-          break;
-        case 'denunciar-uno':
-          this._denunciarUno(sala, jugadorId, payload);
-          break;
-        default:
-          this._emitirA(jugadorId, 'error', { mensaje: `Acción desconocida: ${accion}` });
+      try {
+        switch (accion) {
+          case 'iniciar-partida':
+            this._iniciarPartida(sala, jugadorId, partidaId);
+            break;
+          case 'jugar-carta':
+            await this._jugarCarta(sala, jugadorId, partidaId, payload);
+            break;
+          case 'robar-carta':
+            this._robarCarta(sala, jugadorId, partidaId);
+            break;
+          case 'cantar-uno':
+            this._cantarUno(sala, jugadorId, jugador);
+            break;
+          case 'denunciar-uno':
+            this._denunciarUno(sala, jugadorId, payload);
+            break;
+          default:
+            this._emitirA(jugadorId, 'error', { mensaje: `Acción desconocida: ${accion}` });
+        }
+      } catch (err) {
+        console.error('[WS] Error procesando mensaje:', err);
       }
     });
 
@@ -95,8 +99,6 @@ class ManejadorPartida {
 
       const salaActual = db.obtenerPartida(partidaId);
       if (!salaActual || salaActual.estado === 'terminada') return;
-
-      db.ajustarPuntajeGlobal(jugadorId, -50);
 
       const info = salaActual.jugadorAbandonó(jugadorId);
       this._emitirATodos(salaActual, 'jugador-abandono', {
@@ -155,7 +157,7 @@ class ManejadorPartida {
             robó: { jugadorId: bot.jugadorId, cantidad: resRobo.cantidad },
           });
         } else if (res.partidaTerminada) {
-          res.ranking.forEach((r) => db.ajustarPuntajeGlobal(r.jugadorId, r.deltaGlobal));
+          await db.guardarResultadoPartida(partidaId, res.ranking);
           this._emitirATodos(sala, 'partida-terminada', { ranking: res.ranking });
           db.eliminarPartida(partidaId);
           return;
@@ -216,14 +218,18 @@ class ManejadorPartida {
     }
   }
 
-  _jugarCarta(sala, jugadorId, partidaId, payload) {
+  async _jugarCarta(sala, jugadorId, partidaId, payload) {
     const { cartaId, colorElegido } = payload;
+
     const res = sala.jugarCarta(jugadorId, cartaId, colorElegido);
+
     if (res.error) return this._emitirA(jugadorId, 'error', { mensaje: res.error });
 
     if (res.partidaTerminada) {
-      res.ranking.forEach((r) => db.ajustarPuntajeGlobal(r.jugadorId, r.deltaGlobal));
+      await db.guardarResultadoPartida(partidaId, res.ranking);
+
       this._emitirATodos(sala, 'partida-terminada', { ranking: res.ranking });
+
       db.eliminarPartida(partidaId);
       return;
     }
@@ -234,15 +240,18 @@ class ManejadorPartida {
         puntosGanados: res.puntosGanados,
         puntajesRonda: res.puntajesRonda,
       });
+
       for (const j of sala.jugadores) {
         this._emitirA(j.jugadorId, 'estado-partida', {
           estado: sala.estadoParaJugador(j.jugadorId),
         });
       }
+
       return;
     }
 
     this._emitirATodos(sala, 'carta-jugada', { jugadorId, carta: res.carta });
+
     this._emitirATodos(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
@@ -256,9 +265,11 @@ class ManejadorPartida {
 
   _robarCarta(sala, jugadorId, partidaId) {
     const res = sala.robarCarta(jugadorId);
+
     if (res.error) return this._emitirA(jugadorId, 'error', { mensaje: res.error });
 
     this._emitirA(jugadorId, 'cartas-robadas', { cartasRobadas: res.cartasRobadas });
+
     this._emitirATodos(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
@@ -273,6 +284,7 @@ class ManejadorPartida {
 
   _cantarUno(sala, jugadorId, jugador) {
     const res = sala.cantarUno(jugadorId);
+
     if (res.error) return this._emitirA(jugadorId, 'error', { mensaje: res.error });
 
     this._emitirATodos(sala, 'uno-cantado', { jugadorId, nombreUsuario: jugador.nombreUsuario });
@@ -280,7 +292,9 @@ class ManejadorPartida {
 
   _denunciarUno(sala, jugadorId, payload) {
     const { acusadoId } = payload;
+
     const res = sala.denunciarUno(jugadorId, acusadoId);
+
     if (res.error) return this._emitirA(jugadorId, 'error', { mensaje: res.error });
 
     this._emitirATodos(sala, 'uno-denunciado', { denuncianteId: jugadorId, acusado: res.acusado });

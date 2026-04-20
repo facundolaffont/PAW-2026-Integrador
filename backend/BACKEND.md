@@ -5,7 +5,8 @@
 - **Node.js** + **Express** (API REST)
 - **ws** (WebSocket, mismo puerto que HTTP)
 - **@google/generative-ai** (Gemini 1.5 Flash para bots con IA)
-- Almacenamiento en memoria (sin base de datos)
+- **mysql2** (persistencia de jugadores e historial de partidas)
+- Partidas activas en memoria; jugadores e historial en MySQL
 
 ## Estructura
 
@@ -20,7 +21,9 @@ backend/
     ├── ws/
     │   └── ManejadorPartida.js        # Conexiones WebSocket y acciones de juego
     ├── db/
-    │   └── Persistencia.js            # Almacenamiento en memoria (singleton)
+    │   ├── Persistencia.js            # Singleton: jugadores en MySQL, partidas activas en memoria
+    │   ├── mysql.js                   # Connection pool (mysql2)
+    │   └── init.sql                   # Schema: jugadores, partidas, partida_jugadores
     └── juego/
         ├── Carta.js                   # Modelo de carta (valor, validación)
         ├── Jugador.js                 # Jugador registrado (puntaje global)
@@ -135,16 +138,34 @@ Ejemplo:
 - **Reversa con 2 jugadores**: actúa como Salta
 - **Fin de ronda**: el primero en quedarse sin cartas suma los puntos de las cartas restantes de los rivales
 - **Fin de partida**: el primero en llegar a **500 puntos** gana
-- **Abandono**: el jugador pierde 50 puntos globales (mínimo 0) y la partida se cancela
+- **Abandono**: la partida se cancela; no se persiste resultado en base de datos
 
-## Puntaje global al terminar la partida
+## Sistema de puntaje
+
+### Puntaje de ronda
+
+Cuando un jugador se queda sin cartas, gana la ronda y suma al acumulado (`puntajesRonda`) el **valor de las cartas que les quedan en mano a los demás**. Los valores son:
+
+| Carta | Valor |
+|-------|-------|
+| Números (0–9) | valor nominal |
+| Salta / Reversa / Roba-dos | 20 |
+| Comodines (roba-cuatro, roba-tres, cambia-color) | 50 |
+
+Ejemplo: si los rivales tienen `7 + Reversa + Comodín` en mano → el ganador suma `7 + 20 + 50 = 77` puntos.
+
+La partida continúa ronda a ronda hasta que un jugador acumula **500 puntos** en `puntajesRonda`.
+
+### Puntaje global al terminar la partida
+
+El ranking final se arma ordenando por `puntajesRonda` de mayor a menor. El `puntajeGlobal` de cada jugador no se almacena como columna; se calcula como `SUM(delta_global)` sobre `partida_jugadores`.
 
 | Posición | Delta |
 |----------|-------|
 | 1° (ganador) | +50 |
 | 2° | 0 |
-| 3° | −25 (mínimo 0) |
-| 4° | −50 (mínimo 0) |
+| 3° | −25 |
+| 4° | −50 |
 
 ---
 
@@ -158,6 +179,11 @@ Requiere un archivo `.env` en `/backend`:
 ```
 GEMINI_API_KEY=tu_api_key
 PORT=3000
+DB_HOST=mysql      # localhost si corrés sin Docker
+DB_PORT=3306
+DB_USER=uno
+DB_PASSWORD=uno
+DB_NAME=uno
 ```
 
 Obtené tu API key gratis en [aistudio.google.com](https://aistudio.google.com).
@@ -185,7 +211,7 @@ Obtené tu API key gratis en [aistudio.google.com](https://aistudio.google.com).
 
 - [ ] **Contraseña en login**: ahora cualquiera puede ingresar con cualquier nombre existente
 - [ ] **Timer para cantar UNO**: actualmente el servidor no aplica penalidad automática si el jugador no canta en X segundos; depende de que otro jugador lo denuncie
-- [ ] **Persistencia**: al reiniciar el servidor se pierden todos los jugadores y partidas
+- [x] **Persistencia**: jugadores e historial de partidas en MySQL; partidas activas en memoria
 - [ ] **Espectadores**: permitir conectarse a una sala sin jugar
 - [ ] **Chat en partida**: evento `mensaje` cliente→servidor, broadcast a la sala
 - [ ] **Reconexión**: actualmente si un jugador se desconecta la partida se cancela

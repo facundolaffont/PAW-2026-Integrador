@@ -4,6 +4,7 @@ const db = require('../db/Persistencia');
 class PuntajesController {
   constructor() {
     this.router = express.Router();
+
     this._registrarRutas();
   }
 
@@ -11,8 +12,8 @@ class PuntajesController {
     this.router.get('/', (req, res) => this.listar(req, res));
   }
 
-  listar(req, res) {
-    res.json(db.obtenerPuntajes());
+  async listar(req, res) {
+    res.json(await db.obtenerPuntajes());
   }
 }
 

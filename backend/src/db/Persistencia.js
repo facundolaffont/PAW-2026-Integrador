@@ -1,38 +1,35 @@
-const Jugador = require('../juego/Jugador');
+const repo = process.env.DB_HOST
+  ? require('./repositorios/JugadorRepositorioMySQL')
+  : require('./repositorios/JugadorRepositorioMemoria');
 
 class Persistencia {
   constructor() {
-    this.jugadores = new Map();
     this.partidas = new Map();
   }
 
+  // ─── Jugadores (delegado al repositorio) ─────────────────────────────────
+
   registrarJugador(jugadorId, nombreUsuario) {
-    const jugador = new Jugador(jugadorId, nombreUsuario);
-    this.jugadores.set(jugadorId, jugador);
-    return jugador;
+    return repo.registrarJugador(jugadorId, nombreUsuario);
   }
 
   obtenerJugador(jugadorId) {
-    return this.jugadores.get(jugadorId) || null;
+    return repo.obtenerJugador(jugadorId);
   }
 
   obtenerJugadorPorNombre(nombreUsuario) {
-    for (const jugador of this.jugadores.values()) {
-      if (jugador.nombreUsuario === nombreUsuario) return jugador;
-    }
-    return null;
-  }
-
-  ajustarPuntajeGlobal(jugadorId, delta) {
-    const jugador = this.jugadores.get(jugadorId);
-    if (jugador) jugador.ajustarPuntaje(delta);
+    return repo.obtenerJugadorPorNombre(nombreUsuario);
   }
 
   obtenerPuntajes() {
-    return [...this.jugadores.values()]
-      .sort((a, b) => b.puntajeGlobal - a.puntajeGlobal)
-      .map(({ nombreUsuario, puntajeGlobal }) => ({ nombreUsuario, puntajeGlobal }));
+    return repo.obtenerPuntajes();
   }
+
+  guardarResultadoPartida(partidaId, ranking) {
+    return repo.guardarResultadoPartida(partidaId, ranking);
+  }
+
+  // ─── Partidas activas (en memoria) ───────────────────────────────────────
 
   guardarPartida(partidaId, sala) {
     this.partidas.set(partidaId, sala);
