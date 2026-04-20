@@ -312,7 +312,9 @@ class SalaDeJuego {
 
   jugadorAbandonó(jugadorId) {
     this.estado = 'terminada';
+
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
+
     return { nombreUsuario: jugador?.nombreUsuario };
   }
 

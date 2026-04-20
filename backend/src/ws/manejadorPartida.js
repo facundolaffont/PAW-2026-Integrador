@@ -109,6 +109,7 @@ class ManejadorPartida {
 
       const info = salaActual.jugadorAbandonó(jugadorId);
 
+      // Evento para el frontend: notifica a todos los jugadores que la partida fue cancelada
       this._emitirATodos(salaActual, 'jugador-abandono', {
         jugadorId,
         nombreUsuario: info.nombreUsuario,
