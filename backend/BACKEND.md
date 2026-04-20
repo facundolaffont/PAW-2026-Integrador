@@ -19,14 +19,17 @@ backend/
     │   ├── PartidasController.js      # CRUD de partidas
     │   └── PuntajesController.js      # Tabla global de puntajes
     ├── ws/
-    │   └── ManejadorPartida.js        # Conexiones WebSocket y acciones de juego
+    │   └── manejadorPartida.js        # Conexiones WebSocket y acciones de juego
     ├── db/
-    │   ├── Persistencia.js            # Singleton: jugadores en MySQL, partidas activas en memoria
+    │   ├── Persistencia.js            # Singleton: elige repositorio según DB_HOST; partidas activas en memoria
     │   ├── mysql.js                   # Connection pool (mysql2)
-    │   └── init.sql                   # Schema: jugadores, partidas, partida_jugadores
+    │   ├── init.sql                   # Schema: jugadores, partidas, partida_jugadores
+    │   └── repositorios/
+    │       ├── JugadorRepositorioMemoria.js  # Implementación en memoria (sin DB_HOST)
+    │       └── JugadorRepositorioMySQL.js    # Implementación MySQL (con DB_HOST)
     └── juego/
-        ├── Carta.js                   # Modelo de carta (valor, validación)
-        ├── Jugador.js                 # Jugador registrado (puntaje global)
+        ├── Carta.js                   # Modelo de carta (valor, validación de jugada)
+        ├── Jugador.js                 # Jugador registrado (id, nombre)
         ├── JugadorEnSala.js           # Jugador dentro de una partida (mano, UNO)
         ├── Mazo.js                    # Mazo de cartas (crear, mezclar, robar)
         ├── SalaDeJuego.js             # Lógica de la partida (turnos, rondas)
@@ -134,7 +137,7 @@ Ejemplo:
 - **Jugada válida**: misma carta, mismo color, o comodín
 - **Comodines**: se juegan sobre cualquier carta; el jugador elige el color nuevo
 - **Acumulación de penalidad**: +2, +3 y +4 se apilan si el siguiente jugador tiene una del mismo tipo. Si no tiene, roba todo el acumulado
-- **UNO**: debe cantarse cuando quedan **2 cartas** en mano (antes de jugar la anteúltima). Si otro jugador lo denuncia primero, el infractor roba 2
+- **UNO**: debe cantarse después de jugar la anteúltima carta, cuando queda **1 carta** en mano. Si otro jugador lo denuncia antes de que lo cante, el infractor roba 2
 - **Reversa con 2 jugadores**: actúa como Salta
 - **Fin de ronda**: el primero en quedarse sin cartas suma los puntos de las cartas restantes de los rivales
 - **Fin de partida**: el primero en llegar a **500 puntos** gana
@@ -175,11 +178,15 @@ Al crear una partida con `cantidadBots > 0`, se agregan jugadores bot a la sala.
 
 ### Configuración
 
-Requiere un archivo `.env` en `/backend`:
+Requiere un archivo `.env` en `/backend` con la API key:
 ```
 GEMINI_API_KEY=tu_api_key
+```
+
+Las variables de base de datos y puerto están definidas en `docker-compose.yml`. Si corrés sin Docker, agregá al `.env`:
+```
 PORT=3000
-DB_HOST=mysql      # localhost si corrés sin Docker
+DB_HOST=localhost
 DB_PORT=3306
 DB_USER=uno
 DB_PASSWORD=uno
@@ -201,9 +208,9 @@ Obtené tu API key gratis en [aistudio.google.com](https://aistudio.google.com).
 
 | Slot | Nombre |
 |------|--------|
-| Bot 1 | Gemini 🤖 |
-| Bot 2 | Bot Azul 🤖 |
-| Bot 3 | Bot Verde 🤖 |
+| Bot 1 | Bot-A |
+| Bot 2 | Bot-B |
+| Bot 3 | Bot-C |
 
 ---
 
