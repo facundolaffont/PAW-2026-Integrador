@@ -103,9 +103,30 @@ classDiagram
 
     %% ─── WebSocket ───
 
-    class ManejadorPartida {
+    class ManejadorConexiones {
         -Map~String, WebSocket~ conexiones
+        +registrar(jugadorId, ws) void
+        +desregistrar(jugadorId) void
+        +emitirA(jugadorId, evento, datos) void
+        +emitirATodos(jugadoresIds, evento, datos) void
+    }
+
+    class PartidaController {
+        -ManejadorConexiones conexiones
+        -Persistencia persistencia
         -BotLLM botLLM
+        +unirJugador(partidaId, jugadorId) Object
+        +iniciarPartida(partidaId, jugadorId) void
+        +jugarCarta(partidaId, jugadorId, cartaId, colorElegido) void
+        +robarCarta(partidaId, jugadorId) void
+        +cantarUno(partidaId, jugadorId) void
+        +denunciarUno(partidaId, jugadorId, acusadoId) void
+        +desconectar(partidaId, jugadorId) void
+    }
+
+    class ManejadorMensajes {
+        -PartidaController controller
+        -ManejadorConexiones conexiones
         +manejarConexion(ws, jugadorId, partidaId) void
     }
 
@@ -136,7 +157,7 @@ classDiagram
         -Express app
         -HttpServer server
         -WebSocketServer wss
-        -ManejadorPartida manejador
+        -ManejadorMensajes manejador
         +iniciar() void
     }
 
@@ -149,14 +170,19 @@ classDiagram
     BotLLM ..> Carta : usa esJugadaValida()
     Persistencia o-- Jugador : jugadores *
     Persistencia o-- SalaDeJuego : partidas *
-    ManejadorPartida --> BotLLM : botLLM
-    ManejadorPartida ..> Persistencia : usa
-    ManejadorPartida ..> SalaDeJuego : gestiona turnos
+    ManejadorMensajes --> PartidaController : delega
+    ManejadorMensajes --> ManejadorConexiones : registra conexiones
+    PartidaController --> ManejadorConexiones : emite eventos
+    PartidaController --> BotLLM : botLLM
+    PartidaController ..> Persistencia : usa
+    PartidaController ..> SalaDeJuego : orquesta turnos
     AuthController ..> Persistencia : usa
     PartidasController ..> Persistencia : usa
     PartidasController ..> SalaDeJuego : crea
     PuntajesController ..> Persistencia : usa
-    Servidor --> ManejadorPartida : manejador
+    Servidor --> ManejadorConexiones : crea
+    Servidor --> PartidaController : crea
+    Servidor --> ManejadorMensajes : manejador
     Servidor --> AuthController : crea
     Servidor --> PartidasController : crea
     Servidor --> PuntajesController : crea

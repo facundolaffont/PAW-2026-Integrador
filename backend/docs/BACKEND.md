@@ -12,22 +12,25 @@
 
 ```
 backend/
-├── server.js                          # Clase Servidor (Express + WebSocket)
+├── server.js                          # Clase Servidor (Express + WebSocket); cablea dependencias
 └── src/
-    ├── rutas/
+    ├── http/
     │   ├── AuthController.js          # Registro e ingreso de jugadores
     │   ├── PartidasController.js      # CRUD de partidas
     │   └── PuntajesController.js      # Tabla global de puntajes
     ├── ws/
-    │   └── manejadorPartida.js        # Conexiones WebSocket y acciones de juego
-    ├── db/
+    │   ├── manejadorMensajes.js       # Handler WS: parsea mensajes y delega al controller
+    │   └── manejadorConexiones.js     # Gestión del Map jugadorId → WebSocket; emisión de eventos
+    ├── controladores/
+    │   └── PartidaController.js       # Orquestador: lógica de juego, bot, persistencia
+    ├── persistencia/
     │   ├── Persistencia.js            # Singleton: elige repositorio según DB_HOST; partidas activas en memoria
     │   ├── mysql.js                   # Connection pool (mysql2)
     │   ├── init.sql                   # Schema: jugadores, partidas, partida_jugadores
     │   └── repositorios/
     │       ├── JugadorRepositorioMemoria.js  # Implementación en memoria (sin DB_HOST)
     │       └── JugadorRepositorioMySQL.js    # Implementación MySQL (con DB_HOST)
-    └── juego/
+    └── modelo/
         ├── Carta.js                   # Modelo de carta (valor, validación de jugada)
         ├── Jugador.js                 # Jugador registrado (id, nombre)
         ├── JugadorEnSala.js           # Jugador dentro de una partida (mano, UNO)

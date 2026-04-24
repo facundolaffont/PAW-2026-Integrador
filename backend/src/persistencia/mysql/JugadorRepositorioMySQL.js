@@ -1,5 +1,5 @@
-const pool = require('../mysql');
-const Jugador = require('../../juego/Jugador');
+const pool = require('./conexion');
+const Jugador = require('../../modelo/Jugador');
 
 class JugadorRepositorioMySQL {
   async registrarJugador(jugadorId, nombreUsuario) {

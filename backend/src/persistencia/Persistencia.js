@@ -1,6 +1,6 @@
 const repo = process.env.DB_HOST
-  ? require('./repositorios/JugadorRepositorioMySQL')
-  : require('./repositorios/JugadorRepositorioMemoria');
+  ? require('./mysql/JugadorRepositorioMySQL')
+  : require('./memoria/JugadorRepositorioMemoria');
 
 class Persistencia {
   constructor() {

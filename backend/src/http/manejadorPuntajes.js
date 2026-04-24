@@ -1,8 +1,9 @@
 const express = require('express');
-const db = require('../db/Persistencia');
 
-class PuntajesController {
-  constructor() {
+class ManejadorPuntajes {
+  constructor(controller) {
+    this.controller = controller;
+
     this.router = express.Router();
 
     this._registrarRutas();
@@ -13,8 +14,10 @@ class PuntajesController {
   }
 
   async listar(req, res) {
-    res.json(await db.obtenerPuntajes());
+    const puntajes = await this.controller.listarPuntajes();
+
+    res.json(puntajes);
   }
 }
 
-module.exports = PuntajesController;
+module.exports = ManejadorPuntajes;
