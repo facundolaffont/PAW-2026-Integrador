@@ -1,0 +1,69 @@
+backend/src/controladores/AuthController.js
+  054e55cf002a265b 1,3-6,8-10,12-13,15-17,19-20,22-24,26-27,29-31,33
+backend/docker-compose.yml
+  054e55cf002a265b 11,19,30
+backend/package.json
+  054e55cf002a265b 4,6-7
+backend/src/ws/manejadorMensajes.js
+  871418dd83358044 1-61
+backend/src/http/manejadorPuntajes.js
+  054e55cf002a265b 3-5,23
+  h_8b256784326366 6,8,17-19
+backend/src/http/manejadorPartidas.js
+  054e55cf002a265b 3,47
+  h_8b256784326366 8,14,16,29,38-39,41
+backend/src/persistencia/mysql/JugadorRepositorioMySQL.js
+  h_8b256784326366 1-2
+backend/src/controladores/PuntajesController.js
+  054e55cf002a265b 1-11
+backend/src/http/manejadorAuth.js
+  h_8b256784326366 21,23,31,33
+  054e55cf002a265b 3-5,7,9,12-13,15,18-19,22,25-26,28-29,32,35,39
+backend/Dockerfile
+  054e55cf002a265b 12
+backend/src/persistencia/Persistencia.js
+  h_8b256784326366 1-53
+backend/src/controladores/PartidaController.js
+  054e55cf002a265b 1-2,4-5,13,15-16,19-37,39-44,46-49,52-56,58
+  871418dd83358044 6-10,60-69,72-73,76,79-80,87-88,91,98-99,102,105-107,109-111,115-117,120,126,130-131,134-137,140,142,144,149,156,164,166,173,177-178,181-184,186-187,195,199-201,204-207,209,212-213,216-225,227-329,333
+backend/src/ws/manejadorConexiones.js
+  871418dd83358044 1,3,6-7,10-11,14-15,17-19,22-24,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ba196aac2b5d0d32a28faa0a80722f46f6eac59b",
+  "prompts": {
+    "054e55cf002a265b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1e81018c-8cf6-437d-a02e-bb8af08d6ea7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli",
+      "messages": [],
+      "total_additions": 1361,
+      "total_deletions": 132,
+      "accepted_lines": 188,
+      "overriden_lines": 24
+    },
+    "871418dd83358044": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4c375c9f-20c3-4ed0-bc03-e7607921c7cb",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli",
+      "messages": [],
+      "total_additions": 1408,
+      "total_deletions": 295,
+      "accepted_lines": 306,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_8b256784326366": {
+      "author": "rrobles_meli"
+    }
+  }
+}
