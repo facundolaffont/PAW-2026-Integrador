@@ -1,0 +1,29 @@
+backend/src/app.js
+  h_8b256784326366 53,69
+  06e44269f129470e 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "5a871ba8a0a60c8504fe2171b7c3a974e84103b0",
+  "prompts": {
+    "06e44269f129470e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d2eae62a-7551-4d0f-a05e-98d3cc07fa62",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 2
+    }
+  },
+  "humans": {
+    "h_8b256784326366": {
+      "author": "rrobles_meli"
+    }
+  }
+}
