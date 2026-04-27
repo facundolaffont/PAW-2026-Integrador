@@ -49,6 +49,8 @@ class Servidor {
   _configurarWebSocket() {
     // URL de conexión: ws://HOST:PORT?jugadorId=<id>&partidaId=<id>
 
+    // Intercepta la solicitud HTTP de upgrade antes de que se establezca el WebSocket,
+    // valida los parametros requeridos y rechaza conexiones invalidas con 400.
     this.server.on('upgrade', (req, socket, head) => {
       const url = new URL(req.url, `http://${req.headers.host}`);
 
@@ -64,6 +66,7 @@ class Servidor {
         return;
       }
 
+      // Completa el handshake HTTP→WebSocket y entrega la conexion ya establecida al manejador.
       this.wss.handleUpgrade(req, socket, head, (ws) => {
         this.manejador.manejarConexion(ws, jugadorId, partidaId).catch((err) => {
           console.error('[WS] Error en conexión:', err);
