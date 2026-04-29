@@ -1,4 +1,5 @@
 class ManejadorConexiones {
+
   constructor() {
     this.conexiones = new Map();
   }
@@ -24,6 +25,7 @@ class ManejadorConexiones {
       this.emitirA(jugadorId, evento, datos);
     }
   }
+  
 }
 
 module.exports = ManejadorConexiones;

@@ -1,9 +1,18 @@
 const { v4: uuidv4 } = require('uuid');
 const SalaDeJuego = require('../modelo/SalaDeJuego');
+const BotLLM = require('../modelo/BotLLM');
+const ManejadorConexiones = require('../ws/manejadorConexiones');
 
 const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
 
 class PartidaController {
+
+  /**
+   * 
+   * @param {ManejadorConexiones} conexiones 
+   * @param {Persistencia} persistencia 
+   * @param {BotLLM} botLLM 
+   */
   constructor(conexiones, persistencia, botLLM) {
     this.conexiones = conexiones;
     this.persistencia = persistencia;

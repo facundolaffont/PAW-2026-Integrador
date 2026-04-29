@@ -1,16 +1,13 @@
 const express = require('express');
 
 class ManejadorPuntajes {
+
   constructor(controller) {
     this.controller = controller;
 
     this.router = express.Router();
 
-    this._registrarRutas();
-  }
-
-  _registrarRutas() {
-    this.router.get('/', (req, res) => this.listar(req, res));
+    this.#registrarRutas();
   }
 
   async listar(req, res) {
@@ -18,6 +15,11 @@ class ManejadorPuntajes {
 
     res.json(puntajes);
   }
+
+  #registrarRutas() {
+    this.router.get('/', (req, res) => this.listar(req, res));
+  }
+  
 }
 
 module.exports = ManejadorPuntajes;

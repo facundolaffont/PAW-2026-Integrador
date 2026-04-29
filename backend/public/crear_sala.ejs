@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UNO Argentino - Crear Sala</title>
+    <link rel="stylesheet" href="/styles/crear_sala.css" />
+  </head>
+  <body>
+    <div class="container-crear-sala">
+      <div class="form-crear-sala">
+        <h2>Crear nueva sala</h2>
+        <label for="nombre-sala">Nombre de sala</label>
+        <input type="text" id="nombre-sala" class="input-crear" placeholder="Ejemplo: Sala UNO" />
+        <label for="num-jugadores">Número de jugadores</label>
+        <input type="number" id="num-jugadores" class="input-crear" min="2" max="4" value="4" />
+        <div class="botones-crear">
+          <button class="btn-crear" onclick="window.location.href = '/'">CANCELAR</button>
+          <button class="btn-crear">CREAR PARTIDA</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

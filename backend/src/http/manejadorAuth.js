@@ -1,18 +1,13 @@
 const express = require('express');
 
 class ManejadorAuth {
+  
   constructor(controller) {
     this.controller = controller;
 
     this.router = express.Router();
 
-    this._registrarRutas();
-  }
-
-  _registrarRutas() {
-    this.router.post('/registrarse', (req, res) => this.registrar(req, res));
-
-    this.router.post('/ingresar', (req, res) => this.ingresar(req, res));
+    this.#registrarRutas();
   }
 
   async registrar(req, res) {
@@ -33,6 +28,11 @@ class ManejadorAuth {
     }
 
     res.json(result.data);
+  }
+
+  #registrarRutas() {
+    this.router.post('/registrarse', (req, res) => this.registrar(req, res));
+    this.router.post('/ingresar', (req, res) => this.ingresar(req, res));
   }
 }
 

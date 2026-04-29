@@ -10,15 +10,15 @@ services:
       - mysql_data:/var/lib/mysql
       - ./src/persistencia/mysql/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uuno", "-puno"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uuno', '-puno']
       interval: 5s
       timeout: 5s
       retries: 10
 
-  backend:
+  app:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       PORT: 3000
       DB_HOST: mysql

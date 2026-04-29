@@ -1,7 +1,8 @@
-# UNO Argentino — Documentación del Backend
+# UNO Argentino — Documentación de la webapp
 
 ## Stack
 
+- **Node.js** + **EJS** (Frontend)
 - **Node.js** + **Express** (API REST)
 - **ws** (WebSocket, mismo puerto que HTTP)
 - **@google/generative-ai** (Gemini 1.5 Flash para bots con IA)
@@ -11,7 +12,7 @@
 ## Estructura
 
 ```
-backend/
+app/
 ├── server.js                          # Clase Servidor (Express + WebSocket); cablea dependencias
 └── src/
     ├── http/
@@ -47,34 +48,35 @@ Base URL: `http://localhost:3000`
 
 ### Autenticación
 
-| Método | Ruta | Body | Respuesta |
-|--------|------|------|-----------|
-| POST | `/api/registrarse` | `{ nombreUsuario }` | `{ jugadorId, nombreUsuario }` |
-| POST | `/api/ingresar` | `{ nombreUsuario }` | `{ jugadorId, nombreUsuario }` |
+| Método | Ruta               | Body                | Respuesta                      |
+| ------ | ------------------ | ------------------- | ------------------------------ |
+| POST   | `/api/registrarse` | `{ nombreUsuario }` | `{ jugadorId, nombreUsuario }` |
+| POST   | `/api/ingresar`    | `{ nombreUsuario }` | `{ jugadorId, nombreUsuario }` |
 
 > No hay contraseña por ahora. El `jugadorId` (UUID) es el identificador de sesión.
 
 ### Partidas
 
-| Método | Ruta | Body | Respuesta |
-|--------|------|------|-----------|
-| GET | `/api/partidas` | — | Lista de salas en estado `esperando` |
-| POST | `/api/partidas` | `{ jugadorId, maxJugadores?, cantidadBots? }` | `{ partidaId, ... }` |
-| GET | `/api/partidas/:id` | — | Resumen público de la sala |
+| Método | Ruta                | Body                                          | Respuesta                            |
+| ------ | ------------------- | --------------------------------------------- | ------------------------------------ |
+| GET    | `/api/partidas`     | —                                             | Lista de salas en estado `esperando` |
+| POST   | `/api/partidas`     | `{ jugadorId, maxJugadores?, cantidadBots? }` | `{ partidaId, ... }`                 |
+| GET    | `/api/partidas/:id` | —                                             | Resumen público de la sala           |
 
 - `maxJugadores`: entre 2 y 4 (opcional, por defecto se calcula como `1 + cantidadBots`)
 - `cantidadBots`: entre 0 y 3. El total humanos + bots debe ser entre 2 y 4.
 
 Ejemplo — 1 jugador vs 2 bots:
+
 ```json
 { "jugadorId": "...", "cantidadBots": 2 }
 ```
 
 ### Puntajes
 
-| Método | Ruta | Respuesta |
-|--------|------|-----------|
-| GET | `/api/puntajes` | Lista ordenada por puntaje global `[{ nombreUsuario, puntajeGlobal }]` |
+| Método | Ruta            | Respuesta                                                              |
+| ------ | --------------- | ---------------------------------------------------------------------- |
+| GET    | `/api/puntajes` | Lista ordenada por puntaje global `[{ nombreUsuario, puntajeGlobal }]` |
 
 ---
 
@@ -88,50 +90,51 @@ Al conectarse, el servidor une al jugador a la sala (si hay lugar) y envía el e
 
 Todos los mensajes son JSON con el campo `accion`.
 
-| Acción | Payload extra | Descripción |
-|--------|--------------|-------------|
-| `iniciar-partida` | — | El creador inicia la partida (mínimo 2 jugadores) |
-| `jugar-carta` | `{ cartaId, colorElegido? }` | Jugar una carta de la mano. `colorElegido` requerido para comodines |
-| `robar-carta` | — | Robar del mazo (o absorber la penalidad acumulada) |
-| `cantar-uno` | — | Declarar UNO (debe hacerse cuando quedan 2 cartas en mano) |
-| `denunciar-uno` | `{ acusadoId }` | Denunciar que un jugador no cantó UNO |
+| Acción            | Payload extra                | Descripción                                                         |
+| ----------------- | ---------------------------- | ------------------------------------------------------------------- |
+| `iniciar-partida` | —                            | El creador inicia la partida (mínimo 2 jugadores)                   |
+| `jugar-carta`     | `{ cartaId, colorElegido? }` | Jugar una carta de la mano. `colorElegido` requerido para comodines |
+| `robar-carta`     | —                            | Robar del mazo (o absorber la penalidad acumulada)                  |
+| `cantar-uno`      | —                            | Declarar UNO (debe hacerse cuando quedan 2 cartas en mano)          |
+| `denunciar-uno`   | `{ acusadoId }`              | Denunciar que un jugador no cantó UNO                               |
 
 Ejemplo:
+
 ```json
 { "accion": "jugar-carta", "cartaId": "uuid-de-la-carta", "colorElegido": "rojo" }
 ```
 
 ### Eventos: Servidor → Cliente
 
-| Evento | Datos | Descripción |
-|--------|-------|-------------|
-| `estado-partida` | `{ estado }` | Estado completo (mano propia, cantidad de cartas rivales, turno, carta en mesa, puntajes) |
-| `jugador-unido` | `{ jugadorId, nombreUsuario, totalJugadores }` | Un jugador entró a la sala |
-| `turno-cambiado` | `{ turno, sentido, penalidad?, robó? }` | Cambió el turno |
-| `carta-jugada` | `{ jugadorId, carta }` | Alguien jugó una carta |
-| `cartas-robadas` | `{ cartasRobadas }` | Las cartas que robaste vos (solo te llega a vos) |
-| `uno-cantado` | `{ jugadorId, nombreUsuario }` | Un jugador cantó UNO |
-| `uno-denunciado` | `{ denuncianteId, acusado }` | Se denunció un UNO no cantado |
-| `ronda-terminada` | `{ ganadorRonda, puntosGanados, puntajesRonda }` | Terminó una ronda |
-| `partida-terminada` | `{ ranking }` | Alguien llegó a 500 pts. Ranking con deltas de puntaje global |
-| `jugador-abandono` | `{ jugadorId, nombreUsuario, mensaje }` | Un jugador se desconectó, partida cancelada |
-| `error` | `{ mensaje }` | Jugada inválida u otro error |
+| Evento              | Datos                                            | Descripción                                                                               |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `estado-partida`    | `{ estado }`                                     | Estado completo (mano propia, cantidad de cartas rivales, turno, carta en mesa, puntajes) |
+| `jugador-unido`     | `{ jugadorId, nombreUsuario, totalJugadores }`   | Un jugador entró a la sala                                                                |
+| `turno-cambiado`    | `{ turno, sentido, penalidad?, robó? }`          | Cambió el turno                                                                           |
+| `carta-jugada`      | `{ jugadorId, carta }`                           | Alguien jugó una carta                                                                    |
+| `cartas-robadas`    | `{ cartasRobadas }`                              | Las cartas que robaste vos (solo te llega a vos)                                          |
+| `uno-cantado`       | `{ jugadorId, nombreUsuario }`                   | Un jugador cantó UNO                                                                      |
+| `uno-denunciado`    | `{ denuncianteId, acusado }`                     | Se denunció un UNO no cantado                                                             |
+| `ronda-terminada`   | `{ ganadorRonda, puntosGanados, puntajesRonda }` | Terminó una ronda                                                                         |
+| `partida-terminada` | `{ ranking }`                                    | Alguien llegó a 500 pts. Ranking con deltas de puntaje global                             |
+| `jugador-abandono`  | `{ jugadorId, nombreUsuario, mensaje }`          | Un jugador se desconectó, partida cancelada                                               |
+| `error`             | `{ mensaje }`                                    | Jugada inválida u otro error                                                              |
 
 ---
 
 ## Mazo UNO Argentino
 
-| Carta | Cantidad | Valor (puntaje) |
-|-------|----------|----------------|
-| 0 por color | 4 | 0 |
-| 1–9 por color (x2) | 72 | valor nominal |
-| Roba Dos por color (x2) | 8 | 20 |
-| Reversa por color (x2) | 8 | 20 |
-| Salta por color (x2) | 8 | 20 |
-| Comodín | 4 | 50 |
-| Comodín Roba Cuatro | 4 | 50 |
-| Comodín Roba Tres | 4 | 50 |
-| **Total** | **112** | |
+| Carta                   | Cantidad | Valor (puntaje) |
+| ----------------------- | -------- | --------------- |
+| 0 por color             | 4        | 0               |
+| 1–9 por color (x2)      | 72       | valor nominal   |
+| Roba Dos por color (x2) | 8        | 20              |
+| Reversa por color (x2)  | 8        | 20              |
+| Salta por color (x2)    | 8        | 20              |
+| Comodín                 | 4        | 50              |
+| Comodín Roba Cuatro     | 4        | 50              |
+| Comodín Roba Tres       | 4        | 50              |
+| **Total**               | **112**  |                 |
 
 ---
 
@@ -152,11 +155,11 @@ Ejemplo:
 
 Cuando un jugador se queda sin cartas, gana la ronda y suma al acumulado (`puntajesRonda`) el **valor de las cartas que les quedan en mano a los demás**. Los valores son:
 
-| Carta | Valor |
-|-------|-------|
-| Números (0–9) | valor nominal |
-| Salta / Reversa / Roba-dos | 20 |
-| Comodines (roba-cuatro, roba-tres, cambia-color) | 50 |
+| Carta                                            | Valor         |
+| ------------------------------------------------ | ------------- |
+| Números (0–9)                                    | valor nominal |
+| Salta / Reversa / Roba-dos                       | 20            |
+| Comodines (roba-cuatro, roba-tres, cambia-color) | 50            |
 
 Ejemplo: si los rivales tienen `7 + Reversa + Comodín` en mano → el ganador suma `7 + 20 + 50 = 77` puntos.
 
@@ -166,12 +169,12 @@ La partida continúa ronda a ronda hasta que un jugador acumula **500 puntos** e
 
 El ranking final se arma ordenando por `puntajesRonda` de mayor a menor. El `puntajeGlobal` de cada jugador no se almacena como columna; se calcula como `SUM(delta_global)` sobre `partida_jugadores`.
 
-| Posición | Delta |
-|----------|-------|
-| 1° (ganador) | +50 |
-| 2° | 0 |
-| 3° | −25 |
-| 4° | −50 |
+| Posición     | Delta |
+| ------------ | ----- |
+| 1° (ganador) | +50   |
+| 2°           | 0     |
+| 3°           | −25   |
+| 4°           | −50   |
 
 ---
 
@@ -181,12 +184,14 @@ Al crear una partida con `cantidadBots > 0`, se agregan jugadores bot a la sala.
 
 ### Configuración
 
-Requiere un archivo `.env` en `/backend` con la API key:
+Requiere un archivo `.env` en `app/` con la API key:
+
 ```
 GEMINI_API_KEY=tu_api_key
 ```
 
 Las variables de base de datos y puerto están definidas en `docker-compose.yml`. Si corrés sin Docker, agregá al `.env`:
+
 ```
 PORT=3000
 DB_HOST=localhost
@@ -209,11 +214,11 @@ Obtené tu API key gratis en [aistudio.google.com](https://aistudio.google.com).
 
 ### Nombres de los bots
 
-| Slot | Nombre |
-|------|--------|
-| Bot 1 | Bot-A |
-| Bot 2 | Bot-B |
-| Bot 3 | Bot-C |
+| Slot  | Nombre |
+| ----- | ------ |
+| Bot 1 | Bot-A  |
+| Bot 2 | Bot-B  |
+| Bot 3 | Bot-C  |
 
 ---
 

@@ -1,20 +1,13 @@
 const express = require('express');
 
 class ManejadorPartidas {
+  
   constructor(controller) {
     this.controller = controller;
 
     this.router = express.Router();
 
-    this._registrarRutas();
-  }
-
-  _registrarRutas() {
-    this.router.get('/', (req, res) => this.listar(req, res));
-
-    this.router.post('/', (req, res) => this.crear(req, res));
-
-    this.router.get('/:id', (req, res) => this.obtener(req, res));
+    this.#registrarRutas();
   }
 
   listar(req, res) {
@@ -42,6 +35,13 @@ class ManejadorPartidas {
 
     res.json(result.data);
   }
+
+  #registrarRutas() {
+    this.router.get('/', (req, res) => this.listar(req, res));
+    this.router.post('/', (req, res) => this.crear(req, res));
+    this.router.get('/:id', (req, res) => this.obtener(req, res));
+  }
+  
 }
 
 module.exports = ManejadorPartidas;
