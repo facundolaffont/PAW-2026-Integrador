@@ -54,7 +54,6 @@ class Servidor {
     this.app.use(express.static(path.join(__dirname, '../public/resources/')));
 
     /* Configuración de middleware, rutas HTTP y WebSocket. */
-
     this.#configurarMiddleware();
     this.#configurarRutasHttp();
     this.#configurarWebSocket();
@@ -96,19 +95,34 @@ class Servidor {
   #configurarRutasHttp() {
     // Rutas del frontend.
     this.app.get('/', (req, res) => {
-      res.render('inicio');
+      res.render('inicio', {
+        title: 'UNO Argentino - Inicio',
+        styles: ['/styles/inicio.css'],
+      });
     });
-    this.app.get('/crear_sala', (req, res) => {
-      res.render('crear_sala');
+    this.app.get('/crear-sala', (req, res) => {
+      res.render('crear-sala', {
+        title: 'UNO Argentino - Crear Sala',
+        styles: ['/styles/crear-sala.css'],
+      });
     });
     this.app.get('/partida', (req, res) => {
-      res.render('partida');
+      res.render('partida', {
+        title: 'UNO Argentino - Partida',
+        styles: ['/styles/partida.css'],
+      });
     });
     this.app.get('/puntajes', (req, res) => {
-      res.render('puntajes');
+      res.render('puntajes', {
+        title: 'UNO Argentino - Puntajes',
+        styles: ['/styles/puntajes.css'],
+      });
     });
     this.app.get('/salas', (req, res) => {
-      res.render('salas');
+      res.render('salas', {
+        title: 'UNO Argentino - Salas',
+        styles: ['/styles/salas.css'],
+      });
     });
 
     // Rutas API REST.
