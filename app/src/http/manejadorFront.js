@@ -44,6 +44,13 @@ class ManejadorFront {
       });
     });
 
+    this.app.get('/public/jugar', (req, res) => {
+      res.render('jugar', {
+        title: 'UNO Argentino - Jugar',
+        styles: ['/styles/auth.css'],
+      });
+    });
+
     this.app.get('/public/nombre-jugador', (req, res) => {
       res.render('nombre-jugador', {
         title: 'UNO Argentino - Nombre de Jugador',

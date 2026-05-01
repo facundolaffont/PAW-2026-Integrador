@@ -70,3 +70,10 @@ body {
   background: #ffd600;
   color: #222;
 }
+
+.error-crear {
+  margin: 8px 0 0 0;
+  color: #c0392b;
+  font-size: 0.9rem;
+  text-align: center;
+}

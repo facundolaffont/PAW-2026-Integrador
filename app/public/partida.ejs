@@ -2,58 +2,162 @@
 <html lang="es">
   <%- include('partials/head.ejs') %>
   <body>
-    <h1>Página de Partida</h1>
-    <!-- Aquí va el contenido de partida.html -->
-    <h1>Página de Partida</h1>
-    <!-- Aquí va el contenido de partida.html -->
-    <!-- NAVBAR -->
     <nav class="navbar">
       <div class="navbar-logo">UNO Argentino</div>
-      <div class="navbar-info">Ronda 3</div>
+      <div class="navbar-info" id="estado-partida">Conectando...</div>
       <div class="navbar-links">
-        <a href="#" class="navbar-link">Reglas</a>
-        <a href="#" class="navbar-link">Salir</a>
+        <a href="#" id="salir" class="navbar-link">Salir</a>
       </div>
     </nav>
 
-    <!-- MESA PRINCIPAL -->
-    <div class="mesa">
-      <!-- JUGADOR 3 (arriba) -->
-      <div class="area-jugador-arriba">
-        <div class="mano-horizontal">
-          <div class="carta"></div>
-          <div class="carta"></div>
-          <div class="carta"></div>
-          <div class="carta"></div>
-          <div class="carta"></div>
-          <div class="carta"></div>
-          <div class="carta"></div>
-        </div>
-        <div class="info-jugador">
-          <div class="puntaje">&#9733; 0</div>
-          <span>JUGADOR 3</span>
-        </div>
-      </div>
+    <div class="lobby">
+      <h1 id="lobby-titulo">Sala</h1>
+      <p id="lobby-info" class="lobby-info"></p>
 
-      <!-- ZONA CENTRAL -->
-      <div class="zona-central">
-        <!-- JUGADOR 2 (izquierda) -->
-        <div class="area-jugador-lateral izquierda">
-          <div class="nombre-lateral">
-            <div class="puntaje">&#9733; 0</div>
-            JUGADOR 2
-          </div>
-          <div class="mano-lateral">
-            <div class="carta"></div>
-            <div class="carta"></div>
-            <div class="carta"></div>
-            <div class="carta"></div>
-            <div class="carta"></div>
-            <div class="carta"></div>
-            <div class="carta"></div>
-          </div>
-        </div>
-      </div>
+      <h2 class="lobby-subtitulo">Jugadores</h2>
+      <ul id="lista-jugadores" class="lista-jugadores"></ul>
+
+      <p id="mensaje" class="lobby-mensaje" hidden></p>
+
+      <button id="btn-iniciar" class="btn-iniciar" hidden>INICIAR PARTIDA</button>
     </div>
+
+    <script>
+      (function () {
+        const jugadorId = sessionStorage.getItem('jugadorId');
+        if (!jugadorId) window.location.href = '/public/bienvenida';
+      })();
+
+      const jugadorId = sessionStorage.getItem('jugadorId');
+      const partidaId = new URLSearchParams(window.location.search).get('partidaId');
+
+      const elEstado = document.getElementById('estado-partida');
+      const elTitulo = document.getElementById('lobby-titulo');
+      const elInfo = document.getElementById('lobby-info');
+      const elLista = document.getElementById('lista-jugadores');
+      const elMensaje = document.getElementById('mensaje');
+      const btnIniciar = document.getElementById('btn-iniciar');
+
+      let esCreador = false;
+      let maxJugadores = null;
+      let ws;
+
+      function mostrarMensaje(texto, tipo = 'info') {
+        elMensaje.textContent = texto;
+        elMensaje.dataset.tipo = tipo;
+        elMensaje.hidden = false;
+      }
+
+      function pintarJugadores(jugadores) {
+        elLista.innerHTML = jugadores
+          .map((nombre) => `<li class="jugador-item">${nombre}</li>`)
+          .join('');
+        const cant = jugadores.length;
+        const total = maxJugadores != null ? `/${maxJugadores}` : '';
+        elInfo.textContent = `${cant}${total} jugadores en la sala`;
+      }
+
+      async function cargarResumen() {
+        if (!partidaId) {
+          mostrarMensaje('Falta el ID de partida.', 'error');
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/partidas/${encodeURIComponent(partidaId)}`);
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            mostrarMensaje(data.error || 'No se pudo cargar la partida.', 'error');
+            return;
+          }
+          const sala = await response.json();
+          esCreador = sala.creadorId === jugadorId;
+          maxJugadores = sala.maxJugadores;
+          elTitulo.textContent = `Sala de ${sala.jugadores[0] || 'jugador'}`;
+          pintarJugadores(sala.jugadores);
+          if (esCreador) btnIniciar.hidden = false;
+        } catch (err) {
+          console.error(err);
+          mostrarMensaje('Error de red al cargar la partida.', 'error');
+        }
+      }
+
+      function conectarWS() {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${proto}//${window.location.host}/ws?jugadorId=${encodeURIComponent(jugadorId)}&partidaId=${encodeURIComponent(partidaId)}`;
+        ws = new WebSocket(url);
+
+        ws.addEventListener('open', () => {
+          elEstado.textContent = 'En sala';
+        });
+
+        ws.addEventListener('message', (e) => {
+          let msg;
+          try {
+            msg = JSON.parse(e.data);
+          } catch {
+            return;
+          }
+          manejarEvento(msg);
+        });
+
+        ws.addEventListener('close', () => {
+          elEstado.textContent = 'Desconectado';
+        });
+
+        ws.addEventListener('error', (err) => {
+          console.error('WS error', err);
+          elEstado.textContent = 'Error de conexión';
+        });
+      }
+
+      function manejarEvento(msg) {
+        const { evento, ...datos } = msg;
+        switch (evento) {
+          case 'estado-partida': {
+            const estado = datos.estado;
+            if (estado.estado === 'jugando') {
+              elEstado.textContent = 'Partida en curso';
+              btnIniciar.hidden = true;
+              mostrarMensaje('La partida ya empezó.');
+            }
+            const nombres = (estado.jugadores || []).map((j) => j.nombreUsuario);
+            pintarJugadores(nombres);
+            break;
+          }
+          case 'jugador-unido': {
+            cargarResumen();
+            break;
+          }
+          case 'turno-cambiado': {
+            elEstado.textContent = 'Partida en curso';
+            btnIniciar.hidden = true;
+            break;
+          }
+          case 'error': {
+            mostrarMensaje(datos.mensaje || 'Error', 'error');
+            break;
+          }
+          case 'jugador-abandono': {
+            mostrarMensaje(datos.mensaje || 'Un jugador abandonó.', 'error');
+            break;
+          }
+        }
+      }
+
+      btnIniciar.addEventListener('click', () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ accion: 'iniciar-partida' }));
+      });
+
+      document.getElementById('salir').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (ws) ws.close();
+        window.location.href = '/public/';
+      });
+
+      cargarResumen();
+      conectarWS();
+    </script>
   </body>
 </html>

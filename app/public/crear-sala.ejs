@@ -6,18 +6,8 @@
       <div class="form-crear-sala">
         <h1>Crear nueva sala</h1>
 
-        <form action="/public/crear-sala" method="POST" onsubmit="enviarCrearSala(event)">
-          <label for="nombre-sala">Nombre de sala</label>
-          <input
-            type="text"
-            id="nombre-sala"
-            name="nombre_sala"
-            class="input-crear"
-            placeholder="Ejemplo: Sala UNO"
-            required
-          />
-
-          <label for="num-jugadores">Número de jugadores</label>
+        <form onsubmit="enviarCrearSala(event)">
+          <label for="num-jugadores">Cantidad máxima de jugadores</label>
           <input
             type="number"
             id="num-jugadores"
@@ -29,8 +19,22 @@
             required
           />
 
+          <label for="cantidad-bots">Cantidad de bots</label>
+          <input
+            type="number"
+            id="cantidad-bots"
+            name="cantidad_bots"
+            class="input-crear"
+            min="0"
+            max="3"
+            value="0"
+            required
+          />
+
+          <p class="error-crear" id="error" hidden></p>
+
           <div class="botones-crear">
-            <button type="button" class="btn-crear" onclick="window.location.href = '/public/'">
+            <button type="button" class="btn-crear" onclick="window.location.href = '/public/jugar'">
               CANCELAR
             </button>
             <button type="submit" class="btn-crear">CREAR PARTIDA</button>
@@ -38,44 +42,48 @@
         </form>
       </div>
     </div>
-  </div>
-  <script>
-    function enviarCrearSala(e) {
+    <script>
+      (function () {
+        const jugadorId = sessionStorage.getItem('jugadorId');
+        if (!jugadorId) window.location.href = '/public/bienvenida';
+      })();
 
-      // Evita que el formulario se envíe de la forma tradicional.
-      e.preventDefault();
+      async function enviarCrearSala(e) {
+        e.preventDefault();
+        const error = document.getElementById('error');
+        error.hidden = true;
 
-      const form = e.target;
-      const nombre_sala = form.nombre_sala.value;
-      const num_jugadores = form.num_jugadores.value;
-      const payload = {
-        nombre_sala,
-        num_jugadores
-      };
-      // { jugadorId, maxJugadores, cantidadBots }
+        const jugadorId = sessionStorage.getItem('jugadorId');
+        const maxJugadores = parseInt(e.target.num_jugadores.value, 10);
+        const cantidadBots = parseInt(e.target.cantidad_bots.value, 10);
 
-      // Envía la solicitud POST con el payload en formato JSON.
-      fetch('/api/partidas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-      .then((response) => {
-        if (response.redirected) window.location.href = response.url;
-        else if (response.ok) window.location.href = '/salas';
-        else {
-          console.error('Error al crear la sala:', response);
-          alert('Error al crear la sala.');
+        if (1 + cantidadBots > maxJugadores) {
+          error.textContent = 'La cantidad de bots no puede dejar la sala llena (debe quedar lugar para vos).';
+          error.hidden = false;
+          return;
         }
-      })
-      .catch((error) => {
-        console.error('Error de red o del servidor:', error);
-        alert('Error de red o del servidor.');
-      });
 
-    }
-  </script>
+        try {
+          const response = await fetch('/api/partidas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jugadorId, maxJugadores, cantidadBots }),
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            error.textContent = data.error || 'Error al crear la sala.';
+            error.hidden = false;
+            return;
+          }
+
+          window.location.href = `/public/partida?partidaId=${encodeURIComponent(data.partidaId)}`;
+        } catch (err) {
+          console.error(err);
+          error.textContent = 'Error de red o del servidor.';
+          error.hidden = false;
+        }
+      }
+    </script>
   </body>
 </html>

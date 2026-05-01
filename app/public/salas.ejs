@@ -7,39 +7,95 @@
         <img src="/images/uno-logo.png" alt="UNO" class="logo-salas" />
         <h2>Salas disponibles</h2>
       </div>
-      <input type="text" class="input-buscar" placeholder="Buscar sala" />
+      <input type="text" id="buscar" class="input-buscar" placeholder="Buscar sala" />
       <div class="tabla-salas">
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
+              <th>Sala</th>
               <th>Jugadores</th>
+              <th></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="lista-salas">
             <tr>
-              <td>SALA 1</td>
-              <td>3/4</td>
-            </tr>
-            <tr>
-              <td>SALA 2</td>
-              <td>2/4</td>
-            </tr>
-            <tr>
-              <td>SALA 3</td>
-              <td>4/4</td>
-            </tr>
-            <tr>
-              <td>SALA 4</td>
-              <td>1/4</td>
+              <td colspan="3" class="vacio">Cargando...</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div class="botones-salas">
-        <button class="btn-salas">PARTIDA RÁPIDA</button>
-        <button class="btn-salas">CREAR PARTIDA</button>
+        <button class="btn-salas" onclick="window.location.href = '/public/jugar'">VOLVER</button>
+        <button class="btn-salas" onclick="window.location.href = '/public/crear-sala'">CREAR PARTIDA</button>
       </div>
     </div>
+    <script>
+      (function () {
+        const jugadorId = sessionStorage.getItem('jugadorId');
+        if (!jugadorId) window.location.href = '/public/bienvenida';
+      })();
+
+      let salas = [];
+
+      function nombreSala(s) {
+        const creador = (s.jugadores && s.jugadores[0]) || 'Sala';
+        return `Sala de ${creador}`;
+      }
+
+      function pintar(filtro = '') {
+        const tbody = document.getElementById('lista-salas');
+        const filtradas = salas.filter((s) =>
+          nombreSala(s).toLowerCase().includes(filtro.toLowerCase())
+        );
+
+        if (filtradas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="vacio">No hay salas disponibles.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtradas
+          .map((s) => {
+            const cant = (s.jugadores || []).length;
+            const llena = cant >= s.maxJugadores;
+            const accion = llena
+              ? '<span class="sala-llena">Llena</span>'
+              : `<button class="btn-unirse" data-id="${s.partidaId}">UNIRSE</button>`;
+            return `
+              <tr>
+                <td>${nombreSala(s)}</td>
+                <td>${cant}/${s.maxJugadores}</td>
+                <td>${accion}</td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        tbody.querySelectorAll('.btn-unirse').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            window.location.href = `/public/partida?partidaId=${encodeURIComponent(id)}`;
+          });
+        });
+      }
+
+      async function cargarSalas() {
+        try {
+          const response = await fetch('/api/partidas');
+          if (!response.ok) throw new Error('No se pudieron cargar las salas');
+          salas = await response.json();
+          pintar(document.getElementById('buscar').value);
+        } catch (err) {
+          console.error(err);
+          document.getElementById('lista-salas').innerHTML =
+            '<tr><td colspan="3" class="vacio">Error al cargar las salas.</td></tr>';
+        }
+      }
+
+      document.getElementById('buscar').addEventListener('input', (e) => pintar(e.target.value));
+
+      cargarSalas();
+      // Refresca cada 3s para ver salas nuevas / cambios de cupo.
+      setInterval(cargarSalas, 3000);
+    </script>
   </body>
 </html>
