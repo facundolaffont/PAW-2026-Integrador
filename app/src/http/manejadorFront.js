@@ -14,6 +14,15 @@ class ManejadorFront {
      * Rutas del frontend.
      * Se podrían separar en un manejador específico si se quisiera, pero dado que el frontend es muy simple y no tiene lógica de negocio, lo dejo aquí para evitar agregar complejidad innecesaria.
      */
+    this.app.get('/', (req, res) => res.redirect('/public/bienvenida'));
+
+    this.app.get('/public/bienvenida', (req, res) => {
+      res.render('bienvenida', {
+        title: 'UNO Argentino - Bienvenida',
+        styles: ['/styles/auth.css'],
+      });
+    });
+
     this.app.get('/public/', (req, res) => {
       res.render('inicio', {
         title: 'UNO Argentino - Inicio',
