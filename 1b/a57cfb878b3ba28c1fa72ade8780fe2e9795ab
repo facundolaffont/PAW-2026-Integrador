@@ -1,0 +1,27 @@
+app/public/resources/styles/puntajes.css
+  356983a92429e960 12-14,20-21,25-33,38,42-49,51,54-57,62-87,90-91,93-101,103-114
+app/public/puntajes.ejs
+  356983a92429e960 7-25,28-66
+app/public/inicio.ejs
+  356983a92429e960 11-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "1ba57cfb878b3ba28c1fa72ade8780fe2e9795ab",
+  "prompts": {
+    "356983a92429e960": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3717650d-03e3-4317-bac2-0b90012bbddd",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "rrobles_meli",
+      "messages": [],
+      "total_additions": 138,
+      "total_deletions": 28,
+      "accepted_lines": 138,
+      "overriden_lines": 0
+    }
+  }
+}
