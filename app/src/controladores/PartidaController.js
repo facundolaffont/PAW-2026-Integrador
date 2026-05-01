@@ -117,17 +117,26 @@ class PartidaController {
       return { ok: false, status: 409, error: 'Ya estás en una partida activa' };
 
     const bots = parseInt(cantidadBots);
-    const total = 1 + bots;
-    const max = maxJugadores ? parseInt(maxJugadores) : total;
+    // Si no se especifica máximo, se asume sala llena: 1 humano + bots, mínimo 2.
+    const max = maxJugadores ? parseInt(maxJugadores) : Math.max(2, 1 + bots);
 
     if (bots < 0 || bots > 3)
       return { ok: false, status: 400, error: 'cantidadBots debe ser entre 0 y 3' };
 
-    if (total < 2 || total > 4)
+    if (max < 2 || max > 4)
       return {
         ok: false,
         status: 400,
-        error: 'El total de jugadores (humanos + bots) debe ser entre 2 y 4',
+        error: 'maxJugadores debe ser entre 2 y 4',
+      };
+
+    // El creador ocupa un lugar; los bots se agregan en la creación.
+    // Resto de los lugares queda libre para humanos que se unan después.
+    if (1 + bots > max)
+      return {
+        ok: false,
+        status: 400,
+        error: 'La cantidad de bots no puede dejar la sala sin lugar para vos',
       };
 
     const partidaId = uuidv4();

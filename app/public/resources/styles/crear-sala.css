@@ -77,3 +77,9 @@ body {
   font-size: 0.9rem;
   text-align: center;
 }
+
+.hint {
+  color: #6c8aa4;
+  font-size: 13px;
+  font-weight: normal;
+}

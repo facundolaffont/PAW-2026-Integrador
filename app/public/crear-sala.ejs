@@ -19,7 +19,7 @@
             required
           />
 
-          <label for="cantidad-bots">Cantidad de bots</label>
+          <label for="cantidad-bots">Cantidad de bots <span class="hint" id="hint-bots"></span></label>
           <input
             type="number"
             id="cantidad-bots"
@@ -47,6 +47,26 @@
         const jugadorId = sessionStorage.getItem('jugadorId');
         if (!jugadorId) window.location.href = '/public/bienvenida';
       })();
+
+      // Mantiene el máximo de bots = maxJugadores - 1 (siempre te queda lugar a vos).
+      // Si el valor actual de bots supera el nuevo máximo, lo recorta.
+      const inputJugadores = document.getElementById('num-jugadores');
+      const inputBots = document.getElementById('cantidad-bots');
+      const hintBots = document.getElementById('hint-bots');
+
+      function sincronizarLimiteBots() {
+        const max = Math.max(1, parseInt(inputJugadores.value, 10) || 2) - 1;
+        inputBots.max = String(max);
+        hintBots.textContent = `(máx. ${max})`;
+        if (parseInt(inputBots.value, 10) > max) inputBots.value = max;
+      }
+
+      inputJugadores.addEventListener('input', sincronizarLimiteBots);
+      inputBots.addEventListener('input', () => {
+        const max = parseInt(inputBots.max, 10);
+        if (parseInt(inputBots.value, 10) > max) inputBots.value = max;
+      });
+      sincronizarLimiteBots();
 
       async function enviarCrearSala(e) {
         e.preventDefault();
