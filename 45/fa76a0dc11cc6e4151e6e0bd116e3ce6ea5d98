@@ -1,0 +1,34 @@
+app/public/login.ejs
+  356983a92429e960 1-57
+app/src/http/manejadorFront.js
+  356983a92429e960 24-37
+app/public/registro.ejs
+  356983a92429e960 1-57
+app/public/resources/styles/auth.css
+  356983a92429e960 1-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "45fa76a0dc11cc6e4151e6e0bd116e3ce6ea5d98",
+  "prompts": {
+    "356983a92429e960": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3717650d-03e3-4317-bac2-0b90012bbddd",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "rrobles_meli",
+      "messages": [],
+      "total_additions": 543,
+      "total_deletions": 0,
+      "accepted_lines": 227,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_8b256784326366": {
+      "author": "rrobles_meli"
+    }
+  }
+}
