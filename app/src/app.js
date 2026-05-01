@@ -1,10 +1,14 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
+
 const http = require('http');
 const path = require('path');
 const express = require('express');
 const { WebSocketServer } = require('ws');
 const { URL } = require('url');
+const axios = require('axios');
 
+const logger = require('./logger');
 const db = require('./persistencia/Persistencia');
 const BotLLM = require('./modelo/BotLLM');
 const ManejadorConexiones = require('./ws/manejadorConexiones');
@@ -15,11 +19,40 @@ const ManejadorMensajes = require('./ws/manejadorMensajes');
 const ManejadorAuth = require('./http/manejadorAuth');
 const ManejadorPartidas = require('./http/manejadorPartidas');
 const ManejadorPuntajes = require('./http/manejadorPuntajes');
+const AppException = require('./errores/AppException');
+const EmptyException = require('./errores/EmptyException');
+const {
+  isDevEnvConfigured,
+  isEmptyObject,
+  handleErrorByEnv,
+  handleGenericErrorByEnv,
+  registerLog,
+  logContext,
+} = require('./utils');
+const errorhandler = require('errorhandler');
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'UNO Argentino API',
+      version: '1.0.0',
+      description: 'Documentación interactiva de la API UNO Argentino',
+    },
+  },
+  apis: [path.join(__dirname, './**/*.js')],
+};
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 class Servidor {
   constructor(puerto) {
     this.puerto = puerto;
     this.app = express();
+
+    // Documentación Swagger UI disponible en /api-docs
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // Crea un servidor HTTP utilizando el módulo `http` de Node.js,
     // pasando la aplicación Express como manejador de solicitudes.
@@ -57,12 +90,19 @@ class Servidor {
     this.#configurarMiddleware();
     this.#configurarRutasHttp();
     this.#configurarWebSocket();
+
+    // Middleware de errorhandler que sólo funciona en desarrollo.
+    if (isDevEnvConfigured()) {
+      this.app.use(errorhandler());
+    }
   }
 
   /**
    * Inicia el servidor HTTP y WebSocket.
    */
   iniciar() {
+    logContext(logger, this);
+
     this.server.listen(this.puerto, () => {
       console.log(`Servidor escuchando en http://localhost:${this.puerto}.`);
       console.log(
@@ -81,6 +121,8 @@ class Servidor {
    * Sin este middleware, `req.body` sería `undefined` para las solicitudes con JSON.
    */
   #configurarMiddleware() {
+    logContext(logger, this);
+
     this.app.use(express.json());
   }
 
@@ -93,31 +135,66 @@ class Servidor {
    * encarga de procesar las solicitudes que llegan a esas rutas.
    */
   #configurarRutasHttp() {
-    // Rutas del frontend.
+    logContext(logger, this);
+
+    /* Rutas del frontend. */
+
     this.app.get('/', (req, res) => {
       res.render('inicio', {
         title: 'UNO Argentino - Inicio',
         styles: ['/styles/inicio.css'],
       });
     });
+
     this.app.get('/crear-sala', (req, res) => {
       res.render('crear-sala', {
         title: 'UNO Argentino - Crear Sala',
         styles: ['/styles/crear-sala.css'],
       });
     });
+
+    // Manejar el POST del formulario de creación de sala.
+    this.app.post('/crear-sala', async (req, res, next) => {
+      try {
+        // Si el cuerpo de la solicitud no tiene información o es un objeto vacío,
+        // lanza una excepción.
+        if (isEmptyObject(req.body)) throw new EmptyException('Cuerpo HTTP sin información.');
+
+        registerLog(logger, 'debug', 'Datos de sala recibidos.', { body: req.body });
+        const jugadorId = 'UUID';
+        const maxJugadores = parseInt(req.body.num_jugadores, 10);
+        const cantidadBots = Math.max(0, maxJugadores - 2);
+        const payload = {
+          jugadorId,
+          maxJugadores,
+          cantidadBots,
+        };
+
+        registerLog(logger, 'debug', 'Payload a enviar al backend.', { payload });
+        await axios.post('http://localhost:3000/api/partidas', payload, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        res.redirect('/salas');
+      } catch (error) {
+        handleGenericErrorByEnv(error, next, res, 'Error al crear la sala.');
+      }
+    });
+
     this.app.get('/partida', (req, res) => {
       res.render('partida', {
         title: 'UNO Argentino - Partida',
         styles: ['/styles/partida.css'],
       });
     });
+
     this.app.get('/puntajes', (req, res) => {
       res.render('puntajes', {
         title: 'UNO Argentino - Puntajes',
         styles: ['/styles/puntajes.css'],
       });
     });
+
     this.app.get('/salas', (req, res) => {
       res.render('salas', {
         title: 'UNO Argentino - Salas',
@@ -125,7 +202,8 @@ class Servidor {
       });
     });
 
-    // Rutas API REST.
+    /* Rutas del backend. */
+
     const auth = new ManejadorAuth(new AuthController(db));
     const partidas = new ManejadorPartidas(this.partidaController);
     const puntajes = new ManejadorPuntajes(new PuntajesController(db));
@@ -136,7 +214,7 @@ class Servidor {
   }
 
   #configurarWebSocket() {
-    // URL de conexión: ws://HOST:PORT?jugadorId=<id>&partidaId=<id>
+    logContext(logger, this);
 
     // Intercepta la solicitud HTTP de los clientes que intentan establecer una conexión
     // WebSocket. En este punto se validan los parametros requeridos y se rechazan
@@ -161,7 +239,7 @@ class Servidor {
       // colgadas.
       this.wss.handleUpgrade(req, socket, head, (ws) => {
         this.manejador.manejarConexion(ws, jugadorId, partidaId).catch((err) => {
-          console.error('[WS] Error en conexión:', err);
+          registerLog(logger, 'error', `[WS] Error en conexión: ${err.message}`, { error: err });
 
           ws.close();
         });

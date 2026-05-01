@@ -2,17 +2,13 @@ const { v4: uuidv4 } = require('uuid');
 const SalaDeJuego = require('../modelo/SalaDeJuego');
 const BotLLM = require('../modelo/BotLLM');
 const ManejadorConexiones = require('../ws/manejadorConexiones');
+const { registerLog, logContext } = require('../utils');
 
 const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
 
-class PartidaController {
+const logger = require('../logger');
 
-  /**
-   * 
-   * @param {ManejadorConexiones} conexiones 
-   * @param {Persistencia} persistencia 
-   * @param {BotLLM} botLLM 
-   */
+class PartidaController {
   constructor(conexiones, persistencia, botLLM) {
     this.conexiones = conexiones;
     this.persistencia = persistencia;
@@ -110,7 +106,9 @@ class PartidaController {
   }
 
   async crearPartida(jugadorId, maxJugadores, cantidadBots = 0) {
-    if (!jugadorId) return { ok: false, status: 400, error: 'jugadorId requerido' };
+    logContext(logger, this, { jugadorId, maxJugadores, cantidadBots });
+
+    if (!jugadorId) throw new NotFoundException('jugadorId requerido');
 
     const jugador = await this.persistencia.obtenerJugador(jugadorId);
     if (!jugador) return { ok: false, status: 404, error: 'Jugador no encontrado' };
@@ -146,6 +144,8 @@ class PartidaController {
   }
 
   async unirJugador(partidaId, jugadorId) {
+    logContext(logger, this, { partidaId, jugadorId });
+
     const sala = this.persistencia.obtenerPartida(partidaId);
 
     if (!sala) {
@@ -190,6 +190,8 @@ class PartidaController {
   }
 
   async jugarCarta(partidaId, jugadorId, cartaId, colorElegido) {
+    logContext(logger, this, { partidaId, jugadorId, cartaId, colorElegido });
+
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.jugarCarta(jugadorId, cartaId, colorElegido);
 
@@ -237,6 +239,8 @@ class PartidaController {
   }
 
   async desconectar(partidaId, jugadorId) {
+    logContext(logger, this, { partidaId, jugadorId });
+
     const sala = this.persistencia.obtenerPartida(partidaId);
 
     if (!sala || sala.estado === 'terminada') return;
@@ -258,6 +262,8 @@ class PartidaController {
   }
 
   async _ejecutarTurnoBot(partidaId) {
+    logContext(logger, this, { partidaId });
+
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala || !sala.turnoEsBot()) return;
 

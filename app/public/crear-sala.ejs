@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+  <%- include('partials/head.ejs') %>
+  <body>
+    <div class="container-crear-sala">
+      <div class="form-crear-sala">
+        <h1>Crear nueva sala</h1>
+
+        <form action="/crear-sala" method="POST" onsubmit="enviarCrearSala(event)">
+          <label for="nombre-sala">Nombre de sala</label>
+          <input
+            type="text"
+            id="nombre-sala"
+            name="nombre_sala"
+            class="input-crear"
+            placeholder="Ejemplo: Sala UNO"
+            required
+          />
+
+          <label for="num-jugadores">Número de jugadores</label>
+          <input
+            type="number"
+            id="num-jugadores"
+            name="num_jugadores"
+            class="input-crear"
+            min="2"
+            max="4"
+            value="4"
+            required
+          />
+
+          <div class="botones-crear">
+            <button type="button" class="btn-crear" onclick="window.location.href = '/'">
+              CANCELAR
+            </button>
+            <button type="submit" class="btn-crear">CREAR PARTIDA</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    function enviarCrearSala(e) {
+
+      // Evita que el formulario se envíe de la forma tradicional.
+      e.preventDefault();
+
+      const form = e.target;
+      const nombre_sala = form.nombre_sala.value;
+      const num_jugadores = form.num_jugadores.value;
+      const payload = {
+        nombre_sala,
+        num_jugadores
+      };
+
+      // Envía la solicitud POST con el payload en formato JSON.
+      fetch('/crear-sala', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then((response) => {
+        if (response.redirected) window.location.href = response.url;
+        else if (response.ok) window.location.href = '/salas';
+        else {
+          console.error('Error al crear la sala:', response);
+          alert('Error al crear la sala.');
+        }
+      })
+      .catch((error) => {
+        console.error('Error de red o del servidor:', error);
+        alert('Error de red o del servidor.');
+      });
+
+    }
+  </script>
+  </body>
+</html>
