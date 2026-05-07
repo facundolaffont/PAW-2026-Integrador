@@ -14,9 +14,12 @@ class ManejadorPuntajes {
 
   async listar(req, res) {
     logContext(logger, this);
-    const puntajes = await this.controller.listarPuntajes();
-
-    res.json(puntajes);
+    try {
+      const puntajes = await this.controller.listarPuntajes();
+      res.json(puntajes);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al cargar puntajes.' });
+    }
   }
 
   #registrarRutas() {

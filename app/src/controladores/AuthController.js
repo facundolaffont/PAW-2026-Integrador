@@ -18,6 +18,7 @@ class AuthController {
     const jugadorId = uuidv4();
     const nombre = nombreUsuario.trim();
     await this.persistencia.registrarJugador(jugadorId, nombre);
+    this.persistencia.marcarJugadorLogueado(jugadorId);
 
     return { ok: true, data: { jugadorId, nombreUsuario: nombre } };
   }
