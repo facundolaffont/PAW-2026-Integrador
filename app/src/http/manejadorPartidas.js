@@ -34,7 +34,7 @@ class ManejadorPartidas {
 
       const { jugadorId, maxJugadores, cantidadBots } = req.body;
 
-      registerLog(logger, 'debug', 'Creando partida con los siguientes datos.', {
+      registerLog(logger, 'debug', 'Creando partida.', {
         jugadorId,
         maxJugadores,
         cantidadBots,

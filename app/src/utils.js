@@ -7,35 +7,18 @@
 function logContext(logger, context, params) {
   const stack = new Error().stack;
   const callerLine = stack.split('\n')[2];
+
   const methodMatch = callerLine.match(/at (\S+)/);
-  const fullName = methodMatch ? methodMatch[1] : 'desconocido';
-
-  let className = null;
-  let methodName = fullName;
-  if (fullName.includes('.')) {
-    [className, methodName] = fullName.split('.');
-  } else if (context && context.constructor && context.constructor.name) {
-    className = context.constructor.name;
-  }
-
-  // Extraer archivo y línea
-  let location = '';
   const locMatch =
-    callerLine.match(/\((.*):(\d+):(\d+)\)/) || callerLine.match(/at (.*):(\d+):(\d+)/);
-  if (locMatch) {
-    if (locMatch.length === 4) {
-      location = `${locMatch[1]}:${locMatch[2]}`;
-    } else if (locMatch.length === 5) {
-      location = `${locMatch[1]}:${locMatch[2]}`;
-    }
-  }
+    callerLine.match(/\((.*?):(\d+):(\d+)\)/) || callerLine.match(/at (.*?):(\d+):(\d+)/);
 
-  const msg = `-> ${className ? `${className}.` : '-'}${methodName} (${location})`;
-  if (params && Object.keys(params).length > 0) {
-    registerLog(logger, 'debug', msg, params);
-  } else {
-    registerLog(logger, 'debug', msg);
-  }
+  const executionContext = {
+    file: locMatch ? `${locMatch[1]}:${locMatch[2]}` : 'desconocido',
+    method: methodMatch ? methodMatch[1] : 'desconocido',
+  };
+
+  const meta = params && Object.keys(params).length > 0 ? params : null;
+  logger.logEntry('debug', executionContext, null, meta);
 }
 
 /**
@@ -101,8 +84,7 @@ function isEmptyObject(obj) {
 
 /**
  * Registra un mensaje de log utilizando la instancia de logger proporcionada, el nivel
- * de log, el mensaje y los metadatos opcionales. El mensaje se formatea para incluir los
- * metadatos como JSON.
+ * de log, el mensaje y los metadatos opcionales.
  *
  * @param {Object} loggerInstance - Instancia del logger a utilizar para registrar el
  * mensaje.
@@ -111,14 +93,24 @@ function isEmptyObject(obj) {
  * @param {Object} [meta={}] - Metadatos adicionales a incluir en el log.
  */
 function registerLog(loggerInstance, level, message, meta = {}) {
-  // Si meta está vacío, se registra el mensaje sin los metadatos.
-  if (Object.keys(meta).length === 0) {
-    loggerInstance[level](message);
-    return;
-  }
+  const stack = new Error().stack;
+  const callerLine = stack.split('\n')[2];
 
-  // Si meta no está vacío, se incluye en el log formateado como JSON.
-  loggerInstance[level](`${message} [${JSON.stringify(meta)}]`);
+  const methodMatch = callerLine.match(/at (\S+)/);
+  const locMatch =
+    callerLine.match(/\((.*?):(\d+):(\d+)\)/) || callerLine.match(/at (.*?):(\d+):(\d+)/);
+
+  const executionContext = {
+    file: locMatch ? `${locMatch[1]}:${locMatch[2]}` : 'desconocido',
+    method: methodMatch ? methodMatch[1] : 'desconocido',
+  };
+
+  loggerInstance.logEntry(
+    level,
+    executionContext,
+    message || null,
+    Object.keys(meta).length > 0 ? meta : null
+  );
 }
 
 module.exports = {

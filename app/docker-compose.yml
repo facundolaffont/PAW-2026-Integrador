@@ -17,6 +17,11 @@ services:
 
   app:
     build: .
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"development\" ]; then
+        mkdir -p logs && : > logs/app.log && : > logs/error.log;
+      fi;
+      node src/app.js"
     ports:
       - '3000:3000'
     environment:

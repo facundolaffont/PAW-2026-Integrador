@@ -10,8 +10,25 @@ class Logger {
       level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
       format: format.combine(
         format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        format.printf(({ timestamp, level, message, ...meta }) => {
-          return `${timestamp} [${level.toUpperCase()}] ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
+        format.printf(({ timestamp, level, _exec, _msg, _meta }) => {
+          const indentJson = (obj) =>
+            JSON.stringify(obj, null, 4)
+              .split('\n')
+              .map((line) => `    ${line}`)
+              .join('\n');
+
+          let output = `\n[${timestamp}] AppLogger.${level.toUpperCase()}:\n`;
+          output += `\n    Contexto de ejecución:\n${indentJson(_exec)}\n`;
+
+          if (_msg != null) {
+            output += `\n    Mensaje:\n    ${_msg}\n`;
+          }
+
+          if (_meta != null && Object.keys(_meta).length > 0) {
+            output += `\n    Contexto de mensaje:\n${indentJson(_meta)}\n`;
+          }
+
+          return output;
         })
       ),
       transports: [
@@ -23,17 +40,64 @@ class Logger {
     Logger._instance = this;
   }
 
+  /**
+   * Registra una entrada de log con contexto de ejecución pre-computado.
+   * @param {string} level - Nivel de log ('info', 'warn', 'error', 'debug').
+   * @param {{ file: string, method: string }} executionContext - Contexto de ejecución.
+   * @param {string|null} [message=null] - Mensaje opcional.
+   * @param {object|null} [meta=null] - Metadatos opcionales del mensaje.
+   */
+  logEntry(level, executionContext, message = null, meta = null) {
+    this._logger[level]('', {
+      _exec: executionContext,
+      _msg: message,
+      _meta: meta,
+    });
+  }
+
   info(message, meta = {}) {
-    this._logger.info(message, meta);
+    this.logEntry(
+      'info',
+      this._captureExecutionContext(4),
+      message || null,
+      Object.keys(meta).length ? meta : null
+    );
   }
   warn(message, meta = {}) {
-    this._logger.warn(message, meta);
+    this.logEntry(
+      'warn',
+      this._captureExecutionContext(4),
+      message || null,
+      Object.keys(meta).length ? meta : null
+    );
   }
   error(message, meta = {}) {
-    this._logger.error(message, meta);
+    this.logEntry(
+      'error',
+      this._captureExecutionContext(4),
+      message || null,
+      Object.keys(meta).length ? meta : null
+    );
   }
   debug(message, meta = {}) {
-    this._logger.debug(message, meta);
+    this.logEntry(
+      'debug',
+      this._captureExecutionContext(4),
+      message || null,
+      Object.keys(meta).length ? meta : null
+    );
+  }
+
+  _captureExecutionContext(frameIndex) {
+    const stack = new Error().stack;
+    const callerLine = stack.split('\n')[frameIndex] || '';
+    const methodMatch = callerLine.match(/at (\S+)/);
+    const locMatch =
+      callerLine.match(/\((.*):(\d+):(\d+)\)/) || callerLine.match(/at (.*):(\d+):(\d+)/);
+    return {
+      file: locMatch ? `${locMatch[1]}:${locMatch[2]}` : 'desconocido',
+      method: methodMatch ? methodMatch[1] : 'desconocido',
+    };
   }
 }
 
