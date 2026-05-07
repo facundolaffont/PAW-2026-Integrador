@@ -11,15 +11,20 @@
     </nav>
 
     <div class="lobby">
-      <h1 id="lobby-titulo">Sala</h1>
-      <p id="lobby-info" class="lobby-info"></p>
+      <div class="lobby-principal">
+        <h1 id="lobby-titulo">Sala</h1>
+        <p id="lobby-info" class="lobby-info"></p>
 
-      <h2 class="lobby-subtitulo">Jugadores</h2>
-      <ul id="lista-jugadores" class="lista-jugadores"></ul>
+        <h2 class="lobby-subtitulo">Jugadores</h2>
+        <ul id="lista-jugadores" class="lista-jugadores"></ul>
 
-      <p id="mensaje" class="lobby-mensaje" hidden></p>
+        <button id="btn-iniciar" class="btn-iniciar" hidden>INICIAR PARTIDA</button>
+      </div>
 
-      <button id="btn-iniciar" class="btn-iniciar" hidden>INICIAR PARTIDA</button>
+      <div class="lobby-bitacora">
+        <h2 class="lobby-subtitulo">Actividad</h2>
+        <ul id="lista-mensajes" class="lista-mensajes"></ul>
+      </div>
     </div>
 
     <script>
@@ -35,7 +40,7 @@
       const elTitulo = document.getElementById('lobby-titulo');
       const elInfo = document.getElementById('lobby-info');
       const elLista = document.getElementById('lista-jugadores');
-      const elMensaje = document.getElementById('mensaje');
+      const elListaMensajes = document.getElementById('lista-mensajes');
       const btnIniciar = document.getElementById('btn-iniciar');
 
       let esCreador = false;
@@ -43,9 +48,23 @@
       let ws;
 
       function mostrarMensaje(texto, tipo = 'info') {
-        elMensaje.textContent = texto;
-        elMensaje.dataset.tipo = tipo;
-        elMensaje.hidden = false;
+        const li = document.createElement('li');
+        li.className = 'mensaje-item';
+        li.dataset.tipo = tipo;
+
+        const ahora = new Date();
+        const hora = ahora.toLocaleString('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        li.innerHTML = `<span class="mensaje-hora">${hora}</span> ${texto}`;
+
+        elListaMensajes.appendChild(li);
+        elListaMensajes.scrollTop = elListaMensajes.scrollHeight;
       }
 
       function pintarJugadores(jugadores) {
@@ -126,6 +145,7 @@
             break;
           }
           case 'jugador-unido': {
+            mostrarMensaje(`${datos.nombreUsuario || 'Un jugador'} ingresó a la sala.`);
             cargarResumen();
             break;
           }
@@ -155,22 +175,9 @@
         ws.send(JSON.stringify({ accion: 'iniciar-partida' }));
       });
 
-      document.getElementById('salir').addEventListener('click', async (e) => {
+      document.getElementById('salir').addEventListener('click', (e) => {
         e.preventDefault();
         if (ws) ws.close();
-
-        try {
-          await fetch('/api/salir', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jugadorId }),
-          });
-        } catch (_) {
-          // Si falla la petición, igual se limpia sesión local y se redirige.
-        }
-
-        sessionStorage.removeItem('jugadorId');
-        sessionStorage.removeItem('nombreUsuario');
         window.location.href = '/public/';
       });
 
