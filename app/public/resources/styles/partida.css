@@ -150,7 +150,16 @@ body {
   flex-shrink: 0;
 }
 
+.mano-lateral .carta-svg {
+  margin-top: -52px;
+  flex-shrink: 0;
+}
+
 .mano-lateral .carta:first-child {
+  margin-top: 0;
+}
+
+.mano-lateral .carta-svg:first-child {
   margin-top: 0;
 }
 
@@ -181,7 +190,16 @@ body {
   flex-shrink: 0;
 }
 
+.mano-horizontal .carta-svg {
+  margin-left: -18px;
+  flex-shrink: 0;
+}
+
 .mano-horizontal .carta:first-child {
+  margin-left: 0;
+}
+
+.mano-horizontal .carta-svg:first-child {
   margin-left: 0;
 }
 
@@ -198,6 +216,12 @@ body {
   font-size: 18px;
   font-weight: bold;
   color: white;
+}
+
+.carta-svg {
+  width: 64px;
+  height: 95px;
+  object-fit: contain;
 }
 
 .carta.cara-arriba {
@@ -229,6 +253,12 @@ body {
   justify-content: center;
   flex: 1;
   text-align: center;
+  min-height: 0;
+}
+
+.lobby-principal.partida-activa {
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 .lobby-bitacora {

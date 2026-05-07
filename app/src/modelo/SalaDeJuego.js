@@ -2,9 +2,12 @@ const { v4: uuidv4 } = require('uuid');
 const Carta = require('./Carta');
 const Mazo = require('./Mazo');
 const JugadorEnSala = require('./JugadorEnSala');
+const logger = require('../logger');
+const { logContext } = require('../utils');
 
 class SalaDeJuego {
   constructor(partidaId, creadorId, maxJugadores) {
+    logContext(logger, this);
     this.partidaId = partidaId;
     this.creadorId = creadorId;
     this.maxJugadores = maxJugadores;
@@ -23,6 +26,7 @@ class SalaDeJuego {
   // ─── Sala ────────────────────────────────────────────────────────────────
 
   agregarBot(nombreBot) {
+    logContext(logger, this);
     if (this.jugadores.length >= this.maxJugadores) return null;
 
     const botId = `bot-${uuidv4()}`;
@@ -34,6 +38,7 @@ class SalaDeJuego {
   }
 
   agregarJugador(jugadorId, nombreUsuario) {
+    logContext(logger, this);
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
 
     if (this.jugadores.length >= this.maxJugadores) return { error: 'Sala llena' };
@@ -51,6 +56,7 @@ class SalaDeJuego {
   }
 
   resumenPublico() {
+    logContext(logger, this);
     return {
       partidaId: this.partidaId,
       creadorId: this.creadorId,
@@ -63,6 +69,7 @@ class SalaDeJuego {
   // ─── Inicio ──────────────────────────────────────────────────────────────
 
   iniciar(jugadorId) {
+    logContext(logger, this);
     if (jugadorId !== this.creadorId) return { error: 'Solo el creador puede iniciar' };
 
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
@@ -77,6 +84,7 @@ class SalaDeJuego {
   }
 
   _iniciarRonda() {
+    logContext(logger, this);
     this.mazo = Mazo.crearCompleto();
     this.descarte = [];
     this.turnoIdx = 0;
@@ -103,14 +111,17 @@ class SalaDeJuego {
   // ─── Turno ───────────────────────────────────────────────────────────────
 
   jugadorEnTurno() {
+    logContext(logger, this);
     return this.jugadores[this.turnoIdx];
   }
 
   turnoEsBot() {
+    logContext(logger, this);
     return !!this.jugadorEnTurno()?.esBot;
   }
 
   estadoParaBot() {
+    logContext(logger, this);
     const bot = this.jugadorEnTurno();
 
     const cartaEnMesa = this._cartaEnMesa();
@@ -129,10 +140,12 @@ class SalaDeJuego {
   }
 
   _cartaEnMesa() {
+    logContext(logger, this);
     return this.descarte[this.descarte.length - 1];
   }
 
   _avanzarTurno(saltar = false) {
+    logContext(logger, this);
     const n = this.jugadores.length;
     const pasos = saltar ? 2 : 1;
     this.turnoIdx = (((this.turnoIdx + this.sentido * pasos) % n) + n) % n;
@@ -141,6 +154,7 @@ class SalaDeJuego {
   // ─── Jugadas ─────────────────────────────────────────────────────────────
 
   jugarCarta(jugadorId, cartaId, colorElegido) {
+    logContext(logger, this);
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
@@ -173,6 +187,7 @@ class SalaDeJuego {
   }
 
   _aplicarEfecto(carta) {
+    logContext(logger, this);
     let saltar = false;
 
     switch (carta.tipo) {
@@ -207,6 +222,7 @@ class SalaDeJuego {
   }
 
   robarCarta(jugadorId) {
+    logContext(logger, this);
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
@@ -223,6 +239,7 @@ class SalaDeJuego {
   }
 
   _robarDelMazo(jugador, cantidad) {
+    logContext(logger, this);
     const robadas = [];
 
     for (let i = 0; i < cantidad; i++) {
@@ -243,6 +260,7 @@ class SalaDeJuego {
   }
 
   cantarUno(jugadorId) {
+    logContext(logger, this);
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
     if (!jugador) return { error: 'Jugador no encontrado' };
     if (!jugador.tieneUna) return { error: 'Solo podés cantar UNO cuando te queda 1 carta' };
@@ -252,6 +270,7 @@ class SalaDeJuego {
   }
 
   denunciarUno(denuncianteId, acusadoId) {
+    logContext(logger, this);
     const acusado = this.jugadores.find((j) => j.jugadorId === acusadoId);
     if (!acusado) return { error: 'Jugador no encontrado' };
     if (!acusado.tieneUna || acusado.cantóUno) return { error: 'Denuncia inválida' };
@@ -263,6 +282,7 @@ class SalaDeJuego {
   // ─── Ronda / Partida ─────────────────────────────────────────────────────
 
   _cerrarRonda(ganadorId) {
+    logContext(logger, this);
     let PUNTAJE_PARA_GANAR = 500;
 
     let puntosGanados = 0;
@@ -290,6 +310,7 @@ class SalaDeJuego {
   }
 
   _cerrarPartida(ganadorId) {
+    logContext(logger, this);
     this.estado = 'terminada';
 
     const deltas = [50, 0, -25, -50];
@@ -311,6 +332,7 @@ class SalaDeJuego {
   }
 
   jugadorAbandonó(jugadorId) {
+    logContext(logger, this);
     this.estado = 'terminada';
 
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
@@ -322,6 +344,7 @@ class SalaDeJuego {
   // Si el jugador era el creador, devuelve el id del nuevo creador (primer humano restante)
   // o null si no quedan humanos.
   removerJugador(jugadorId) {
+    logContext(logger, this);
     const idx = this.jugadores.findIndex((j) => j.jugadorId === jugadorId);
     if (idx === -1) return { error: 'Jugador no estaba en la sala' };
 
@@ -339,10 +362,12 @@ class SalaDeJuego {
   }
 
   cantidadHumanos() {
+    logContext(logger, this);
     return this.jugadores.filter((j) => !j.esBot).length;
   }
 
   estadoParaJugador(jugadorId) {
+    logContext(logger, this);
     const enMesa = this._cartaEnMesa() || null;
 
     return {

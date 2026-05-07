@@ -16,13 +16,17 @@
 
     <div class="lobby">
       <div class="lobby-principal">
-        <h1 id="lobby-titulo">Sala</h1>
-        <p id="lobby-info" class="lobby-info"></p>
+        <div id="vista-lobby">
+          <h1 id="lobby-titulo">Sala</h1>
+          <p id="lobby-info" class="lobby-info"></p>
 
-        <h2 class="lobby-subtitulo">Jugadores</h2>
-        <ul id="lista-jugadores" class="lista-jugadores"></ul>
+          <h2 class="lobby-subtitulo">Jugadores</h2>
+          <ul id="lista-jugadores" class="lista-jugadores"></ul>
 
-        <button id="btn-iniciar" class="btn-iniciar" hidden>INICIAR PARTIDA</button>
+          <button id="btn-iniciar" class="btn-iniciar" hidden>INICIAR PARTIDA</button>
+        </div>
+
+        <div id="vista-mesa" class="mesa" hidden></div>
       </div>
 
       <div class="lobby-bitacora">
@@ -44,6 +48,9 @@
       const elLista = document.getElementById('lista-jugadores');
       const elListaMensajes = document.getElementById('lista-mensajes');
       const btnIniciar = document.getElementById('btn-iniciar');
+      const elVistaLobby = document.getElementById('vista-lobby');
+      const elVistaMesa = document.getElementById('vista-mesa');
+      const elLobbyPrincipal = document.querySelector('.lobby-principal');
 
       let esCreador = false;
       let maxJugadores = null;
@@ -76,6 +83,144 @@
         const cant = jugadores.length;
         const total = maxJugadores != null ? `/${maxJugadores}` : '';
         elInfo.textContent = `${cant}${total} jugadores en la sala`;
+      }
+
+      function normalizarTipoCarta(carta) {
+        if (!carta) return null;
+        if (carta.tipo === 'numero') return `${carta.color}-${carta.numero}.svg`;
+        if (carta.tipo === 'reversa') return `${carta.color}-cambio-sentido.svg`;
+        if (carta.tipo === 'salta') {
+          if (carta.color === 'azul') return 'azul-pierde.turno.svg';
+          return `${carta.color}-pierde-turno.svg`;
+        }
+        if (carta.tipo === 'roba-dos') return `${carta.color}-roba-dos.svg`;
+        if (carta.tipo === 'roba-cuatro') return 'comodín-roba-4.svg';
+        if (carta.esComodin || carta.color == null) return 'comodín.svg';
+        return null;
+      }
+
+      function urlCarta(carta, reverso = false) {
+        if (reverso) return '/vectors/reverso-cartas.svg';
+        const nombre = normalizarTipoCarta(carta);
+        return nombre ? `/vectors/${nombre}` : '/vectors/reverso-cartas.svg';
+      }
+
+      function crearCarta(carta, reverso = false) {
+        const img = document.createElement('img');
+        img.className = 'carta-svg';
+        img.src = urlCarta(carta, reverso);
+        img.alt = reverso ? 'Carta oculta' : 'Carta';
+        return img;
+      }
+
+      function crearManoHorizontal(cartas, reverso = false) {
+        const mano = document.createElement('div');
+        mano.className = 'mano-horizontal';
+        cartas.forEach((carta) => mano.appendChild(crearCarta(carta, reverso)));
+        return mano;
+      }
+
+      function crearManoLateral(cartas, reverso = false) {
+        const mano = document.createElement('div');
+        mano.className = 'mano-lateral';
+        cartas.forEach((carta) => mano.appendChild(crearCarta(carta, reverso)));
+        return mano;
+      }
+
+      function crearCartasPlaceholder(cantidad) {
+        return Array.from({ length: cantidad }, () => ({}));
+      }
+
+      function ordenarJugadoresDesdeActual(jugadores) {
+        const idxActual = jugadores.findIndex((j) => j.jugadorId === jugadorId);
+        if (idxActual < 0) return jugadores;
+        return jugadores.slice(idxActual).concat(jugadores.slice(0, idxActual));
+      }
+
+      function renderMesa(estado) {
+        const jugadoresOrdenados = ordenarJugadoresDesdeActual(estado.jugadores || []);
+        const jugadorActual = jugadoresOrdenados[0];
+        const rivales = jugadoresOrdenados.slice(1);
+
+        elVistaLobby.hidden = true;
+        elVistaMesa.hidden = false;
+        elLobbyPrincipal.classList.add('partida-activa');
+        elInfo.textContent = '';
+
+        elVistaMesa.innerHTML = '';
+
+        const areaArriba = document.createElement('div');
+        areaArriba.className = 'area-jugador-arriba';
+
+        if (rivales[0]) {
+          const nombre = document.createElement('div');
+          nombre.className = 'info-jugador';
+          nombre.textContent = rivales[0].nombreUsuario;
+          areaArriba.appendChild(nombre);
+          areaArriba.appendChild(
+            crearManoHorizontal(crearCartasPlaceholder(rivales[0].cantidadCartas), true)
+          );
+        }
+
+        const zonaCentral = document.createElement('div');
+        zonaCentral.className = 'zona-central';
+
+        const lateralIzq = document.createElement('div');
+        lateralIzq.className = 'area-jugador-lateral izquierda';
+        if (rivales[1]) {
+          const nombreIzq = document.createElement('div');
+          nombreIzq.className = 'nombre-lateral';
+          nombreIzq.textContent = rivales[1].nombreUsuario;
+          lateralIzq.appendChild(nombreIzq);
+          lateralIzq.appendChild(
+            crearManoLateral(crearCartasPlaceholder(rivales[1].cantidadCartas), true)
+          );
+        }
+
+        const tableroCentral = document.createElement('div');
+        tableroCentral.className = 'tablero-central';
+
+        const mazo = document.createElement('div');
+        mazo.className = 'mazo';
+        mazo.appendChild(crearCarta(null, true));
+
+        const descarte = document.createElement('div');
+        descarte.className = 'carta-descarte';
+        descarte.appendChild(crearCarta(estado.cartaEnMesa || null, false));
+
+        tableroCentral.appendChild(mazo);
+        tableroCentral.appendChild(descarte);
+
+        const lateralDer = document.createElement('div');
+        lateralDer.className = 'area-jugador-lateral derecha';
+        if (rivales[2]) {
+          const nombreDer = document.createElement('div');
+          nombreDer.className = 'nombre-lateral';
+          nombreDer.textContent = rivales[2].nombreUsuario;
+          lateralDer.appendChild(nombreDer);
+          lateralDer.appendChild(
+            crearManoLateral(crearCartasPlaceholder(rivales[2].cantidadCartas), true)
+          );
+        }
+
+        zonaCentral.appendChild(lateralIzq);
+        zonaCentral.appendChild(tableroCentral);
+        zonaCentral.appendChild(lateralDer);
+
+        const areaAbajo = document.createElement('div');
+        areaAbajo.className = 'area-jugador-abajo';
+
+        if (jugadorActual) {
+          const nombreActual = document.createElement('div');
+          nombreActual.className = 'info-jugador';
+          nombreActual.textContent = jugadorActual.nombreUsuario;
+          areaAbajo.appendChild(nombreActual);
+          areaAbajo.appendChild(crearManoHorizontal(jugadorActual.mano || [], false));
+        }
+
+        elVistaMesa.appendChild(areaArriba);
+        elVistaMesa.appendChild(zonaCentral);
+        elVistaMesa.appendChild(areaAbajo);
       }
 
       async function cargarResumen() {
@@ -143,6 +288,7 @@
               elEstado.textContent = 'Partida en curso';
               btnIniciar.hidden = true;
               mostrarMensaje('La partida ya empezó.');
+              renderMesa(estado);
             }
             const nombres = (estado.jugadores || []).map((j) => j.nombreUsuario);
             pintarJugadores(nombres);

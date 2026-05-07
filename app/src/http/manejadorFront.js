@@ -1,15 +1,18 @@
-const { isEmptyObject, logContext } = require('../utils');
+const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('../utils');
 const axios = require('axios');
 const logger = require('../logger');
+const EmptyException = require('../errores/EmptyException');
 
 class ManejadorFront {
   constructor(app) {
+    logContext(logger, this);
     this.app = app;
 
     this.#registrarRutas();
   }
 
   #registrarRutas() {
+    logContext(logger, this);
     /**
      * Rutas del frontend.
      * Se podrían separar en un manejador específico si se quisiera, pero dado que el frontend es muy simple y no tiene lógica de negocio, lo dejo aquí para evitar agregar complejidad innecesaria.

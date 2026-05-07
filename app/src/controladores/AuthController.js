@@ -1,11 +1,15 @@
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../logger');
+const { logContext } = require('../utils');
 
 class AuthController {
   constructor(persistencia) {
+    logContext(logger, this);
     this.persistencia = persistencia;
   }
 
   async registrar(nombreUsuario) {
+    logContext(logger, this);
     if (!nombreUsuario?.trim()) return { ok: false, status: 400, error: 'nombreUsuario requerido' };
 
     if (await this.persistencia.obtenerJugadorPorNombre(nombreUsuario))
@@ -19,6 +23,7 @@ class AuthController {
   }
 
   async ingresar(nombreUsuario) {
+    logContext(logger, this);
     if (!nombreUsuario?.trim()) return { ok: false, status: 400, error: 'nombreUsuario requerido' };
 
     const jugador = await this.persistencia.obtenerJugadorPorNombre(nombreUsuario.trim());
@@ -37,6 +42,7 @@ class AuthController {
   }
 
   async salir(jugadorId) {
+    logContext(logger, this);
     if (!jugadorId?.trim()) return { ok: false, status: 400, error: 'jugadorId requerido' };
 
     this.persistencia.desmarcarJugadorLogueado(jugadorId.trim());

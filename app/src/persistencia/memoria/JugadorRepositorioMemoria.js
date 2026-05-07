@@ -1,12 +1,16 @@
 const Usuario = require('../../modelo/Usuario');
+const logger = require('../../logger');
+const { logContext } = require('../../utils');
 
 class JugadorRepositorioMemoria {
   constructor() {
+    logContext(logger, this);
     this.jugadores = new Map();
     this.puntajes = new Map();
   }
 
   async registrarJugador(jugadorId, nombreUsuario) {
+    logContext(logger, this);
     const jugador = new Usuario(jugadorId, nombreUsuario);
 
     this.jugadores.set(jugadorId, jugador);
@@ -17,10 +21,12 @@ class JugadorRepositorioMemoria {
   }
 
   async obtenerJugador(jugadorId) {
+    logContext(logger, this);
     return this.jugadores.get(jugadorId) || null;
   }
 
   async obtenerJugadorPorNombre(nombreUsuario) {
+    logContext(logger, this);
     for (const jugador of this.jugadores.values()) {
       if (jugador.nombreUsuario === nombreUsuario) return jugador;
     }
@@ -29,6 +35,7 @@ class JugadorRepositorioMemoria {
   }
 
   async obtenerPuntajes() {
+    logContext(logger, this);
     return [...this.jugadores.values()]
       .map((j) => ({
         jugadorId: j.jugadorId,
@@ -39,6 +46,7 @@ class JugadorRepositorioMemoria {
   }
 
   async guardarResultadoPartida(_partidaId, ranking) {
+    logContext(logger, this);
     for (const rank of ranking) {
       if (rank.jugadorId.startsWith('bot-')) continue;
 

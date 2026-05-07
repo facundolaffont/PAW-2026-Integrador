@@ -1,8 +1,11 @@
 const express = require('express');
 const requireAuth = require('./middlewareAuth');
+const logger = require('../logger');
+const { logContext } = require('../utils');
 
 class ManejadorAuth {
   constructor(controller) {
+    logContext(logger, this);
     this.controller = controller;
 
     this.router = express.Router();
@@ -11,6 +14,7 @@ class ManejadorAuth {
   }
 
   async registrar(req, res) {
+    logContext(logger, this);
     const result = await this.controller.registrar(req.body.nombreUsuario);
 
     if (!result.ok) {
@@ -21,6 +25,7 @@ class ManejadorAuth {
   }
 
   async ingresar(req, res) {
+    logContext(logger, this);
     const result = await this.controller.ingresar(req.body.nombreUsuario);
 
     if (!result.ok) {
@@ -31,6 +36,7 @@ class ManejadorAuth {
   }
 
   async salir(req, res) {
+    logContext(logger, this);
     const result = await this.controller.salir(req.body.jugadorId);
 
     if (!result.ok) {
@@ -41,6 +47,7 @@ class ManejadorAuth {
   }
 
   #registrarRutas() {
+    logContext(logger, this);
     /**
      * @swagger
      * /api/registrarse:

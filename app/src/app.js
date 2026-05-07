@@ -50,6 +50,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 class Servidor {
   constructor(puerto) {
+    logContext(logger, this);
     this.puerto = puerto;
     this.app = express();
 

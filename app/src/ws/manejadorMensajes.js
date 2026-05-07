@@ -1,10 +1,15 @@
+const logger = require('../logger');
+const { logContext } = require('../utils');
+
 class ManejadorMensajes {
   constructor(controller, conexiones) {
+    logContext(logger, this);
     this.controller = controller;
     this.conexiones = conexiones;
   }
 
   async manejarConexion(ws, jugadorId, partidaId) {
+    logContext(logger, this);
     this.conexiones.registrar(jugadorId, ws);
 
     const res = await this.controller.unirJugador(partidaId, jugadorId);
@@ -32,7 +37,12 @@ class ManejadorMensajes {
             this.controller.iniciarPartida(partidaId, jugadorId);
             break;
           case 'jugar-carta':
-            await this.controller.jugarCarta(partidaId, jugadorId, payload.cartaId, payload.colorElegido);
+            await this.controller.jugarCarta(
+              partidaId,
+              jugadorId,
+              payload.cartaId,
+              payload.colorElegido
+            );
             break;
           case 'robar-carta':
             this.controller.robarCarta(partidaId, jugadorId);
@@ -44,7 +54,9 @@ class ManejadorMensajes {
             this.controller.denunciarUno(partidaId, jugadorId, payload.acusadoId);
             break;
           default:
-            this.conexiones.emitirA(jugadorId, 'error', { mensaje: `Acción desconocida: ${accion}` });
+            this.conexiones.emitirA(jugadorId, 'error', {
+              mensaje: `Acción desconocida: ${accion}`,
+            });
         }
       } catch (err) {
         console.error('[WS] Error procesando mensaje:', err);

@@ -1,4 +1,6 @@
 const db = require('../persistencia/Persistencia');
+const logger = require('../logger');
+const { logContext } = require('../utils');
 
 /**
  * Middleware que verifica que el jugador tiene una sesión activa.
@@ -6,6 +8,7 @@ const db = require('../persistencia/Persistencia');
  * Responde con 401 si no hay sesión válida.
  */
 function requireAuth(req, res, next) {
+  //logContext(logger, this);
   const jugadorId = req.headers['x-jugador-id'] || req.body?.jugadorId;
 
   if (!jugadorId || !db.jugadorEstaLogueado(jugadorId)) {

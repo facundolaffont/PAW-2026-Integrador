@@ -4,6 +4,7 @@ const { registerLog, logContext } = require('../utils');
 
 class ManejadorPartidas {
   constructor(controller) {
+    logContext(logger, this);
     this.controller = controller;
 
     this.router = express.Router();
@@ -53,6 +54,7 @@ class ManejadorPartidas {
   }
 
   obtener(req, res) {
+    logContext(logger, this);
     const result = this.controller.obtenerPartida(req.params.id);
 
     if (!result.ok) {
@@ -63,6 +65,7 @@ class ManejadorPartidas {
   }
 
   #registrarRutas() {
+    logContext(logger, this);
     /**
      * @swagger
      * /api/partidas:

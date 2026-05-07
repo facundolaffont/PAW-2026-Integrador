@@ -10,22 +10,26 @@ const logger = require('../logger');
 
 class PartidaController {
   constructor(conexiones, persistencia, botLLM) {
+    logContext(logger, this);
     this.conexiones = conexiones;
     this.persistencia = persistencia;
     this.botLLM = botLLM;
   }
 
   listarPartidas() {
+    logContext(logger, this);
     return this.persistencia.listarPartidasDisponibles();
   }
 
   obtenerPartida(id) {
+    logContext(logger, this);
     const sala = this.persistencia.obtenerPartida(id);
     if (!sala) return { ok: false, status: 404, error: 'Partida no encontrada' };
     return { ok: true, data: sala.resumenPublico() };
   }
 
   iniciarPartida(partidaId, jugadorId) {
+    logContext(logger, this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.iniciar(jugadorId);
 
@@ -51,6 +55,7 @@ class PartidaController {
   }
 
   robarCarta(partidaId, jugadorId) {
+    logContext(logger, this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.robarCarta(jugadorId);
 
@@ -73,6 +78,7 @@ class PartidaController {
   }
 
   cantarUno(partidaId, jugadorId) {
+    logContext(logger, this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const jugador = sala.jugadores.find((j) => j.jugadorId === jugadorId);
     const res = sala.cantarUno(jugadorId);
@@ -86,6 +92,7 @@ class PartidaController {
   }
 
   denunciarUno(partidaId, jugadorId, acusadoId) {
+    logContext(logger, this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.denunciarUno(jugadorId, acusadoId);
 
@@ -98,6 +105,7 @@ class PartidaController {
   }
 
   _broadcast(sala, evento, datos) {
+    logContext(logger, this);
     this.conexiones.emitirATodos(
       sala.jugadores.map((j) => j.jugadorId),
       evento,
