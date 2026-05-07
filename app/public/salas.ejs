@@ -2,6 +2,7 @@
 <html lang="es">
   <%- include('partials/head.ejs') %>
   <body>
+    <%- include('partials/navbar.ejs') %>
     <div class="container-salas">
       <div class="header-salas">
         <img src="/images/uno-logo.png" alt="UNO" class="logo-salas" />
@@ -26,7 +27,9 @@
       </div>
       <div class="botones-salas">
         <button class="btn-salas" onclick="window.location.href = '/public/jugar'">VOLVER</button>
-        <button class="btn-salas" onclick="window.location.href = '/public/crear-sala'">CREAR PARTIDA</button>
+        <button class="btn-salas" onclick="window.location.href = '/public/crear-sala'">
+          CREAR PARTIDA
+        </button>
       </div>
     </div>
     <script>

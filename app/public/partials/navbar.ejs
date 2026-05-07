@@ -1,0 +1,33 @@
+<style>
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #1a4971;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .topbar-logo {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: white;
+  }
+
+  .topbar-usuario {
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+  }
+</style>
+<nav class="topbar">
+  <div class="topbar-logo">UNO Argentino</div>
+  <div class="topbar-usuario" id="topbar-usuario"></div>
+</nav>
+<script>
+  (function () {
+    const nombre = sessionStorage.getItem('nombreUsuario');
+    if (nombre) document.getElementById('topbar-usuario').textContent = nombre;
+  })();
+</script>

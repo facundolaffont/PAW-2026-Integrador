@@ -6,6 +6,7 @@
       <div class="navbar-logo">UNO Argentino</div>
       <div class="navbar-info" id="estado-partida">Conectando...</div>
       <div class="navbar-links">
+        <span class="navbar-usuario" id="navbar-usuario"></span>
         <a href="#" id="salir" class="navbar-link">Salir</a>
       </div>
     </nav>
@@ -35,6 +36,9 @@
 
       const jugadorId = sessionStorage.getItem('jugadorId');
       const partidaId = new URLSearchParams(window.location.search).get('partidaId');
+
+      document.getElementById('navbar-usuario').textContent =
+        sessionStorage.getItem('nombreUsuario') || '';
 
       const elEstado = document.getElementById('estado-partida');
       const elTitulo = document.getElementById('lobby-titulo');

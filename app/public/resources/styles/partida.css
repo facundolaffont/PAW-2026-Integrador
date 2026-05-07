@@ -56,6 +56,13 @@ body {
   color: white;
 }
 
+.navbar-usuario {
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  padding: 4px 10px;
+}
+
 /* ─── LAYOUT PRINCIPAL ─── */
 .mesa {
   display: flex;

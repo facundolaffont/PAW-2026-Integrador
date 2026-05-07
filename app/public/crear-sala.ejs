@@ -2,6 +2,7 @@
 <html lang="es">
   <%- include('partials/head.ejs') %>
   <body>
+    <%- include('partials/navbar.ejs') %>
     <div class="container-crear-sala">
       <div class="form-crear-sala">
         <h1>Crear nueva sala</h1>
@@ -19,7 +20,9 @@
             required
           />
 
-          <label for="cantidad-bots">Cantidad de bots <span class="hint" id="hint-bots"></span></label>
+          <label for="cantidad-bots"
+            >Cantidad de bots <span class="hint" id="hint-bots"></span
+          ></label>
           <input
             type="number"
             id="cantidad-bots"
@@ -34,7 +37,11 @@
           <p class="error-crear" id="error" hidden></p>
 
           <div class="botones-crear">
-            <button type="button" class="btn-crear" onclick="window.location.href = '/public/jugar'">
+            <button
+              type="button"
+              class="btn-crear"
+              onclick="window.location.href = '/public/jugar'"
+            >
               CANCELAR
             </button>
             <button type="submit" class="btn-crear">CREAR PARTIDA</button>
@@ -78,7 +85,8 @@
         const cantidadBots = parseInt(e.target.cantidad_bots.value, 10);
 
         if (1 + cantidadBots > maxJugadores) {
-          error.textContent = 'La cantidad de bots no puede dejar la sala llena (debe quedar lugar para vos).';
+          error.textContent =
+            'La cantidad de bots no puede dejar la sala llena (debe quedar lugar para vos).';
           error.hidden = false;
           return;
         }
