@@ -44,6 +44,7 @@ class Partida {
     this.esCreador = false;
     this.maxJugadores = null;
     this.webSocket = null;
+    this.partidaIniciadaNotificada = false;
   }
 
   init() {
@@ -116,18 +117,25 @@ class Partida {
     return nombre ? `/vectors/${nombre}` : '/vectors/reverso-cartas.svg';
   }
 
-  #crearCarta(carta, reverso = false) {
+  #crearCarta(carta, reverso = false, onClick = null) {
     const img = document.createElement('img');
     img.className = 'carta-svg';
     img.src = this.#urlCarta(carta, reverso);
     img.alt = reverso ? 'Carta oculta' : 'Carta';
+    if (!reverso && typeof onClick === 'function') {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', onClick);
+    }
     return img;
   }
 
-  #crearManoHorizontal(cartas, reverso = false) {
+  #crearManoHorizontal(cartas, reverso = false, onCartaClick = null) {
     const mano = document.createElement('div');
     mano.className = 'mano-horizontal';
-    cartas.forEach((carta) => mano.appendChild(this.#crearCarta(carta, reverso)));
+    cartas.forEach((carta) => {
+      const clickHandler = !reverso && carta?.id ? () => onCartaClick?.(carta) : null;
+      mano.appendChild(this.#crearCarta(carta, reverso, clickHandler));
+    });
     return mano;
   }
 
@@ -152,6 +160,7 @@ class Partida {
     const jugadoresOrdenados = this.#ordenarJugadoresDesdeActual(estado.jugadores || []);
     const jugadorActual = jugadoresOrdenados[0];
     const rivales = jugadoresOrdenados.slice(1);
+    const esMiTurno = estado.turno === this.jugadorId;
 
     this.vistaLobby.hidden = true;
     this.vistaMesa.hidden = false;
@@ -197,7 +206,17 @@ class Partida {
 
     const descarte = document.createElement('div');
     descarte.className = 'carta-descarte';
-    descarte.appendChild(this.#crearCarta(estado.cartaEnMesa || null, false));
+    const descarteVisible = estado.descarte || [];
+    descarteVisible.forEach((carta, index) => {
+      const cartaEl = this.#crearCarta(carta || null, false);
+      cartaEl.style.marginLeft = index === 0 ? '0' : '-32px';
+      cartaEl.style.zIndex = String(index + 1);
+      cartaEl.style.position = 'relative';
+      descarte.appendChild(cartaEl);
+    });
+    if (descarteVisible.length === 0) {
+      descarte.appendChild(this.#crearCarta(estado.cartaEnMesa || null, false));
+    }
 
     tableroCentral.appendChild(mazo);
     tableroCentral.appendChild(descarte);
@@ -224,9 +243,17 @@ class Partida {
     if (jugadorActual) {
       const nombreActual = document.createElement('div');
       nombreActual.className = 'info-jugador';
-      nombreActual.textContent = jugadorActual.nombreUsuario;
+      nombreActual.textContent = esMiTurno
+        ? `${jugadorActual.nombreUsuario} (tu turno)`
+        : jugadorActual.nombreUsuario;
       areaAbajo.appendChild(nombreActual);
-      areaAbajo.appendChild(this.#crearManoHorizontal(jugadorActual.mano || [], false));
+      areaAbajo.appendChild(
+        this.#crearManoHorizontal(jugadorActual.mano || [], false, (carta) => {
+          if (!esMiTurno) return;
+          if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+          this.webSocket.send(JSON.stringify({ accion: 'jugar-carta', cartaId: carta.id }));
+        })
+      );
     }
 
     this.vistaMesa.appendChild(areaArriba);
@@ -310,7 +337,10 @@ class Partida {
         if (estado.estado === 'jugando') {
           this.estado.textContent = 'Partida en curso';
           this.onCambioVisibilidad(false);
-          this.#mostrarMensaje('La partida ya empezó.');
+          if (!this.partidaIniciadaNotificada) {
+            this.#mostrarMensaje('La partida ya empezó.');
+            this.partidaIniciadaNotificada = true;
+          }
           this.#renderMesa(estado);
         }
         const nombres = (estado.jugadores || []).map((j) => j.nombreUsuario);

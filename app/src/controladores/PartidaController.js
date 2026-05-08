@@ -38,11 +38,7 @@ class PartidaController {
       return;
     }
 
-    for (const j of sala.jugadores) {
-      this.conexiones.emitirA(j.jugadorId, 'estado-partida', {
-        estado: sala.estadoParaJugador(j.jugadorId),
-      });
-    }
+    this._emitirEstadoPartida(sala);
 
     this._broadcast(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
@@ -71,6 +67,8 @@ class PartidaController {
       penalidad: 0,
       robó: { jugadorId, cantidad: res.cantidad },
     });
+
+    this._emitirEstadoPartida(sala);
 
     if (sala.turnoEsBot()) {
       this._ejecutarTurnoBot(partidaId);
@@ -111,6 +109,15 @@ class PartidaController {
       evento,
       datos
     );
+  }
+
+  _emitirEstadoPartida(sala) {
+    logContext(logger, this);
+    for (const j of sala.jugadores) {
+      this.conexiones.emitirA(j.jugadorId, 'estado-partida', {
+        estado: sala.estadoParaJugador(j.jugadorId),
+      });
+    }
   }
 
   async crearPartida(jugadorId, maxJugadores, cantidadBots = 0) {
@@ -233,11 +240,7 @@ class PartidaController {
         puntajesRonda: res.puntajesRonda,
       });
 
-      for (const j of sala.jugadores) {
-        this.conexiones.emitirA(j.jugadorId, 'estado-partida', {
-          estado: sala.estadoParaJugador(j.jugadorId),
-        });
-      }
+      this._emitirEstadoPartida(sala);
 
       return;
     }
@@ -249,6 +252,8 @@ class PartidaController {
       sentido: sala.sentido,
       penalidad: sala.penalidad,
     });
+
+    this._emitirEstadoPartida(sala);
 
     if (sala.turnoEsBot()) {
       this._ejecutarTurnoBot(partidaId);
@@ -335,6 +340,7 @@ class PartidaController {
           penalidad: 0,
           robó: { jugadorId: bot.jugadorId, cantidad: res.cantidad },
         });
+        this._emitirEstadoPartida(salaActual);
       } else {
         const res = salaActual.jugarCarta(bot.jugadorId, decision.cartaId, decision.colorElegido);
 
@@ -347,6 +353,7 @@ class PartidaController {
             penalidad: 0,
             robó: { jugadorId: bot.jugadorId, cantidad: resRobo.cantidad },
           });
+          this._emitirEstadoPartida(salaActual);
         } else if (res.partidaTerminada) {
           await this.persistencia.guardarResultadoPartida(partidaId, res.ranking);
           this._broadcast(salaActual, 'partida-terminada', { ranking: res.ranking });
@@ -358,11 +365,7 @@ class PartidaController {
             puntosGanados: res.puntosGanados,
             puntajesRonda: res.puntajesRonda,
           });
-          for (const j of salaActual.jugadores) {
-            this.conexiones.emitirA(j.jugadorId, 'estado-partida', {
-              estado: salaActual.estadoParaJugador(j.jugadorId),
-            });
-          }
+          this._emitirEstadoPartida(salaActual);
           return;
         } else {
           if (bot.mano.length === 1) {
@@ -381,6 +384,7 @@ class PartidaController {
             sentido: salaActual.sentido,
             penalidad: salaActual.penalidad,
           });
+          this._emitirEstadoPartida(salaActual);
         }
       }
     } catch (err) {

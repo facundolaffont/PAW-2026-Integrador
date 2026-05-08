@@ -3,10 +3,8 @@
   <%- include('partials/head.ejs') %>
   <body>
     <script>
-      // Si el ID del usuario no está almacenado en la sesión, redirige a la página de bienvenida.
       if (!sessionStorage.getItem('jugadorId')) window.location.href = '/public/bienvenida';
     </script>
-
     <nav class="navbar">
       <div class="navbar-logo">UNO Argentino</div>
       <div class="navbar-info" id="estado-partida">Conectando...</div>
@@ -16,9 +14,7 @@
       </div>
     </nav>
 
-    <!-- Lobby -->
     <div class="lobby">
-      <!-- Lobby de juego -->
       <div class="lobby-principal">
         <div id="vista-lobby">
           <h1 id="lobby-titulo">Sala</h1>
@@ -33,7 +29,6 @@
         <div id="vista-mesa" class="mesa" hidden></div>
       </div>
 
-      <!-- Bitácora de actividades -->
       <div class="lobby-bitacora">
         <h2 class="lobby-subtitulo">Actividad</h2>
         <ul id="lista-mensajes" class="lista-mensajes"></ul>
@@ -43,7 +38,6 @@
     <script type="module">
       import Partida from '/scripts/partida.js';
 
-      // Establece el nombre del usuario en la barra de navegación utilizando el valor almacenado en sessionStorage.
       document.getElementById('navbar-usuario').textContent =
         sessionStorage.getItem('nombreUsuario') || '';
 

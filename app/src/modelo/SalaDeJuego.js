@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const Carta = require('./Carta');
 const Mazo = require('./Mazo');
 const JugadorEnSala = require('./JugadorEnSala');
 const logger = require('../logger');
@@ -163,15 +162,9 @@ class SalaDeJuego {
     const carta = jugador.mano.find((c) => c.id === cartaId);
     if (!carta) return { error: 'No tenés esa carta' };
 
-    const enMesa = this._cartaEnMesa();
-    if (!Carta.esJugadaValida(carta, enMesa, this.penalidad, this.tipoPenalidad))
-      return { error: 'Jugada inválida' };
-
-    if (carta.esComodin) {
-      if (!colorElegido) return { error: 'Debés elegir un color' };
-
-      carta.colorElegido = colorElegido;
-    }
+    // Modo libre: se puede jugar cualquier carta sin aplicar efectos.
+    this.penalidad = 0;
+    this.tipoPenalidad = null;
 
     jugador.quitarCarta(cartaId);
 
@@ -181,9 +174,9 @@ class SalaDeJuego {
       return this._cerrarRonda(jugadorId);
     }
 
-    const resultado = this._aplicarEfecto(carta);
+    this._avanzarTurno(false);
 
-    return { ok: true, carta, ...resultado };
+    return { ok: true, carta, turnoIdx: this.turnoIdx, sentido: this.sentido };
   }
 
   _aplicarEfecto(carta) {
@@ -369,6 +362,7 @@ class SalaDeJuego {
   estadoParaJugador(jugadorId) {
     logContext(logger, this);
     const enMesa = this._cartaEnMesa() || null;
+    const descarteVisible = this.descarte.slice(-5);
 
     return {
       partidaId: this.partidaId,
@@ -376,6 +370,7 @@ class SalaDeJuego {
       turno: this.jugadores[this.turnoIdx]?.jugadorId,
       sentido: this.sentido,
       cartaEnMesa: enMesa,
+      descarte: descarteVisible,
       penalidad: this.penalidad,
       jugadores: this.jugadores.map((j) => ({
         jugadorId: j.jugadorId,
