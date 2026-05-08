@@ -22,7 +22,9 @@
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
-        min-width: 320px;
+        width: 100%;
+        max-width: 360px;
+        box-sizing: border-box;
       }
       .nombre-form label {
         font-size: 1.1rem;
@@ -52,6 +54,25 @@
       }
       .nombre-form button:hover {
         background: #0056b3;
+      }
+
+      @media (max-width: 420px) {
+        .nombre-form {
+          padding: 1.5rem 1.2rem;
+        }
+        .nombre-form button {
+          min-height: 44px;
+        }
+        .nombre-form input[type='text'] {
+          font-size: 16px;
+        }
+      }
+
+      @media (hover: none) and (pointer: coarse) {
+        .nombre-form button,
+        .nombre-form input[type='text'] {
+          min-height: 44px;
+        }
       }
     </style>
   </head>

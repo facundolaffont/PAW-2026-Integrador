@@ -43,3 +43,27 @@ body {
   background: #ffd600;
   color: #222;
 }
+
+@media (max-width: 420px) {
+  .logo-inicio {
+    width: 130px;
+    margin-bottom: 30px;
+  }
+  .btn-inicio {
+    font-size: 16px;
+    padding: 12px 32px;
+    min-height: 44px;
+    min-width: 200px;
+  }
+  .container-inicio {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-inicio {
+    min-height: 48px;
+    font-size: 17px;
+  }
+}

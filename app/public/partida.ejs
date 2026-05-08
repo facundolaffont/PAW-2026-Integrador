@@ -8,6 +8,7 @@
     <nav class="navbar">
       <div class="navbar-logo">UNO Argentino</div>
       <div class="navbar-info" id="estado-partida">Conectando...</div>
+      <button class="btn-toggle-bitacora" id="btn-toggle-bitacora">Actividad</button>
       <div class="navbar-links">
         <span class="navbar-usuario" id="navbar-usuario"></span>
         <a href="#" id="salir" class="navbar-link">Salir</a>
@@ -333,6 +334,33 @@
         if (ws) ws.close();
         window.location.href = '/public/';
       });
+
+      // Bitácora toggle para mobile
+      const btnBitacora = document.getElementById('btn-toggle-bitacora');
+      const bitacora = document.querySelector('.lobby-bitacora');
+      if (btnBitacora && bitacora) {
+        btnBitacora.addEventListener('click', () => {
+          const oculto = bitacora.style.display === 'none';
+          bitacora.style.display = oculto ? '' : 'none';
+          btnBitacora.textContent = oculto ? 'Ocultar' : 'Actividad';
+        });
+        // Mostrar bitácora oculta por defecto en mobile
+        if (window.innerWidth <= 768) {
+          bitacora.style.display = 'none';
+          btnBitacora.textContent = 'Actividad';
+        }
+        window.addEventListener('resize', () => {
+          if (window.innerWidth <= 768) {
+            if (bitacora.style.display !== 'none') {
+              bitacora.style.display = 'none';
+              btnBitacora.textContent = 'Actividad';
+            }
+          } else {
+            bitacora.style.display = '';
+            btnBitacora.textContent = 'Ocultar';
+          }
+        });
+      }
 
       cargarResumen();
       conectarWS();

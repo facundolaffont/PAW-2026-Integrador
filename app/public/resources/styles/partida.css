@@ -6,12 +6,13 @@
 
 body {
   background-color: #2e6da4;
-  height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   font-family: Arial, sans-serif;
   color: white;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ─── NAVBAR ─── */
@@ -205,23 +206,25 @@ body {
 
 /* ─── CARTA ─── */
 .carta {
-  width: 64px;
-  height: 90px;
+  width: clamp(40px, 10vw, 68px);
+  height: clamp(56px, 14vw, 96px);
   background-color: #111;
   border-radius: 8px;
   border: 2px solid #444;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: clamp(12px, 3vw, 18px);
   font-weight: bold;
   color: white;
+  flex-shrink: 0;
 }
 
 .carta-svg {
-  width: 64px;
-  height: 95px;
+  width: clamp(40px, 10vw, 68px);
+  height: clamp(58px, 14.8vw, 100px);
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .carta.cara-arriba {
@@ -272,6 +275,7 @@ body {
   padding: 16px;
   gap: 12px;
   min-height: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
 .lista-mensajes {
@@ -373,6 +377,10 @@ body {
   background: #ffd600;
 }
 
+.btn-iniciar:active {
+  transform: scale(0.97);
+}
+
 .lobby-mensaje {
   color: #ffe14b;
   margin: 0 0 16px 0;
@@ -381,4 +389,257 @@ body {
 
 .lobby-mensaje[data-tipo='error'] {
   color: #ff8a80;
+}
+
+.btn-toggle-bitacora {
+  display: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  body {
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .lobby {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .lobby-bitacora {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: none;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.88);
+    border-left: none;
+    border-top: none;
+    z-index: 20;
+    backdrop-filter: blur(4px);
+  }
+
+  .lobby h1 {
+    font-size: 22px;
+  }
+
+  .lobby-info {
+    font-size: 14px;
+  }
+
+  .lista-jugadores {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .jugador-item {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .btn-iniciar {
+    font-size: 15px;
+    padding: 12px 28px;
+    min-height: 44px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .btn-toggle-bitacora {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .zona-central {
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+
+  .area-jugador-lateral {
+    flex-direction: row !important;
+    padding: 4px 0;
+    align-self: center;
+    gap: 6px;
+  }
+
+  .area-jugador-lateral .nombre-lateral {
+    writing-mode: horizontal-tb;
+    transform: none !important;
+    font-size: 12px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .mano-lateral {
+    flex-direction: row;
+    overflow-x: auto;
+    max-width: 50vw;
+  }
+
+  .mano-lateral .carta,
+  .mano-lateral .carta-svg {
+    margin-top: 0;
+    margin-left: -24px;
+  }
+
+  .mano-lateral .carta:first-child,
+  .mano-lateral .carta-svg:first-child {
+    margin-left: 0;
+  }
+
+  .tablero-central {
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .mano-horizontal {
+    max-width: 92vw;
+    overflow-x: auto;
+    padding: 4px 0;
+  }
+
+  .mano-horizontal .carta,
+  .mano-horizontal .carta-svg {
+    margin-left: -16px;
+  }
+
+  .mano-horizontal .carta:first-child,
+  .mano-horizontal .carta-svg:first-child {
+    margin-left: 0;
+  }
+
+  .navbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .navbar-info {
+    font-size: 12px;
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+
+  .navbar-links {
+    gap: 8px;
+  }
+
+  .navbar-link,
+  .navbar-usuario {
+    font-size: 13px;
+    padding: 6px 8px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  .indicador-direccion {
+    font-size: 20px;
+  }
+
+  .area-jugador-arriba,
+  .area-jugador-abajo {
+    gap: 4px;
+  }
+
+  .area-jugador-abajo {
+    padding-bottom: 12px;
+  }
+
+  .info-jugador {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carta {
+    width: clamp(34px, min(11vw, 7vh), 52px);
+    height: clamp(48px, min(15.4vw, 9.8vh), 73px);
+    border-radius: 5px;
+    border-width: 1.5px;
+    font-size: clamp(10px, 3vw, 14px);
+  }
+
+  .carta-svg {
+    width: clamp(34px, min(11vw, 7vh), 52px);
+    height: clamp(50px, min(16.2vw, 10.3vh), 77px);
+  }
+
+  .mano-horizontal .carta,
+  .mano-horizontal .carta-svg {
+    margin-left: -12px;
+  }
+
+  .mano-lateral .carta,
+  .mano-lateral .carta-svg {
+    margin-left: -18px;
+  }
+
+  .lobby-bitacora {
+    max-height: 150px;
+    padding: 12px;
+  }
+
+  .lista-mensajes {
+    gap: 4px;
+  }
+
+  .mensaje-item {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .lobby {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .navbar {
+    padding: 6px 10px;
+  }
+
+  .navbar-logo {
+    font-size: 15px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-iniciar,
+  .btn-toggle-bitacora,
+  .navbar-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-iniciar {
+    padding: 14px 28px;
+  }
+
+  .mano-horizontal {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mano-lateral {
+    -webkit-overflow-scrolling: touch;
+  }
 }

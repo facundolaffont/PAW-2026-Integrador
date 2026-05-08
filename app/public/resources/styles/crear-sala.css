@@ -19,8 +19,10 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  min-width: 320px;
   align-items: stretch;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 .form-crear-sala h2 {
@@ -69,6 +71,35 @@ body {
 .btn-crear:hover {
   background: #ffd600;
   color: #222;
+}
+
+@media (max-width: 420px) {
+  .form-crear-sala {
+    padding: 24px 16px 20px 16px;
+  }
+  .form-crear-sala h2 {
+    font-size: 1.2rem;
+  }
+  .input-crear {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+  .btn-crear {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  .botones-crear {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-crear,
+  .input-crear {
+    min-height: 44px;
+  }
 }
 
 .error-crear {

@@ -41,11 +41,14 @@ body {
   padding: 16px 24px;
   margin-bottom: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  overflow-x: auto;
+  max-width: 95vw;
 }
 
 .tabla-salas table {
   border-collapse: collapse;
   min-width: 220px;
+  width: 100%;
 }
 
 .tabla-salas th,
@@ -106,6 +109,10 @@ body {
   background: #ffd600;
 }
 
+.btn-unirse:active {
+  transform: scale(0.96);
+}
+
 .sala-llena {
   color: #999;
   font-size: 13px;
@@ -116,4 +123,55 @@ body {
   text-align: center;
   color: #888;
   font-style: italic;
+}
+
+@media (max-width: 420px) {
+  .container-salas {
+    padding-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .tabla-salas {
+    padding: 12px 10px;
+  }
+  .tabla-salas th,
+  .tabla-salas td {
+    padding: 8px 10px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .btn-salas {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+  .btn-unirse {
+    padding: 10px 18px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+  .botones-salas {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .input-buscar {
+    width: 100%;
+    max-width: 280px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  .logo-salas {
+    width: 90px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-salas,
+  .btn-unirse {
+    min-height: 44px;
+  }
+  .btn-unirse {
+    padding: 10px 18px;
+  }
 }

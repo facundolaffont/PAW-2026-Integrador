@@ -6,6 +6,7 @@
     padding: 10px 20px;
     background-color: #1a4971;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    position: relative;
   }
 
   .topbar-logo {
@@ -20,14 +21,148 @@
     color: white;
     font-weight: bold;
   }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2.5px;
+    background: white;
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .hamburger.abierto span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .hamburger.abierto span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.abierto span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .menu-mobile {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #1a4971;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    flex-direction: column;
+    min-width: 180px;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .menu-mobile.abierto {
+    display: flex;
+  }
+
+  .menu-mobile a {
+    color: #a8c8e8;
+    text-decoration: none;
+    padding: 12px 20px;
+    font-size: 15px;
+    transition: background 0.2s;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .menu-mobile a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .topbar {
+      padding: 8px 12px;
+    }
+
+    .topbar-logo {
+      font-size: 16px;
+    }
+
+    .topbar-usuario {
+      font-size: 13px;
+    }
+
+    .hamburger {
+      display: flex;
+    }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .menu-mobile a {
+      min-height: 48px;
+      padding: 14px 20px;
+    }
+
+    .hamburger {
+      min-width: 48px;
+      min-height: 48px;
+    }
+  }
 </style>
 <nav class="topbar">
   <div class="topbar-logo">UNO Argentino</div>
-  <div class="topbar-usuario" id="topbar-usuario"></div>
+  <div class="topbar-right">
+    <div class="topbar-usuario" id="topbar-usuario"></div>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+  <div class="menu-mobile" id="menu-mobile">
+    <a href="/public/">Inicio</a>
+    <a href="/public/jugar">Jugar</a>
+    <a href="/public/puntajes">Ranking</a>
+  </div>
 </nav>
 <script>
   (function () {
     const nombre = sessionStorage.getItem('nombreUsuario');
     if (nombre) document.getElementById('topbar-usuario').textContent = nombre;
+
+    const btn = document.getElementById('hamburger-btn');
+    const menu = document.getElementById('menu-mobile');
+    if (btn && menu) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        btn.classList.toggle('abierto');
+        menu.classList.toggle('abierto');
+      });
+      document.addEventListener('click', function (e) {
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+          btn.classList.remove('abierto');
+          menu.classList.remove('abierto');
+        }
+      });
+    }
   })();
 </script>
