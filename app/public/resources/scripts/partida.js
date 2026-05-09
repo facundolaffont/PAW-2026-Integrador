@@ -94,7 +94,14 @@ class Partida {
   salir() {
     this.cerrandoIntencionalmente = true;
     if (this.timeoutReconexion) clearTimeout(this.timeoutReconexion);
-    if (this.webSocket) this.webSocket.close();
+    if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+      this.webSocket.send(JSON.stringify({ accion: 'abandonar-partida' }));
+      setTimeout(() => {
+        if (this.webSocket) this.webSocket.close();
+      }, 80);
+    } else if (this.webSocket) {
+      this.webSocket.close();
+    }
     window.__navInterno = true;
     window.location.href = '/public/';
   }

@@ -11,6 +11,7 @@ class ManejadorMensajes {
   async manejarConexion(ws, jugadorId, partidaId) {
     logContext(logger, this);
     this.conexiones.registrar(jugadorId, ws);
+    let abandonoExplicito = false;
 
     const res = await this.controller.unirJugador(partidaId, jugadorId);
 
@@ -53,6 +54,11 @@ class ManejadorMensajes {
           case 'denunciar-uno':
             this.controller.denunciarUno(partidaId, jugadorId, payload.acusadoId);
             break;
+          case 'abandonar-partida':
+            abandonoExplicito = true;
+            await this.controller.abandonarPartida(partidaId, jugadorId);
+            ws.close();
+            break;
           default:
             this.conexiones.emitirA(jugadorId, 'error', {
               mensaje: `Acción desconocida: ${accion}`,
@@ -65,6 +71,7 @@ class ManejadorMensajes {
 
     ws.on('close', () => {
       this.conexiones.desregistrar(jugadorId);
+      if (abandonoExplicito) return;
       this.controller.desconectar(partidaId, jugadorId).catch((err) => {
         console.error('[WS] Error al desconectar jugador:', err);
       });

@@ -20,6 +20,7 @@
             min="2"
             max="4"
             value="4"
+            oninput="if (this.value.length > 1) this.value = this.value.slice(0, 1);"
             required
           />
 
@@ -60,6 +61,7 @@
       const hintBots = document.getElementById('hint-bots');
 
       function sincronizarLimiteBots() {
+        if (inputJugadores.value > 4) inputJugadores.value = 4;
         const max = Math.max(1, parseInt(inputJugadores.value, 10) || 2) - 1;
         inputBots.max = String(max);
         hintBots.textContent = `(máx. ${max})`;

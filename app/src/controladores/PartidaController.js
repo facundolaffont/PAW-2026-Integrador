@@ -338,6 +338,35 @@ class PartidaController {
     this.desconexionesPendientes.set(clave, timeoutId);
   }
 
+  async abandonarPartida(partidaId, jugadorId) {
+    logContext(logger, this, { partidaId, jugadorId });
+
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    if (!sala || sala.estado === 'terminada') return;
+
+    this.cancelarAbandonoPendiente(partidaId, jugadorId);
+
+    if (sala.estado === 'esperando') {
+      const res = sala.removerJugador(jugadorId);
+      if (res.error) return;
+
+      if (sala.cantidadHumanos() === 0) {
+        this.persistencia.eliminarPartida(partidaId);
+        return;
+      }
+
+      this._broadcast(sala, 'jugador-salio', {
+        jugadorId,
+        nombreUsuario: res.nombreUsuario,
+        nuevoCreadorId: res.nuevoCreadorId,
+        totalJugadores: sala.jugadores.length,
+      });
+      return;
+    }
+
+    await this._concretarAbandono(partidaId, jugadorId);
+  }
+
   async _concretarAbandono(partidaId, jugadorId) {
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala || sala.estado === 'terminada') return;
