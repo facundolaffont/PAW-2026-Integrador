@@ -6,6 +6,22 @@ Repositorio del trabajo práctico integrador de la materia Programación en Ambi
 
 Ver [authors.txt](https://github.com/facundolaffont/PAW-2026-Integrador/raw/b7e8ee23b7183347c1303a8a93da85e0cfd3ee69/authors.txt).
 
+## Cómo probar la aplicación
+
+Para ejecutar la aplicación, primero clonar el repositorio:
+
+```sh
+git clone https://github.com/facundolaffont/PAW-2026-Integrador.git
+```
+
+Luego, ingresar en la carpeta `app/`, crear el archivo `.env`, tal como indica el archivo `.env.example`, completarlo y luego ejecutar:
+
+```sh
+./run.sh
+```
+
+Finalmente, ingresar a través del navegador a `localhost:3000`.
+
 ## Entregas
 
 A continuación se detallará la información sobre cada entrega requerida.
