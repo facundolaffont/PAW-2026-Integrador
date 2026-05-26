@@ -28,6 +28,29 @@
     gap: 12px;
   }
 
+  .btn-salir-desktop {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-salir-desktop:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .btn-salir-desktop {
+      display: none;
+    }
+  }
+
   .hamburger {
     display: none;
     background: none;
@@ -134,6 +157,7 @@
   <div class="topbar-logo">UNO Argentino</div>
   <div class="topbar-right">
     <div class="topbar-usuario" id="topbar-usuario"></div>
+    <button class="btn-salir-desktop" id="btn-salir-desktop">Salir</button>
     <button class="hamburger" id="hamburger-btn" aria-label="Menú">
       <span></span>
       <span></span>
@@ -144,6 +168,7 @@
     <a href="/public/">Inicio</a>
     <a href="/public/jugar">Jugar</a>
     <a href="/public/puntajes">Ranking</a>
+    <a href="#" id="menu-salir">Salir</a>
   </div>
 </nav>
 <script>
@@ -151,32 +176,34 @@
     const nombre = sessionStorage.getItem('nombreUsuario');
     if (nombre) document.getElementById('topbar-usuario').textContent = nombre;
 
-    // Re-login silencioso al cargar la página: cubre el caso de F5/recarga
-    // (donde el pagehide previo nos deslogueó) y reinicio del server.
-    // Si ya estás logueado, /api/ingresar devuelve 409 y no pasa nada.
-    if (nombre) {
-      fetch('/api/ingresar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombreUsuario: nombre }),
-      }).catch(() => {});
+    // Función de logout: llama al servidor y redirige a bienvenida
+    async function salir() {
+      const jugadorId = sessionStorage.getItem('jugadorId');
+      if (jugadorId) {
+        try {
+          await fetch('/api/salir', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Jugador-Id': jugadorId,
+            },
+          });
+        } catch (_) {
+          // Si falla la red, igual limpiamos la sesión local
+        }
+      }
+      sessionStorage.removeItem('jugadorId');
+      sessionStorage.removeItem('nombreUsuario');
+      window.location.href = '/public/bienvenida';
     }
 
-    // Detección de cierre de navegador/pestaña: si el usuario navega dentro de
-    // la app (click en link/botón), se setea __navInterno y NO se desloguea.
-    // Si el usuario cierra la pestaña/navegador, se dispara sendBeacon a /api/salir
-    // para liberar el nombre.
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('a[href], button')) window.__navInterno = true;
-    });
+    const btnDesktop = document.getElementById('btn-salir-desktop');
+    const menuSalir = document.getElementById('menu-salir');
 
-    window.addEventListener('pagehide', () => {
-      if (window.__navInterno) return;
-      const jugadorId = sessionStorage.getItem('jugadorId');
-      if (!jugadorId) return;
-      const blob = new Blob([JSON.stringify({ jugadorId })], { type: 'application/json' });
-      navigator.sendBeacon('/api/salir', blob);
-    });
+    if (btnDesktop) btnDesktop.addEventListener('click', salir);
+    if (menuSalir) menuSalir.addEventListener('click', (e) => { e.preventDefault(); salir(); });
+
+    // Hamburger menu toggle
     const btn = document.getElementById('hamburger-btn');
     const menu = document.getElementById('menu-mobile');
     if (btn && menu) {

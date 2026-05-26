@@ -14,4 +14,9 @@
       </div>
     </div>
   </body>
+  <script>
+    if (sessionStorage.getItem('jugadorId')) {
+      window.location.replace('/public/');
+    }
+  </script>
 </html>

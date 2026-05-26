@@ -9,12 +9,11 @@ class JugadorRepositorioMemoria {
     this.puntajes = new Map();
   }
 
-  async registrarJugador(jugadorId, nombreUsuario) {
+  async registrarJugador(jugadorId, nombreUsuario, passwordHash) {
     logContext(logger, this);
-    const jugador = new Usuario(jugadorId, nombreUsuario);
+    const jugador = new Usuario(jugadorId, nombreUsuario, passwordHash);
 
     this.jugadores.set(jugadorId, jugador);
-
     this.puntajes.set(jugadorId, 0);
 
     return jugador;
@@ -51,7 +50,6 @@ class JugadorRepositorioMemoria {
       if (rank.jugadorId.startsWith('bot-')) continue;
 
       const actual = this.puntajes.get(rank.jugadorId) || 0;
-
       this.puntajes.set(rank.jugadorId, actual + rank.deltaGlobal);
     }
   }

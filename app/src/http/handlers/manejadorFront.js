@@ -1,7 +1,5 @@
-const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('../utils');
-const axios = require('axios');
-const logger = require('../logger');
-const EmptyException = require('../errores/EmptyException');
+const { logContext, registerLog } = require('../../utils');
+const logger = require('../../logger');
 
 class ManejadorFront {
   #logLevel = process.env.LOG_LEVEL || 'debug';
@@ -75,34 +73,6 @@ class ManejadorFront {
         title: 'UNO Argentino - Crear Sala',
         styles: ['/styles/crear-sala.css'],
       });
-    });
-
-    // Manejar el POST del formulario de creación de sala.
-    this.app.post('/public/crear-sala', async (req, res, next) => {
-      try {
-        // Si el cuerpo de la solicitud no tiene información o es un objeto vacío,
-        // lanza una excepción.
-        if (isEmptyObject(req.body)) throw new EmptyException('Cuerpo HTTP sin información.');
-
-        registerLog(logger, 'debug', 'Datos de sala recibidos.', { body: req.body });
-        const jugadorId = 'UUID';
-        const maxJugadores = parseInt(req.body.num_jugadores, 10);
-        const cantidadBots = Math.max(0, maxJugadores - 2);
-        const payload = {
-          jugadorId,
-          maxJugadores,
-          cantidadBots,
-        };
-
-        registerLog(logger, 'debug', 'Payload a enviar al backend.', { payload });
-        await axios.post('http://localhost:3000/api/partidas', payload, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        res.redirect('/salas');
-      } catch (error) {
-        handleGenericErrorByEnv(error, next, res, 'Error al crear la sala.');
-      }
     });
 
     this.app.get('/public/partida', (req, res) => {

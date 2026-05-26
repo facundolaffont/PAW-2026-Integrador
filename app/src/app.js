@@ -16,11 +16,11 @@ const PartidaController = require('./controladores/PartidaController');
 const AuthController = require('./controladores/AuthController');
 const PuntajesController = require('./controladores/PuntajesController');
 const ManejadorMensajes = require('./ws/manejadorMensajes');
-const ManejadorFront = require('./http/manejadorFront');
-const requireAuth = require('./http/middlewareAuth');
-const ManejadorAuth = require('./http/manejadorAuth');
-const ManejadorPartidas = require('./http/manejadorPartidas');
-const ManejadorPuntajes = require('./http/manejadorPuntajes');
+const ManejadorFront = require('./http/handlers/manejadorFront');
+const requireAuth = require('./http/middleware/middlewareAuth');
+const ManejadorAuth = require('./http/handlers/manejadorAuth');
+const ManejadorPartidas = require('./http/handlers/manejadorPartidas');
+const ManejadorPuntajes = require('./http/handlers/manejadorPuntajes');
 const AppException = require('./errores/AppException');
 const EmptyException = require('./errores/EmptyException');
 const {
@@ -33,29 +33,12 @@ const {
 } = require('./utils');
 const errorhandler = require('errorhandler');
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'UNO Argentino API',
-      version: '1.0.0',
-      description: 'Documentación interactiva de la API UNO Argentino',
-    },
-  },
-  apis: [path.join(__dirname, './**/*.js')],
-};
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 class Servidor {
   constructor(puerto) {
     logContext(logger, this);
     this.puerto = puerto;
     this.app = express();
-
-    // Documentación Swagger UI disponible en /api-docs
-    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // Crea un servidor HTTP utilizando el módulo `http` de Node.js,
     // pasando la aplicación Express como manejador de solicitudes.
@@ -151,7 +134,7 @@ class Servidor {
     this.app
       .use('/api', auth.router)
       .use('/api/partidas', requireAuth, partidas.router)
-      .use('/api/puntajes', requireAuth, puntajes.router);
+      .use('/api/puntajes', puntajes.router); // público: el ranking no requiere login
   }
 
   #configurarWebSocket() {

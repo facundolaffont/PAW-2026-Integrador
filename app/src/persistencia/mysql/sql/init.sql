@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS jugadores (
   id VARCHAR(36) PRIMARY KEY,
-  nombre_usuario VARCHAR(50) UNIQUE NOT NULL
+  nombre_usuario VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(60) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS partidas (
