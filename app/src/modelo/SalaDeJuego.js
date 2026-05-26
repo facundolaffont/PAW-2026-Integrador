@@ -20,6 +20,39 @@ class SalaDeJuego {
     this.penalidad = 0;
     this.tipoPenalidad = null;
     this.puntajesRonda = {};
+
+    // Chat de la sala (en memoria, no se persiste).
+    this.mensajesChat = [];
+    this.MAX_MENSAJES_CHAT = 100;
+    this.MAX_LARGO_MENSAJE = 200;
+  }
+
+  agregarMensajeChat(jugadorId, texto) {
+    logContext(logger, this);
+    if (typeof texto !== 'string') return { error: 'Mensaje inválido' };
+    const limpio = texto.trim();
+    if (!limpio) return { error: 'El mensaje no puede estar vacío' };
+    if (limpio.length > this.MAX_LARGO_MENSAJE) {
+      return { error: `El mensaje supera el máximo de ${this.MAX_LARGO_MENSAJE} caracteres` };
+    }
+
+    const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
+    if (!jugador) return { error: 'No estás en la sala' };
+    if (jugador.esBot) return { error: 'Los bots no pueden chatear' };
+
+    const mensaje = {
+      jugadorId,
+      nombreUsuario: jugador.nombreUsuario,
+      texto: limpio,
+      timestamp: Date.now(),
+    };
+
+    this.mensajesChat.push(mensaje);
+    if (this.mensajesChat.length > this.MAX_MENSAJES_CHAT) {
+      this.mensajesChat.splice(0, this.mensajesChat.length - this.MAX_MENSAJES_CHAT);
+    }
+
+    return { ok: true, mensaje };
   }
 
   // ─── Sala ────────────────────────────────────────────────────────────────
@@ -379,6 +412,7 @@ class SalaDeJuego {
         mano: j.jugadorId === jugadorId ? j.mano : undefined,
       })),
       puntajesRonda: this.puntajesRonda,
+      mensajesChat: this.mensajesChat,
     };
   }
 }

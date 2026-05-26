@@ -119,6 +119,20 @@ class PartidaController {
     this._broadcast(sala, 'uno-denunciado', { denuncianteId: jugadorId, acusado: res.acusado });
   }
 
+  enviarMensajeChat(partidaId, jugadorId, texto) {
+    logContext(logger, this, { partidaId, jugadorId });
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    if (!sala) return;
+
+    const res = sala.agregarMensajeChat(jugadorId, texto);
+    if (res.error) {
+      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      return;
+    }
+
+    this._broadcast(sala, 'mensaje-chat', res.mensaje);
+  }
+
   _broadcast(sala, evento, datos) {
     logContext(logger, this);
     this.conexiones.emitirATodos(
