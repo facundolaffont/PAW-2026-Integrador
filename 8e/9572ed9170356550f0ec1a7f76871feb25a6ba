@@ -1,0 +1,75 @@
+app/src/http/handlers/manejadorPartidas.js
+  h_c044bf8701ab58 2-3
+app/src/http/middleware/middlewareAuth.js
+  h_c044bf8701ab58 1-2,7,17
+app/Dockerfile
+  s_2a7e5f5d22b014::t_41f9452cc2decd 6
+app/public/resources/styles/auth.css
+  s_39cd4b7673b12d::t_89211944088cf1 222-223
+  s_39cd4b7673b12d::t_0ad834a318e9a0 49-50,59-60,64-110
+app/package.json
+  s_39cd4b7673b12d::t_ba5ad9ab70596b 12
+app/src/modelo/Usuario.js
+  s_39cd4b7673b12d::t_c386383e3fc57f 5,9
+app/src/app.js
+  s_39cd4b7673b12d::t_e141e87896e259 137
+  s_39cd4b7673b12d::t_fbaaacb2123e05 19-23
+app/src/persistencia/mysql/sql/init.sql
+  s_39cd4b7673b12d::t_29c73f41358b2f 3-4
+app/src/http/handlers/manejadorAuth.js
+  h_c044bf8701ab58 3-4,18,29,40-42
+  s_39cd4b7673b12d::t_59ffb6409da726 2
+app/src/controladores/AuthController.js
+  s_39cd4b7673b12d::t_6858c88091d45b 2,6-9,16,19-38,41-43,49,52-64,66-67
+app/src/persistencia/memoria/JugadorRepositorioMemoria.js
+  s_39cd4b7673b12d::t_023bae02383605 12,14
+app/src/http/handlers/manejadorFront.js
+  h_c044bf8701ab58 1-2
+app/public/bienvenida.ejs
+  s_39cd4b7673b12d::t_0cccc79a195cfd 17-21
+app/public/login.ejs
+  s_39cd4b7673b12d::t_73510bc5aa7efa 9,17-18,20-32,34,40-55,59,63-66,72,78,90-92
+app/src/persistencia/mysql/JugadorRepositorioMySQL.js
+  s_39cd4b7673b12d::t_7c5276e7ef3dad 7,9-12,14,19-22,26,32,38
+app/src/persistencia/Persistencia.js
+  s_39cd4b7673b12d::t_e31b2048bc956a 16,18
+app/public/registro.ejs
+  s_39cd4b7673b12d::t_8a7b0bebcf5215 9,17-18,20-46,48,54-69,73,77-101,107,113-116,128-130
+app/public/partials/navbar.ejs
+  s_39cd4b7673b12d::t_706a53e35eb473 31-53
+  s_39cd4b7673b12d::t_3aab89167c8f18 160,171
+  s_39cd4b7673b12d::t_ede66be9e84b47 179-197,200-201,203-206
+app/src/http/handlers/manejadorPuntajes.js
+  h_c044bf8701ab58 2-3,27
+app/docker-compose.yml
+  s_39cd4b7673b12d::t_69248b6282a1e6 13,24-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8e9572ed9170356550f0ec1a7f76871feb25a6ba",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_2a7e5f5d22b014": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "befdaecb-69b8-4f32-91e2-3cd68e8e2f4f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    },
+    "s_39cd4b7673b12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da349793-8acf-448f-ae90-b6cf4b105dca",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
