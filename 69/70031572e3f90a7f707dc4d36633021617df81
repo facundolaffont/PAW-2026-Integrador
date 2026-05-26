@@ -1,0 +1,45 @@
+.claude/settings.local.json
+  s_39cd4b7673b12d::t_760d8329966a54 1-7
+app/public/bienvenida.ejs
+  s_39cd4b7673b12d::t_fbd616d9a36bc7 5-7,10-12,14-15,17-75
+app/public/partials/head.ejs
+  s_39cd4b7673b12d::t_6fdd1c9bfaea45 5-34
+app/src/app.js
+  s_39cd4b7673b12d::t_bac9bd930be7b8 127
+app/src/http/handlers/manejadorFront.js
+  s_39cd4b7673b12d::t_7ca2bdbd326c57 1,7,10,15-19,22-23,26,28,30-38,42,46-48,52,55-59,63,66-70,74-93,97,101-103,110-112,119-121,128-130,137-139
+  h_c044bf8701ab58 94-96
+app/public/resources/robots.txt
+  s_39cd4b7673b12d::t_19e4bcf83b51de 1-6,8-10,15-18,22-23
+  s_39cd4b7673b12d::t_0711d5eb2ec768 7,11-14,19-21,24
+app/public/resources/SEO.md
+  h_c044bf8701ab58 1-11
+app/public/resources/styles/auth.css
+  s_39cd4b7673b12d::t_19a4a96541821a 196-242
+app/public/resources/sitemap.xml
+  s_39cd4b7673b12d::t_0ead40faae5e49 5,7-9,11-14,16-19,26
+  s_39cd4b7673b12d::t_a72657fc468f72 1-4,6,10,15,20-25,27-44
+app/public/puntajes.ejs
+  s_39cd4b7673b12d::t_b7da5fef946832 9,19-35,39,43-62,64,66-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "6970031572e3f90a7f707dc4d36633021617df81",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_39cd4b7673b12d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da349793-8acf-448f-ae90-b6cf4b105dca",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
