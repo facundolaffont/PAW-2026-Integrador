@@ -10,22 +10,20 @@ services:
       - mysql_data:/var/lib/mysql
       - ./src/persistencia/mysql/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uuno', '-puno']
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent']
       interval: 5s
       timeout: 5s
       retries: 10
 
   app:
     build: .
-    command: >
-      sh -c "if [ \"$NODE_ENV\" = \"development\" ]; then
-        mkdir -p logs && : > logs/app.log && : > logs/error.log;
-      fi;
-      node src/app.js"
     ports:
       - '3000:3000'
     environment:
       PORT: 3000
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT:-3306}
       DB_USER: ${DB_USER}
@@ -35,7 +33,6 @@ services:
       mysql:
         condition: service_healthy
     restart: unless-stopped
-
     volumes:
       - ./logs:/app/logs
 

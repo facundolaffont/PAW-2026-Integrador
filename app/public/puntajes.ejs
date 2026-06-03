@@ -2,14 +2,11 @@
 <html lang="es">
   <%- include('partials/head.ejs') %>
   <body>
-    <script>
-      if (!sessionStorage.getItem('jugadorId')) window.location.href = '/public/bienvenida';
-    </script>
     <%- include('partials/navbar.ejs') %>
     <div class="container-puntajes">
       <div class="puntajes-box">
         <img src="/images/uno-logo.png" alt="UNO" class="logo-puntajes" />
-        <h2>Ranking global</h2>
+        <h1>Ranking global</h1>
         <div class="tabla-puntajes">
           <table>
             <thead>
@@ -19,56 +16,59 @@
                 <th>Puntaje</th>
               </tr>
             </thead>
-            <tbody id="lista-puntajes">
-              <tr>
-                <td colspan="3" class="vacio-puntajes">Cargando...</td>
-              </tr>
+            <tbody>
+              <% if (puntajes.length === 0) { %>
+                <tr>
+                  <td colspan="3" class="vacio-puntajes">Todavía no hay puntajes registrados.</td>
+                </tr>
+              <% } else { %>
+                <% puntajes.forEach(function(p, i) { %>
+                  <%
+                    const medalla = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+                  %>
+                  <tr data-jugador-id="<%= p.jugadorId %>">
+                    <td class="puesto"><%= medalla %></td>
+                    <td><%= p.nombreUsuario %></td>
+                    <td class="puntaje-valor"><%= p.puntajeGlobal %></td>
+                  </tr>
+                <% }); %>
+              <% } %>
             </tbody>
           </table>
         </div>
-        <button class="btn-puntajes" onclick="window.location.href = '/public/'">VOLVER</button>
+        <button class="btn-puntajes" onclick="window.location.href='/public/'">VOLVER</button>
       </div>
     </div>
-    <script>
-      const jugadorActual = sessionStorage.getItem('jugadorId');
 
-      async function cargarPuntajes() {
-        const tbody = document.getElementById('lista-puntajes');
-        try {
-          const response = await fetch('/api/puntajes', {
-            headers: { 'X-Jugador-Id': sessionStorage.getItem('jugadorId') || '' },
-          });
-          if (!response.ok) throw new Error('Error al cargar puntajes');
-          const puntajes = await response.json();
-
-          if (!Array.isArray(puntajes) || puntajes.length === 0) {
-            tbody.innerHTML =
-              '<tr><td colspan="3" class="vacio-puntajes">Todavía no hay puntajes registrados.</td></tr>';
-            return;
-          }
-
-          tbody.innerHTML = puntajes
-            .map((p, i) => {
-              const esActual = jugadorActual && p.jugadorId === jugadorActual;
-              const claseFila = esActual ? 'fila-actual' : '';
-              const medalla = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
-              return `
-                <tr class="${claseFila}">
-                  <td class="puesto">${medalla}</td>
-                  <td>${p.nombreUsuario}</td>
-                  <td class="puntaje-valor">${p.puntajeGlobal}</td>
-                </tr>
-              `;
-            })
-            .join('');
-        } catch (err) {
-          console.error(err);
-          tbody.innerHTML =
-            '<tr><td colspan="3" class="vacio-puntajes">Error al cargar el ranking.</td></tr>';
-        }
-      }
-
-      cargarPuntajes();
+    <!-- Schema.org: ItemList (ranking de jugadores) -->
+    <% if (puntajes.length > 0) { %>
+    <script type="application/ld+json">
+    <%- JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Ranking Global — UNO Argentino",
+      "description": "Los mejores jugadores de UNO Argentino ordenados por puntaje global.",
+      "url": canonicalUrl,
+      "numberOfItems": puntajes.length,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": puntajes.slice(0, 10).map(function(p, i) {
+        return {
+          "@type": "ListItem",
+          "position": i + 1,
+          "name": p.nombreUsuario,
+          "description": "Puntaje global: " + p.puntajeGlobal
+        };
+      })
+    }) %>
     </script>
+    <% } %>
   </body>
+  <script>
+    // Resaltar la fila del jugador actual si está logueado
+    const jugadorActual = sessionStorage.getItem('jugadorId');
+    if (jugadorActual) {
+      const fila = document.querySelector(`tr[data-jugador-id="${jugadorActual}"]`);
+      if (fila) fila.classList.add('fila-actual');
+    }
+  </script>
 </html>

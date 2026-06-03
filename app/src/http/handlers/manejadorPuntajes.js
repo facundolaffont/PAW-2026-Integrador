@@ -1,6 +1,6 @@
 const express = require('express');
-const logger = require('../logger');
-const { logContext } = require('../utils');
+const logger = require('../../logger');
+const { logContext } = require('../../utils');
 
 class ManejadorPuntajes {
   constructor(controller) {
@@ -24,6 +24,7 @@ class ManejadorPuntajes {
 
   #registrarRutas() {
     logContext(logger, this);
+
     this.router.get('/', (req, res) => this.listar(req, res));
   }
 }

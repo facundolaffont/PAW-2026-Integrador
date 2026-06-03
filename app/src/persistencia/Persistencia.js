@@ -13,9 +13,9 @@ class Persistencia {
 
   // ─── Jugadores (delegado al repositorio) ─────────────────────────────────
 
-  registrarJugador(jugadorId, nombreUsuario) {
+  registrarJugador(jugadorId, nombreUsuario, passwordHash) {
     logContext(logger, this);
-    return repo.registrarJugador(jugadorId, nombreUsuario);
+    return repo.registrarJugador(jugadorId, nombreUsuario, passwordHash);
   }
 
   obtenerJugador(jugadorId) {

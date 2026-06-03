@@ -1,0 +1,24 @@
+# robots.txt — le indica a los crawlers de buscadores qué pueden y qué no pueden indexar.
+# Se sirve en la raíz del dominio: https://tudominio.com/robots.txt
+# Referencia: https://developers.google.com/search/docs/crawling-indexing/robots/intro
+
+# User-agent: a qué crawler aplican las reglas siguientes.
+# El asterisco (*) significa "todos los buscadores" (Google, Bing, etc.).
+User-agent: *
+
+# Allow: páginas públicas que SÍ queremos que Google indexe.
+# Estas reglas más específicas tienen precedencia sobre el Disallow: /public/ de abajo.
+Allow: /public/bienvenida
+Allow: /public/puntajes
+Allow: /public/ingresar
+Allow: /public/registrarse
+
+# Disallow: rutas que NO queremos indexar.
+# /public/ bloquea el resto de las páginas de la app (requieren login, sin contenido útil para el buscador).
+# /api/ bloquea los endpoints REST (devuelven JSON, no páginas).
+Disallow: /public/
+Disallow: /api/
+
+# Sitemap: le indica al crawler dónde encontrar el mapa del sitio.
+# Reemplazar con el dominio real antes de deployar a producción.
+Sitemap: https://tudominio.com/sitemap.xml

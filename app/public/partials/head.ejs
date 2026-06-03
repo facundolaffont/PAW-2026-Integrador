@@ -2,6 +2,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
+
+  <%
+    const _desc = typeof description !== 'undefined'
+      ? description
+      : 'UNO Argentino — Jugá al UNO en línea, multijugador y gratuito.';
+    const _robots  = typeof robots      !== 'undefined' ? robots      : 'index, follow';
+    const _ogTitle = typeof ogTitle     !== 'undefined' ? ogTitle     : title;
+    const _ogDesc  = typeof ogDescription !== 'undefined' ? ogDescription : _desc;
+  %>
+
+  <meta name="description" content="<%= _desc %>" />
+  <meta name="robots"      content="<%= _robots %>" />
+
+  <% if (typeof canonicalUrl !== 'undefined') { %>
+    <link rel="canonical" href="<%= canonicalUrl %>" />
+  <% } %>
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="UNO Argentino" />
+  <meta property="og:title"       content="<%= _ogTitle %>" />
+  <meta property="og:description" content="<%= _ogDesc %>" />
+  <meta property="og:locale"      content="es_AR" />
+  <% if (typeof ogImage !== 'undefined') { %>
+    <meta property="og:image" content="<%= ogImage %>" />
+  <% } %>
+  <% if (typeof ogUrl !== 'undefined') { %>
+    <meta property="og:url" content="<%= ogUrl %>" />
+  <% } %>
+
   <script>window.__APP_LOG_LEVEL__ = '<%= logLevel %>';</script>
 
   <% if (typeof styles !== 'undefined' && styles.length) { %>

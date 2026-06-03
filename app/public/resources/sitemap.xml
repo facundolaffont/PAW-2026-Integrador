@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <!-- loc: URL canónica y completa de la página (debe coincidir con el dominio real) -->
+    <loc>https://tudominio.com/public/bienvenida</loc>
+
+    <!-- lastmod: fecha de la última modificación del contenido (formato YYYY-MM-DD).
+         Actualizar con cada deploy o cambio relevante en la página. -->
+    <lastmod>2026-05-26</lastmod>
+
+    <!-- changefreq: sugerencia de frecuencia de rastreo para el buscador.
+         Valores posibles: always | hourly | daily | weekly | monthly | yearly | never.
+         Google puede ignorarlo; es solo una pista. -->
+    <changefreq>weekly</changefreq>
+
+    <!-- priority: importancia relativa de esta página dentro del propio sitio (0.0 a 1.0).
+         No afecta el ranking global en Google, solo indica qué páginas propias priorizar.
+         1.0 = más importante, 0.0 = menos importante. Por defecto es 0.5. -->
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://tudominio.com/public/puntajes</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>daily</changefreq>  <!-- cambia cada vez que se juega una partida -->
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://tudominio.com/public/ingresar</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://tudominio.com/public/registrarse</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+</urlset>

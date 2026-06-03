@@ -4,37 +4,38 @@ const logger = require('../../logger');
 const { logContext } = require('../../utils');
 
 class JugadorRepositorioMySQL {
-  async registrarJugador(jugadorId, nombreUsuario) {
+  async registrarJugador(jugadorId, nombreUsuario, passwordHash) {
     logContext(logger, this);
-    await pool.execute('INSERT INTO jugadores (id, nombre_usuario) VALUES (?, ?)', [
-      jugadorId,
-      nombreUsuario,
-    ]);
+    await pool.execute(
+      'INSERT INTO jugadores (id, nombre_usuario, password_hash) VALUES (?, ?, ?)',
+      [jugadorId, nombreUsuario, passwordHash]
+    );
 
-    return new Usuario(jugadorId, nombreUsuario);
+    return new Usuario(jugadorId, nombreUsuario, passwordHash);
   }
 
   async obtenerJugador(jugadorId) {
     logContext(logger, this);
-    const [rows] = await pool.execute('SELECT id, nombre_usuario FROM jugadores WHERE id = ?', [
-      jugadorId,
-    ]);
+    const [rows] = await pool.execute(
+      'SELECT id, nombre_usuario, password_hash FROM jugadores WHERE id = ?',
+      [jugadorId]
+    );
 
     if (!rows.length) return null;
 
-    return new Usuario(rows[0].id, rows[0].nombre_usuario);
+    return new Usuario(rows[0].id, rows[0].nombre_usuario, rows[0].password_hash);
   }
 
   async obtenerJugadorPorNombre(nombreUsuario) {
     logContext(logger, this);
     const [rows] = await pool.execute(
-      'SELECT id, nombre_usuario FROM jugadores WHERE nombre_usuario = ?',
+      'SELECT id, nombre_usuario, password_hash FROM jugadores WHERE nombre_usuario = ?',
       [nombreUsuario]
     );
 
     if (!rows.length) return null;
 
-    return new Usuario(rows[0].id, rows[0].nombre_usuario);
+    return new Usuario(rows[0].id, rows[0].nombre_usuario, rows[0].password_hash);
   }
 
   async obtenerPuntajes() {
@@ -75,7 +76,6 @@ class JugadorRepositorioMySQL {
       await conn.commit();
     } catch (err) {
       await conn.rollback();
-
       throw err;
     } finally {
       conn.release();
