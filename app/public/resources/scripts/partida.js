@@ -32,6 +32,8 @@ class Partida {
     lobbyPrincipal,
     btnToggleBitacora = null,
     panelBitacora = null,
+    inputChat = null,
+    formChat = null,
     onCambioVisibilidad = () => {},
   }) {
     this.jugadorId = jugadorId;
@@ -47,7 +49,11 @@ class Partida {
     this.lobbyPrincipal = lobbyPrincipal;
     this.btnToggleBitacora = btnToggleBitacora;
     this.panelBitacora = panelBitacora;
+    this.inputChat = inputChat;
+    this.formChat = formChat;
     this.onCambioVisibilidad = onCambioVisibilidad;
+    this.chatHidratado = false;
+    this.idsMensajesChatVistos = new Set();
 
     logger.info('Cargando página de partida', {
       partidaId: this.partidaId,
@@ -85,12 +91,29 @@ class Partida {
    */
   init() {
     this.#configurarBitacoraMobile();
+    this.#configurarChat();
     this.#cargarResumen();
     this.#conectarWS();
   }
 
+  #configurarChat() {
+    if (!this.formChat || !this.inputChat) return;
+    this.formChat.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.enviarChat(this.inputChat.value);
+      this.inputChat.value = '';
+    });
+  }
+
+  enviarChat(texto) {
+    if (!texto || !texto.trim()) return;
+    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+    this.webSocket.send(JSON.stringify({ accion: 'chat', texto: texto.trim() }));
+  }
+
   /**
-   * Configura el comportamiento responsive del panel de actividad en pantallas pequeñas.
+   * Configura el comportamiento responsive del panel de actividad en pantallas
+   * pequeñas.
    *
    * @returns {void}
    */
@@ -240,6 +263,52 @@ class Partida {
 
     this.listaMensajes.prepend(li);
     this.listaMensajes.scrollTop = 0;
+  }
+
+  /**
+   * Renderiza un mensaje del chat en la lista.
+   *
+   * @param {Object} mensaje - Objeto con la información del mensaje.
+   * @param {number} mensaje.jugadorId - ID del jugador que envió el mensaje.
+   * @param {string} mensaje.nombreUsuario - Nombre del usuario que envió el mensaje.
+   * @param {string} mensaje.texto - Texto del mensaje.
+   * @param {number} mensaje.timestamp - Marca de tiempo del mensaje.
+   */
+  #mostrarMensajeChat({ jugadorId, nombreUsuario, texto, timestamp }) {
+    if (!this.listaMensajes) return;
+
+    // Deduplica si recibimos el mismo mensaje vía broadcast e hidratación
+    const claveMsg = `${jugadorId}|${timestamp}|${texto}`;
+    if (this.idsMensajesChatVistos.has(claveMsg)) return;
+    this.idsMensajesChatVistos.add(claveMsg);
+
+    const li = document.createElement('li');
+    li.className = 'mensaje-chat-item';
+    if (jugadorId === this.jugadorId) li.classList.add('propio');
+
+    const spanHora = document.createElement('span');
+    spanHora.className = 'mensaje-hora';
+    const fecha = new Date(timestamp || Date.now());
+    spanHora.textContent = fecha.toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const strong = document.createElement('strong');
+    strong.className = 'mensaje-autor';
+    strong.textContent = `${nombreUsuario}: `;
+
+    const spanTexto = document.createElement('span');
+    spanTexto.className = 'mensaje-texto';
+    spanTexto.textContent = texto;
+
+    li.appendChild(spanHora);
+    li.appendChild(document.createTextNode(' '));
+    li.appendChild(strong);
+    li.appendChild(spanTexto);
+
+    this.listaMensajes.appendChild(li);
+    this.listaMensajes.scrollTop = this.listaMensajes.scrollHeight;
   }
 
   /**
@@ -776,6 +845,12 @@ class Partida {
         }
         const nombres = (estado.jugadores || []).map((j) => j.nombreUsuario);
         this.#pintarJugadores(nombres);
+        // Hidratar el historial de chat la primera vez que llega estado-partida
+        // (sirve para reconexiones después de un microcorte o F5)
+        if (!this.chatHidratado && Array.isArray(estado.mensajesChat)) {
+          for (const m of estado.mensajesChat) this.#mostrarMensajeChat(m);
+          this.chatHidratado = true;
+        }
         break;
       }
       case 'carta-jugada': {
@@ -837,6 +912,10 @@ class Partida {
       }
       case 'jugador-reconectado': {
         this.#mostrarMensaje(`${datos.nombreUsuario || 'Un jugador'} volvió a la partida.`);
+        break;
+      }
+      case 'mensaje-chat': {
+        this.#mostrarMensajeChat(datos);
         break;
       }
     }

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+  <%- include('partials/head.ejs') %>
+  <body>
+    <main class="container-reglas">
+      <article class="reglas-articulo" itemscope itemtype="https://schema.org/Article">
+        <header class="reglas-header">
+          <img src="/images/uno-logo.png" alt="Logo de UNO Argentino" class="logo-reglas" />
+          <p class="eyebrow">El reglamento</p>
+          <h1 itemprop="headline">Reglas del juego</h1>
+          <p class="reglas-bajada" itemprop="description">
+            Todo lo que tenés que saber para sentarte a la mesa: mazo, turnos, cartas, puntaje y
+            abandonos.
+          </p>
+
+          <ul class="fact-strip" aria-label="Datos clave del juego">
+            <li><strong>108</strong><span>cartas</span></li>
+            <li><strong>2–4</strong><span>jugadores</span></li>
+            <li><strong>500</strong><span>puntos para ganar</span></li>
+          </ul>
+        </header>
+
+        <nav class="reglas-toc" aria-label="Índice del reglamento">
+          <span class="reglas-toc-titulo">En esta página</span>
+          <ol class="reglas-toc-lista">
+            <li>
+              <a href="#mazo"><span class="toc-n">01</span>Contenido del mazo</a>
+            </li>
+            <li>
+              <a href="#generales"><span class="toc-n">02</span>Reglas generales</a>
+            </li>
+            <li>
+              <a href="#cartas"><span class="toc-n">03</span>Reglas de las cartas</a>
+            </li>
+            <li>
+              <a href="#puntaje"><span class="toc-n">04</span>Sistema de puntaje</a>
+            </li>
+          </ol>
+        </nav>
+
+        <section id="mazo" aria-labelledby="h-mazo" class="seccion">
+          <header class="seccion-header">
+            <span class="seccion-numero" aria-hidden="true">01</span>
+            <h2 id="h-mazo">Contenido del mazo</h2>
+          </header>
+
+          <p class="seccion-intro">
+            El mazo está formado por <strong>108 cartas</strong>: 76 numeradas en cuatro colores y
+            32 cartas especiales que cambian el ritmo del juego.
+          </p>
+
+          <ul class="grid-mazo" aria-label="Composición del mazo">
+            <li class="acc-rojo">
+              <span class="cant">19×</span>
+              <span class="desc"><strong>Rojas</strong> · 0 al 9 · valen su número</span>
+            </li>
+            <li class="acc-azul">
+              <span class="cant">19×</span>
+              <span class="desc"><strong>Azules</strong> · 0 al 9 · valen su número</span>
+            </li>
+            <li class="acc-verde">
+              <span class="cant">19×</span>
+              <span class="desc"><strong>Verdes</strong> · 0 al 9 · valen su número</span>
+            </li>
+            <li class="acc-amarillo">
+              <span class="cant">19×</span>
+              <span class="desc"><strong>Amarillas</strong> · 0 al 9 · valen su número</span>
+            </li>
+            <li>
+              <span class="cant">8×</span>
+              <span class="desc"><strong>Roba dos</strong> · 2 por color · 20 puntos</span>
+            </li>
+            <li>
+              <span class="cant">8×</span>
+              <span class="desc"><strong>Cambio de sentido</strong> · 2 por color · 20 puntos</span>
+            </li>
+            <li>
+              <span class="cant">8×</span>
+              <span class="desc"><strong>Pierde el turno</strong> · 2 por color · 20 puntos</span>
+            </li>
+            <li class="acc-comodin">
+              <span class="cant">4×</span>
+              <span class="desc"><strong>Comodín</strong> · 50 puntos</span>
+            </li>
+            <li class="acc-comodin">
+              <span class="cant">4×</span>
+              <span class="desc"><strong>Comodín roba cuatro</strong> · 50 puntos</span>
+            </li>
+          </ul>
+        </section>
+
+        <section id="generales" aria-labelledby="h-generales" class="seccion">
+          <header class="seccion-header">
+            <span class="seccion-numero" aria-hidden="true">02</span>
+            <h2 id="h-generales">Reglas generales</h2>
+          </header>
+
+          <section id="objetivo">
+            <h3>Objetivo del juego</h3>
+            <p>
+              Ser el primer jugador en quedarse sin cartas en cada ronda, acumulando los puntos
+              derivados de las cartas que les quedan a los oponentes. Los puntos se acumulan ronda a
+              ronda, y <strong>gana quien primero llegue a 500</strong>.
+            </p>
+          </section>
+
+          <section id="jugadores">
+            <h3>Cantidad de jugadores</h3>
+            <p>Cada partida puede tener de <strong>2 a 4 jugadores</strong>.</p>
+          </section>
+
+          <section id="turnos">
+            <h3>Sentido de los turnos</h3>
+            <p>
+              El primer turno lo tiene siempre el jugador a la izquierda de quien reparte. Arrancan
+              en sentido horario, pero el sentido puede cambiar durante la ronda con las cartas de
+              acción.
+            </p>
+          </section>
+
+          <section id="reparto">
+            <h3>Reparto</h3>
+            <p>
+              Se baraja el mazo y cada jugador extrae una carta: reparte quien sacó la de mayor
+              valor (las cartas con símbolo valen cero solo para el sorteo). El reparto va turnando
+              en sentido horario.
+            </p>
+            <p>
+              Se dan <strong>7 cartas boca abajo</strong> por jugador en sentido horario. El mazo
+              restante queda boca abajo en el centro, y se voltea una carta a su derecha para
+              iniciar el descarte.
+            </p>
+            <p>
+              Si la primera carta volteada es de acción, se ejecuta: si es Roba dos, el que arranca
+              roba 2; si es Cambio de sentido, se invierte el orden antes del primer turno.
+            </p>
+          </section>
+
+          <section id="acciones">
+            <h3>Acciones principales</h3>
+            <p>
+              En tu turno tenés que jugar una carta que coincida en color o en número con la última
+              del descarte, o un comodín. La carta jugada va a la pila de descarte y el turno pasa
+              al siguiente jugador, según el sentido actual y lo que dictamine la carta.
+            </p>
+            <p>
+              Si no podés o no querés jugar, robás una carta del mazo. Si esa carta es jugable,
+              podés jugarla en el mismo turno.
+            </p>
+          </section>
+
+          <section id="penultima">
+            <h3>Juego de la penúltima carta</h3>
+            <aside class="quote-callout" role="note">
+              <p class="quote-text">
+                Decí <strong>«UNO»</strong> antes de jugar tu penúltima carta. Si te olvidás y otro
+                jugador te denuncia antes de la próxima jugada o robo,
+                <strong>tomás 2 cartas de penalización</strong>.
+              </p>
+            </aside>
+          </section>
+
+          <section id="ultima">
+            <h3>Juego de la última carta</h3>
+            <p>
+              Al jugar la última carta termina la ronda. Si esa última carta fue un comodín, se
+              aplica su efecto sobre el siguiente jugador (por ejemplo, el Comodín roba cuatro lo
+              hace tomar 4 cartas). Después se valorizan las cartas que les quedaron a los rivales y
+              se suma el resultado al ganador de la ronda.
+            </p>
+          </section>
+        </section>
+
+        <section id="cartas" aria-labelledby="h-cartas" class="seccion">
+          <header class="seccion-header">
+            <span class="seccion-numero" aria-hidden="true">03</span>
+            <h2 id="h-cartas">Reglas de las cartas</h2>
+          </header>
+
+          <p class="seccion-intro">
+            Cada carta tiene su regla de cuándo se puede jugar y qué efecto produce.
+          </p>
+
+          <div class="grid-cartas">
+            <article class="carta-regla" data-ghost="9">
+              <span class="carta-icono" aria-hidden="true">0–9</span>
+              <h3>Número</h3>
+              <p>
+                Se juega cuando la última del descarte tiene el mismo color o el mismo número. No
+                tiene efecto especial: pasa el turno.
+              </p>
+            </article>
+
+            <article class="carta-regla" data-ghost="+2">
+              <span class="carta-icono" aria-hidden="true">+2</span>
+              <h3>Roba dos</h3>
+              <p>
+                Mismo color u otra Roba dos. El siguiente jugador <strong>roba 2 cartas</strong>
+                y pierde su turno.
+              </p>
+            </article>
+
+            <article class="carta-regla" data-ghost="↻">
+              <span class="carta-icono" aria-hidden="true">↻</span>
+              <h3>Cambio de sentido</h3>
+              <p>
+                Mismo color u otra Cambio de sentido. <strong>Invierte el orden</strong> de los
+                turnos. En partidas de 2, saltea al rival.
+              </p>
+            </article>
+
+            <article class="carta-regla" data-ghost="⊘">
+              <span class="carta-icono" aria-hidden="true">⊘</span>
+              <h3>Pierde el turno</h3>
+              <p>
+                Mismo color u otra Pierde el turno. El siguiente jugador
+                <strong>pierde su turno</strong>.
+              </p>
+            </article>
+
+            <article class="carta-regla acc-comodin" data-ghost="★">
+              <span class="carta-icono" aria-hidden="true">★</span>
+              <h3>Comodín</h3>
+              <p>
+                Se juega en cualquier momento. Permite <strong>elegir el color</strong> con el que
+                continúa la jugada.
+              </p>
+            </article>
+
+            <article class="carta-regla acc-comodin" data-ghost="+4">
+              <span class="carta-icono" aria-hidden="true">+4</span>
+              <h3>Comodín roba cuatro</h3>
+              <p>
+                Se juega en cualquier momento. Elegís el color y el siguiente jugador
+                <strong>roba 4 cartas</strong> y pierde su turno.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="puntaje" aria-labelledby="h-puntaje" class="seccion">
+          <header class="seccion-header">
+            <span class="seccion-numero" aria-hidden="true">04</span>
+            <h2 id="h-puntaje">Sistema de puntaje</h2>
+          </header>
+
+          <section>
+            <h3>Puntaje por ronda</h3>
+            <p>
+              Al cerrar una ronda, el ganador suma el valor de todas las cartas que les quedaron al
+              resto de los jugadores. Los valores están en
+              <a href="#mazo">Contenido del mazo</a>.
+            </p>
+          </section>
+
+          <section>
+            <h3>Puntaje por partida</h3>
+            <p>Al terminar la partida, el ranking global se ajusta así:</p>
+            <div class="grid-puntaje" role="list">
+              <div role="listitem" class="stat positivo">
+                <span class="stat-valor">+50</span>
+                <span class="stat-label">Ganador</span>
+              </div>
+              <div role="listitem" class="stat neutro">
+                <span class="stat-valor">±0</span>
+                <span class="stat-label">1.º perdedor</span>
+              </div>
+              <div role="listitem" class="stat negativo">
+                <span class="stat-valor">−25</span>
+                <span class="stat-label">2.º perdedor</span>
+              </div>
+              <div role="listitem" class="stat negativo">
+                <span class="stat-valor">−50</span>
+                <span class="stat-label">3.º perdedor</span>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h3>Penalización por abandono</h3>
+            <p>
+              Si un jugador abandona una partida, recibe <strong>−50 puntos</strong>
+              sobre su puntaje global (mínimo 0).
+            </p>
+          </section>
+        </section>
+
+        <footer class="reglas-footer">
+          <p class="cierre">Listo. A jugar.</p>
+          <a href="/public/" class="btn-reglas">VOLVER AL INICIO</a>
+          <a href="#" class="link-top">↑ Volver arriba</a>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

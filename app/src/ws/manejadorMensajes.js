@@ -110,6 +110,9 @@ class ManejadorMensajes {
               await this.#partidaController.abandonarPartida(partidaId, jugadorId);
               webSocket.close();
               break;
+            case 'chat':
+              this.#partidaController.enviarMensajeChat(partidaId, jugadorId, payload.texto);
+              break;
             default:
               this.#manejadorConexiones.emitirA(jugadorId, 'error', {
                 mensaje: `Acción desconocida: ${accion}`,

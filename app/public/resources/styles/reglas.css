@@ -1,0 +1,526 @@
+/* Reglas — sigue el lineamiento de inicio.css / puntajes.css */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #8ab3d1;
+  min-height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.container-reglas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.reglas-articulo {
+  background: #eaf3fa;
+  border-radius: 12px;
+  padding: 28px 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  max-width: 720px;
+  width: 100%;
+  box-sizing: border-box;
+  color: #2e6da4;
+  line-height: 1.55;
+}
+
+/* ───── Header ───── */
+.reglas-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #d2e3f3;
+}
+
+.logo-reglas {
+  width: 100px;
+  margin-bottom: 12px;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: #2e6da4;
+  opacity: 0.65;
+  margin: 0 0 4px 0;
+  font-weight: bold;
+}
+
+.reglas-articulo h1 {
+  color: #2e6da4;
+  margin: 0 0 10px 0;
+  font-size: 1.7rem;
+  text-align: center;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+/* Pequeño acento amarillo bajo el h1 (firma sutil) */
+.reglas-articulo h1::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: #ffe14b;
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+.reglas-bajada {
+  color: #2e6da4;
+  font-size: 0.95rem;
+  margin: 6px auto 18px;
+  max-width: 520px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* Fact strip simple */
+.fact-strip {
+  list-style: none;
+  padding: 4px;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #d2e3f3;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.fact-strip li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 22px;
+  border-right: 1px solid #d2e3f3;
+}
+
+.fact-strip li:last-child {
+  border-right: none;
+}
+
+.fact-strip strong {
+  font-size: 1.2rem;
+  color: #1a4971;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.fact-strip span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #2e6da4;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* ───── Índice ───── */
+.reglas-toc {
+  background: #fff;
+  border: 1px solid #d2e3f3;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 26px;
+}
+
+.reglas-toc-titulo {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #2e6da4;
+  opacity: 0.65;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.reglas-toc-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reglas-toc-lista a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  color: #2e6da4;
+  text-decoration: none;
+  font-size: 0.95rem;
+  border-radius: 5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reglas-toc-lista a:hover,
+.reglas-toc-lista a:focus {
+  background: #fff8d6;
+  color: #1a4971;
+}
+
+.toc-n {
+  font-weight: bold;
+  color: #2e6da4;
+  opacity: 0.55;
+  font-size: 0.85rem;
+  min-width: 24px;
+}
+
+/* ───── Secciones ───── */
+.seccion {
+  margin-bottom: 26px;
+  scroll-margin-top: 16px;
+}
+
+.seccion-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 26px 0 14px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #b0cbe6;
+}
+
+.seccion-numero {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #8a6d00;
+  background: #ffe14b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.reglas-articulo h2 {
+  color: #2e6da4;
+  font-size: 1.22rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.seccion-intro {
+  font-size: 0.95rem;
+  color: #2e6da4;
+  margin: 0 0 14px 0;
+}
+
+.reglas-articulo h3 {
+  color: #2e6da4;
+  font-size: 1rem;
+  margin: 16px 0 6px 0;
+  font-weight: bold;
+}
+
+.reglas-articulo p {
+  color: #2e6da4;
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+}
+
+.reglas-articulo strong {
+  color: #1a4971;
+}
+
+.reglas-articulo a {
+  color: #2e6da4;
+}
+
+.reglas-articulo a:hover {
+  color: #1a4971;
+}
+
+/* ───── Mazo: dos columnas con cantidad destacada ───── */
+.grid-mazo {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0 18px;
+}
+
+.grid-mazo li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #d2e3f3;
+  font-size: 0.93rem;
+  color: #2e6da4;
+}
+
+.grid-mazo .cant {
+  flex-shrink: 0;
+  min-width: 40px;
+  background: #2e6da4;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.82rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.grid-mazo .desc {
+  flex: 1;
+}
+
+/* ───── Callout (regla del UNO) ───── */
+.quote-callout {
+  background: #fff8d6;
+  border-left: 4px solid #ffe14b;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 10px 0;
+}
+
+.quote-text {
+  margin: 0 !important;
+  color: #8a6d00 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.55 !important;
+}
+
+.quote-text strong {
+  color: #5e4900 !important;
+}
+
+/* ───── Grid de reglas de cartas ───── */
+.grid-cartas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.carta-regla {
+  background: #fff;
+  border: 1px solid #d2e3f3;
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.carta-regla:hover {
+  border-color: #b0cbe6;
+  box-shadow: 0 2px 8px rgba(46, 109, 164, 0.08);
+}
+
+.carta-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 30px;
+  padding: 0 10px;
+  background: #2e6da4;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.92rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.carta-regla h3 {
+  margin: 0 0 6px 0 !important;
+  font-size: 0.98rem !important;
+  color: #2e6da4 !important;
+}
+
+.carta-regla p {
+  margin: 0 !important;
+  font-size: 0.9rem !important;
+  color: #2e6da4 !important;
+  line-height: 1.5;
+}
+
+/* ───── Stats de puntaje ───── */
+.grid-puntaje {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin: 14px 0 8px 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px;
+  background: #fff;
+  border: 1px solid #d2e3f3;
+  border-radius: 8px;
+}
+
+.stat-valor {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2e6da4;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  margin-top: 6px;
+  color: #2e6da4;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.nota-puntaje {
+  font-size: 0.82rem !important;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* ───── Footer ───── */
+.reglas-footer {
+  text-align: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #d2e3f3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cierre {
+  margin: 0 !important;
+  color: #2e6da4 !important;
+  opacity: 0.8;
+  font-size: 0.95rem !important;
+}
+
+/* Botón amarillo igual a .btn-inicio / .btn-puntajes
+   con override de :visited para que no se vea oscuro */
+a.btn-reglas,
+a.btn-reglas:link,
+a.btn-reglas:visited,
+a.btn-reglas:hover,
+a.btn-reglas:active,
+a.btn-reglas:focus {
+  background: #ffe14b;
+  color: #444;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 10px 28px;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s, color 0.2s;
+}
+
+a.btn-reglas:hover {
+  background: #ffd600;
+  color: #222;
+}
+
+.link-top {
+  font-size: 0.85rem;
+  color: #2e6da4 !important;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.link-top:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 600px) {
+  .fact-strip li {
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .reglas-articulo {
+    padding: 22px 16px;
+  }
+  .reglas-articulo h1 {
+    font-size: 1.4rem;
+  }
+  .reglas-articulo h2 {
+    font-size: 1.08rem;
+  }
+  .reglas-articulo h3 {
+    font-size: 0.95rem;
+  }
+  .reglas-bajada,
+  .reglas-articulo p,
+  .grid-mazo li,
+  .carta-regla p {
+    font-size: 0.9rem;
+  }
+  .fact-strip {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .fact-strip li {
+    flex: 1;
+    padding: 8px 8px;
+    min-width: 0;
+  }
+  .fact-strip strong {
+    font-size: 1.05rem;
+  }
+  .fact-strip span {
+    font-size: 0.62rem;
+    text-align: center;
+  }
+  .reglas-toc {
+    padding: 12px 14px;
+  }
+  .logo-reglas {
+    width: 70px;
+  }
+  .stat-valor {
+    font-size: 1.2rem;
+  }
+  .seccion-header {
+    gap: 10px;
+  }
+  a.btn-reglas,
+  a.btn-reglas:link,
+  a.btn-reglas:visited {
+    min-height: 44px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 16px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  a.btn-reglas,
+  a.btn-reglas:link,
+  a.btn-reglas:visited {
+    min-height: 44px;
+  }
+}

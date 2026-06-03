@@ -4,32 +4,56 @@
   <title><%= title %></title>
 
   <%
+    const _seo = typeof seo !== 'undefined' && seo ? seo : {};
     const _desc = typeof description !== 'undefined'
       ? description
       : 'UNO Argentino — Jugá al UNO en línea, multijugador y gratuito.';
-    const _robots  = typeof robots      !== 'undefined' ? robots      : 'index, follow';
-    const _ogTitle = typeof ogTitle     !== 'undefined' ? ogTitle     : title;
+    const _robots = typeof robots !== 'undefined' ? robots : 'index, follow';
+    const _ogTitle = typeof ogTitle !== 'undefined' ? ogTitle : title;
     const _ogDesc  = typeof ogDescription !== 'undefined' ? ogDescription : _desc;
+    const _canonical = typeof _seo.canonicalUrl !== 'undefined'
+      ? _seo.canonicalUrl
+      : (typeof canonicalUrl !== 'undefined'
+        ? canonicalUrl
+        : (typeof canonical !== 'undefined' ? canonical : undefined));
+    const _ogImage = typeof _seo.ogImage !== 'undefined'
+      ? _seo.ogImage
+      : (typeof ogImage !== 'undefined' ? ogImage : undefined);
+    const _ogUrl = typeof _seo.ogUrl !== 'undefined'
+      ? _seo.ogUrl
+      : (typeof ogUrl !== 'undefined' ? ogUrl : undefined);
   %>
 
   <meta name="description" content="<%= _desc %>" />
-  <meta name="robots"      content="<%= _robots %>" />
+  <meta name="robots" content="<%= _robots %>" />
+  <% if (typeof keywords !== 'undefined') { %>
+    <meta name="keywords" content="<%= keywords %>" />
+  <% } %>
 
-  <% if (typeof canonicalUrl !== 'undefined') { %>
-    <link rel="canonical" href="<%= canonicalUrl %>" />
+  <% if (typeof _canonical !== 'undefined') { %>
+    <link rel="canonical" href="<%= _canonical %>" />
   <% } %>
 
   <!-- Open Graph -->
-  <meta property="og:type"        content="website" />
-  <meta property="og:site_name"   content="UNO Argentino" />
-  <meta property="og:title"       content="<%= _ogTitle %>" />
+  <meta property="og:type" content="<%= typeof ogType !== 'undefined' ? ogType : 'website' %>" />
+  <meta property="og:site_name" content="UNO Argentino" />
+  <meta property="og:title" content="<%= _ogTitle %>" />
   <meta property="og:description" content="<%= _ogDesc %>" />
-  <meta property="og:locale"      content="es_AR" />
-  <% if (typeof ogImage !== 'undefined') { %>
-    <meta property="og:image" content="<%= ogImage %>" />
+  <meta property="og:locale" content="es_AR" />
+  <% if (typeof _ogImage !== 'undefined') { %>
+    <meta property="og:image" content="<%= _ogImage %>" />
   <% } %>
-  <% if (typeof ogUrl !== 'undefined') { %>
-    <meta property="og:url" content="<%= ogUrl %>" />
+  <% if (typeof _ogUrl !== 'undefined') { %>
+    <meta property="og:url" content="<%= _ogUrl %>" />
+  <% } %>
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<%= _ogTitle %>" />
+  <meta name="twitter:description" content="<%= _ogDesc %>" />
+  <% if (typeof twitterImage !== 'undefined') { %>
+    <meta name="twitter:image" content="<%= twitterImage %>" />
+  <% } else if (typeof _ogImage !== 'undefined') { %>
+    <meta name="twitter:image" content="<%= _ogImage %>" />
   <% } %>
 
   <script>window.__APP_LOG_LEVEL__ = '<%= logLevel %>';</script>
@@ -38,5 +62,9 @@
     <% styles.forEach(function(style) { %>
       <link rel="stylesheet" href="<%= style %>" />
     <% }); %>
+  <% } %>
+
+  <% if (typeof jsonLd !== 'undefined') { %>
+    <script type="application/ld+json"><%- jsonLd %></script>
   <% } %>
 </head>

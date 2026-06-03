@@ -11,6 +11,7 @@
       <button class="btn-toggle-bitacora" id="btn-toggle-bitacora">Actividad</button>
       <div class="navbar-links">
         <span class="navbar-usuario" id="navbar-usuario"></span>
+        <a href="/public/reglas" target="_blank" rel="noopener" class="navbar-link">Reglas</a>
         <a href="#" id="salir" class="navbar-link">Salir</a>
       </div>
     </nav>
@@ -33,6 +34,16 @@
       <div class="lobby-bitacora">
         <h2 class="lobby-subtitulo">Actividad</h2>
         <ul id="lista-mensajes" class="lista-mensajes"></ul>
+        <form id="form-chat" class="form-chat">
+          <input
+            id="input-chat"
+            type="text"
+            maxlength="200"
+            placeholder="Escribí un mensaje..."
+            autocomplete="off"
+          />
+          <button type="submit" class="btn-chat">Enviar</button>
+        </form>
       </div>
     </div>
 
@@ -81,6 +92,8 @@
         lobbyPrincipal: document.querySelector('.lobby-principal'),
         btnToggleBitacora: document.getElementById('btn-toggle-bitacora'),
         panelBitacora: document.querySelector('.lobby-bitacora'),
+        inputChat: document.getElementById('input-chat'),
+        formChat: document.getElementById('form-chat'),
         onCambioVisibilidad: (visible) => {
           btnIniciar.hidden = !visible;
         },
