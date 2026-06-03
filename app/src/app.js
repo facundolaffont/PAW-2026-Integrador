@@ -33,8 +33,10 @@ const {
 } = require('./utils');
 const errorhandler = require('errorhandler');
 
-
 class Servidor {
+  /** @type {WebSocketServer} */
+  wss;
+
   constructor(puerto) {
     logContext(logger, this);
     this.puerto = puerto;
@@ -127,7 +129,6 @@ class Servidor {
     const manejadorFront = new ManejadorFront(this.app, new PuntajesController(db));
 
     /* Rutas del backend. */
-
     const auth = new ManejadorAuth(new AuthController(db));
     const partidas = new ManejadorPartidas(this.partidaController);
     const puntajes = new ManejadorPuntajes(new PuntajesController(db));

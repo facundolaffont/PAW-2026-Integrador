@@ -8,10 +8,18 @@ const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
 
 const logger = require('../logger');
 
+/**
+ * Controlador principal de la lógica de partidas. Se encarga de manejar la creación y gestión de partidas,
+ * la unión de jugadores, el procesamiento de jugadas y la gestión de desconexiones.
+ *
+ * @param {ManejadorConexiones} manejadorConexiones - Manejador de conexiones WebSocket para emitir eventos a los jugadores.
+ * @param {Persistencia} persistencia - Capa de persistencia para almacenar y recuperar el estado de las partidas.
+ * @param {BotLLM} botLLM - Módulo de lógica de bots para decidir las jugadas de los bots.
+ */
 class PartidaController {
-  constructor(conexiones, persistencia, botLLM) {
+  constructor(manejadorConexiones, persistencia, botLLM) {
     logContext(logger, this);
-    this.conexiones = conexiones;
+    this.manejadorConexiones = manejadorConexiones;
     this.persistencia = persistencia;
     this.botLLM = botLLM;
     // Mapea `${partidaId}:${jugadorId}` → timeoutId del abandono diferido.
@@ -20,12 +28,12 @@ class PartidaController {
     this.GRACE_PERIOD_MS = 30000;
   }
 
-  _claveDesconexion(partidaId, jugadorId) {
+  #claveDesconexion(partidaId, jugadorId) {
     return `${partidaId}:${jugadorId}`;
   }
 
   cancelarAbandonoPendiente(partidaId, jugadorId) {
-    const clave = this._claveDesconexion(partidaId, jugadorId);
+    const clave = this.#claveDesconexion(partidaId, jugadorId);
     const timeoutId = this.desconexionesPendientes.get(clave);
     if (timeoutId == null) return false;
     clearTimeout(timeoutId);
@@ -51,19 +59,19 @@ class PartidaController {
     const res = sala.iniciar(jugadorId);
 
     if (res.error) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
       return;
     }
 
-    this._emitirEstadoPartida(sala);
+    this.#emitirEstadoPartida(sala);
 
-    this._broadcast(sala, 'turno-cambiado', {
+    this.#broadcast(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
     });
 
     if (sala.turnoEsBot()) {
-      this._ejecutarTurnoBot(partidaId);
+      this.#ejecutarTurnoBot(partidaId);
     }
   }
 
@@ -73,22 +81,24 @@ class PartidaController {
     const res = sala.robarCarta(jugadorId);
 
     if (res.error) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
       return;
     }
 
-    this.conexiones.emitirA(jugadorId, 'cartas-robadas', { cartasRobadas: res.cartasRobadas });
-    this._broadcast(sala, 'turno-cambiado', {
+    this.manejadorConexiones.emitirA(jugadorId, 'cartas-robadas', {
+      cartasRobadas: res.cartasRobadas,
+    });
+    this.#broadcast(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
       penalidad: 0,
       robó: { jugadorId, cantidad: res.cantidad },
     });
 
-    this._emitirEstadoPartida(sala);
+    this.#emitirEstadoPartida(sala);
 
     if (sala.turnoEsBot()) {
-      this._ejecutarTurnoBot(partidaId);
+      this.#ejecutarTurnoBot(partidaId);
     }
   }
 
@@ -99,11 +109,11 @@ class PartidaController {
     const res = sala.cantarUno(jugadorId);
 
     if (res.error) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
       return;
     }
 
-    this._broadcast(sala, 'uno-cantado', { jugadorId, nombreUsuario: jugador.nombreUsuario });
+    this.#broadcast(sala, 'uno-cantado', { jugadorId, nombreUsuario: jugador.nombreUsuario });
   }
 
   denunciarUno(partidaId, jugadorId, acusadoId) {
@@ -112,26 +122,27 @@ class PartidaController {
     const res = sala.denunciarUno(jugadorId, acusadoId);
 
     if (res.error) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
       return;
     }
 
-    this._broadcast(sala, 'uno-denunciado', { denuncianteId: jugadorId, acusado: res.acusado });
+    this.#broadcast(sala, 'uno-denunciado', { denuncianteId: jugadorId, acusado: res.acusado });
   }
 
-  _broadcast(sala, evento, datos) {
+  #broadcast(sala, evento, datos) {
     logContext(logger, this);
-    this.conexiones.emitirATodos(
+
+    this.manejadorConexiones.emitirATodos(
       sala.jugadores.map((j) => j.jugadorId),
       evento,
       datos
     );
   }
 
-  _emitirEstadoPartida(sala) {
+  #emitirEstadoPartida(sala) {
     logContext(logger, this);
     for (const j of sala.jugadores) {
-      this.conexiones.emitirA(j.jugadorId, 'estado-partida', {
+      this.manejadorConexiones.emitirA(j.jugadorId, 'estado-partida', {
         estado: sala.estadoParaJugador(j.jugadorId),
       });
     }
@@ -142,13 +153,16 @@ class PartidaController {
 
     if (!jugadorId) throw new NotFoundException('jugadorId requerido');
 
+    // Obtiene jugador como instancia de Usuario, si existe, o null si no existe.
     const jugador = await this.persistencia.obtenerJugador(jugadorId);
+
     if (!jugador) return { ok: false, status: 404, error: 'Jugador no encontrado' };
 
     if (this.persistencia.jugadorEstaEnPartida(jugadorId))
       return { ok: false, status: 409, error: 'Ya estás en una partida activa' };
 
     const bots = parseInt(cantidadBots);
+
     // Si no se especifica máximo, se asume sala llena: 1 humano + bots, mínimo 2.
     const max = maxJugadores ? parseInt(maxJugadores) : Math.max(2, 1 + bots);
 
@@ -184,55 +198,89 @@ class PartidaController {
     return { ok: true, data: { partidaId, ...sala.resumenPublico() } };
   }
 
+  /**
+   * Intenta unir un jugador a una partida existente, o lo reconecta si ya estaba en ella, anulando la cancelación pendiente de partida.
+   *
+   * Se valida que la partida exista, que el jugador exista, que el jugador no esté ya en otra partida activa
+   * y que la partida no esté llena. Si la unión es exitosa, se notifica a todos los jugadores de la partida
+   * sobre el nuevo jugador unido y se envía el estado actual de la partida al jugador que se unió.
+   *
+   * Utiliza:
+   * - this.persistencia.
+   * - this.manejadorConexiones.
+   *
+   * @param {Number} partidaId - Identificador numérico de la partida a la cual se quiere unir el jugador.
+   * @param {Number} jugadorId - Identificador numérico del jugador que quiere unirse a la partida.
+   * @returns {Object} Resultado de la operación. Puede ser {ok: true} si se añadió el jugador correctamente, o {error: '<mensaje>'} si hubo un error.
+   *
+   * Posibles mensajes de error:
+   * - 'Partida no encontrada.': No existe una partida con el ID proporcionado.
+   * - 'Jugador no encontrado.': No existe un jugador con el ID proporcionado.
+   * - 'Ya estás en una partida activa.': El jugador ya está participando en otra partida que no ha terminado.
+   */
   async unirJugador(partidaId, jugadorId) {
     logContext(logger, this, { partidaId, jugadorId });
 
+    // Obtiene, si existe, una instancia de esta sala de clase SalaDeJuego.
     const sala = this.persistencia.obtenerPartida(partidaId);
 
+    // Si la sala no existe, se notifica al jugador y se retorna un error.
     if (!sala) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: 'Partida no encontrada' });
-      return { error: 'Partida no encontrada' };
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: 'Partida no encontrada.' });
+      return { error: 'Partida no encontrada.' };
     }
 
+    // Obtiene jugador como instancia de Usuario, si existe, o null si no existe.
     const jugador = await this.persistencia.obtenerJugador(jugadorId);
 
+    // Si el jugador no existe, se notifica y se retorna un error.
     if (!jugador) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: 'Jugador no encontrado' });
-      return { error: 'Jugador no encontrado' };
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: 'Jugador no encontrado.' });
+      return { error: 'Jugador no encontrado.' };
     }
 
     const yaEstaEnEstaSala = sala.jugadores.find((j) => j.jugadorId === jugadorId);
 
+    // Si el jugador ya está en otra partida activa, se notifica y se retorna un error.
     if (!yaEstaEnEstaSala && this.persistencia.jugadorEstaEnPartida(jugadorId)) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: 'Ya estás en una partida activa' });
-      return { error: 'Ya estás en una partida activa' };
+      this.manejadorConexiones.emitirA(jugadorId, 'error', {
+        mensaje: 'Ya estás en una partida activa.',
+      });
+      return { error: 'Ya estás en una partida activa.' };
     }
 
+    // Si el jugador no estaba ya en esta sala, se intenta agregarlo. Si la sala ya está llena,
+    // se notifica y se retorna un error. Si tuvo éxito, se notifica a todos los jugadores de la
+    // sala sobre el nuevo jugador unido.
     if (!yaEstaEnEstaSala) {
       const resultado = sala.agregarJugador(jugadorId, jugador.nombreUsuario);
 
+      // Si no se logró agregar al jugador (ej. sala llena), se notifica y se retorna un error.
       if (resultado.error) {
-        this.conexiones.emitirA(jugadorId, 'error', { mensaje: resultado.error });
+        this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: resultado.error });
         return { error: resultado.error };
       }
 
-      this._broadcast(sala, 'jugador-unido', {
+      this.#broadcast(sala, 'jugador-unido', {
         jugadorId,
         nombreUsuario: jugador.nombreUsuario,
         totalJugadores: sala.jugadores.length,
       });
-    } else if (sala.estado === 'jugando') {
-      // Reconexión durante una partida en curso: cancelar el abandono diferido si existe.
+    }
+
+    // Si la sala y el jugador existen, y el jugador ya está en la sala, reconecta al
+    // usuario y notifica al resto de los participantes.
+    else if (sala.estado === 'jugando') {
       const reconectado = this.cancelarAbandonoPendiente(partidaId, jugadorId);
       if (reconectado) {
-        this._broadcast(sala, 'jugador-reconectado', {
+        this.#broadcast(sala, 'jugador-reconectado', {
           jugadorId,
           nombreUsuario: jugador.nombreUsuario,
         });
       }
     }
 
-    this.conexiones.emitirA(jugadorId, 'estado-partida', {
+    this.manejadorConexiones.emitirA(jugadorId, 'estado-partida', {
       estado: sala.estadoParaJugador(jugadorId),
     });
 
@@ -246,43 +294,43 @@ class PartidaController {
     const res = sala.jugarCarta(jugadorId, cartaId, colorElegido);
 
     if (res.error) {
-      this.conexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
       return;
     }
 
     if (res.partidaTerminada) {
       await this.persistencia.guardarResultadoPartida(partidaId, res.ranking);
 
-      this._broadcast(sala, 'partida-terminada', { ranking: res.ranking });
+      this.#broadcast(sala, 'partida-terminada', { ranking: res.ranking });
 
       this.persistencia.eliminarPartida(partidaId);
       return;
     }
 
     if (res.rondaTerminada) {
-      this._broadcast(sala, 'ronda-terminada', {
+      this.#broadcast(sala, 'ronda-terminada', {
         ganadorRonda: res.ganadorRonda,
         puntosGanados: res.puntosGanados,
         puntajesRonda: res.puntajesRonda,
       });
 
-      this._emitirEstadoPartida(sala);
+      this.#emitirEstadoPartida(sala);
 
       return;
     }
 
-    this._broadcast(sala, 'carta-jugada', { jugadorId, carta: res.carta });
+    this.#broadcast(sala, 'carta-jugada', { jugadorId, carta: res.carta });
 
-    this._broadcast(sala, 'turno-cambiado', {
+    this.#broadcast(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
       penalidad: sala.penalidad,
     });
 
-    this._emitirEstadoPartida(sala);
+    this.#emitirEstadoPartida(sala);
 
     if (sala.turnoEsBot()) {
-      this._ejecutarTurnoBot(partidaId);
+      this.#ejecutarTurnoBot(partidaId);
     }
   }
 
@@ -304,7 +352,7 @@ class PartidaController {
         return;
       }
 
-      this._broadcast(sala, 'jugador-salio', {
+      this.#broadcast(sala, 'jugador-salio', {
         jugadorId,
         nombreUsuario: res.nombreUsuario,
         nuevoCreadorId: res.nuevoCreadorId,
@@ -319,10 +367,10 @@ class PartidaController {
     if (!jugador) return;
 
     // Si ya hay un abandono pendiente para este jugador, no programamos otro.
-    const clave = this._claveDesconexion(partidaId, jugadorId);
+    const clave = this.#claveDesconexion(partidaId, jugadorId);
     if (this.desconexionesPendientes.has(clave)) return;
 
-    this._broadcast(sala, 'jugador-desconectado', {
+    this.#broadcast(sala, 'jugador-desconectado', {
       jugadorId,
       nombreUsuario: jugador.nombreUsuario,
       gracePeriodMs: this.GRACE_PERIOD_MS,
@@ -330,7 +378,7 @@ class PartidaController {
 
     const timeoutId = setTimeout(() => {
       this.desconexionesPendientes.delete(clave);
-      this._concretarAbandono(partidaId, jugadorId).catch((err) => {
+      this.#concretarAbandono(partidaId, jugadorId).catch((err) => {
         registerLog(logger, 'error', 'Error al concretar abandono.', { error: err.message });
       });
     }, this.GRACE_PERIOD_MS);
@@ -338,10 +386,25 @@ class PartidaController {
     this.desconexionesPendientes.set(clave, timeoutId);
   }
 
+  /**
+   * Procesa el abandono de un jugador de una partida en curso. Se notifica a los demás jugadores
+   * de la partida sobre el abandono y se actualiza el estado de la partida. Si el abandono hace que
+   * la partida quede sin jugadores humanos, se termina la partida y se guarda el resultado.
+   *
+   * Utiliza:
+   * - this.persistencia.
+   *
+   * @param {Number} partidaId - Identificador numérico de la partida la cual abandona el jugador.
+   * @param {Number} jugadorId - Identificador numérico del jugador que abandona la partida.
+   * @returns {Promise<void>}
+   */
   async abandonarPartida(partidaId, jugadorId) {
     logContext(logger, this, { partidaId, jugadorId });
 
+    // Obtiene, si existe, una instancia de esta sala de clase SalaDeJuego.
     const sala = this.persistencia.obtenerPartida(partidaId);
+
+    // Si no existe la sala, o está terminada, no hay nada que hacer.
     if (!sala || sala.estado === 'terminada') return;
 
     this.cancelarAbandonoPendiente(partidaId, jugadorId);
@@ -350,30 +413,35 @@ class PartidaController {
       const res = sala.removerJugador(jugadorId);
       if (res.error) return;
 
+      // Si no hay más humanos luego de remover el jugador, eliminar la partida.
       if (sala.cantidadHumanos() === 0) {
         this.persistencia.eliminarPartida(partidaId);
         return;
       }
 
-      this._broadcast(sala, 'jugador-salio', {
+      // A esta altura: se removió al jugador y todavía existen humanos en la partida.
+      // Se notifica a los demás jugadores sobre la salida y se asigna un nuevo creador
+      // si el que se fue era el creador.
+      this.#broadcast(sala, 'jugador-salio', {
         jugadorId,
         nombreUsuario: res.nombreUsuario,
         nuevoCreadorId: res.nuevoCreadorId,
         totalJugadores: sala.jugadores.length,
       });
+
       return;
     }
 
-    await this._concretarAbandono(partidaId, jugadorId);
+    await this.#concretarAbandono(partidaId, jugadorId);
   }
 
-  async _concretarAbandono(partidaId, jugadorId) {
+  async #concretarAbandono(partidaId, jugadorId) {
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala || sala.estado === 'terminada') return;
 
     const info = sala.jugadorAbandonó(jugadorId);
 
-    this._broadcast(sala, 'jugador-abandono', {
+    this.#broadcast(sala, 'jugador-abandono', {
       jugadorId,
       nombreUsuario: info.nombreUsuario,
       mensaje: 'La partida fue cancelada por abandono',
@@ -387,7 +455,7 @@ class PartidaController {
     this.persistencia.eliminarPartida(partidaId);
   }
 
-  async _ejecutarTurnoBot(partidaId) {
+  async #ejecutarTurnoBot(partidaId) {
     logContext(logger, this, { partidaId });
 
     const sala = this.persistencia.obtenerPartida(partidaId);
@@ -418,57 +486,57 @@ class PartidaController {
           return;
         }
 
-        this._broadcast(salaActual, 'turno-cambiado', {
+        this.#broadcast(salaActual, 'turno-cambiado', {
           turno: salaActual.jugadorEnTurno().jugadorId,
           sentido: salaActual.sentido,
           penalidad: 0,
           robó: { jugadorId: bot.jugadorId, cantidad: res.cantidad },
         });
-        this._emitirEstadoPartida(salaActual);
+        this.#emitirEstadoPartida(salaActual);
       } else {
         const res = salaActual.jugarCarta(bot.jugadorId, decision.cartaId, decision.colorElegido);
 
         if (res.error) {
           console.error('[Bot] Jugada inválida, forzando robo:', res.error);
           const resRobo = salaActual.robarCarta(bot.jugadorId);
-          this._broadcast(salaActual, 'turno-cambiado', {
+          this.#broadcast(salaActual, 'turno-cambiado', {
             turno: salaActual.jugadorEnTurno().jugadorId,
             sentido: salaActual.sentido,
             penalidad: 0,
             robó: { jugadorId: bot.jugadorId, cantidad: resRobo.cantidad },
           });
-          this._emitirEstadoPartida(salaActual);
+          this.#emitirEstadoPartida(salaActual);
         } else if (res.partidaTerminada) {
           await this.persistencia.guardarResultadoPartida(partidaId, res.ranking);
-          this._broadcast(salaActual, 'partida-terminada', { ranking: res.ranking });
+          this.#broadcast(salaActual, 'partida-terminada', { ranking: res.ranking });
           this.persistencia.eliminarPartida(partidaId);
           return;
         } else if (res.rondaTerminada) {
-          this._broadcast(salaActual, 'ronda-terminada', {
+          this.#broadcast(salaActual, 'ronda-terminada', {
             ganadorRonda: res.ganadorRonda,
             puntosGanados: res.puntosGanados,
             puntajesRonda: res.puntajesRonda,
           });
-          this._emitirEstadoPartida(salaActual);
+          this.#emitirEstadoPartida(salaActual);
           return;
         } else {
           if (bot.mano.length === 1) {
             salaActual.cantarUno(bot.jugadorId);
-            this._broadcast(salaActual, 'uno-cantado', {
+            this.#broadcast(salaActual, 'uno-cantado', {
               jugadorId: bot.jugadorId,
               nombreUsuario: bot.nombreUsuario,
             });
           }
-          this._broadcast(salaActual, 'carta-jugada', {
+          this.#broadcast(salaActual, 'carta-jugada', {
             jugadorId: bot.jugadorId,
             carta: res.carta,
           });
-          this._broadcast(salaActual, 'turno-cambiado', {
+          this.#broadcast(salaActual, 'turno-cambiado', {
             turno: salaActual.jugadorEnTurno().jugadorId,
             sentido: salaActual.sentido,
             penalidad: salaActual.penalidad,
           });
-          this._emitirEstadoPartida(salaActual);
+          this.#emitirEstadoPartida(salaActual);
         }
       }
     } catch (err) {
@@ -476,7 +544,7 @@ class PartidaController {
     }
 
     if (salaActual.turnoEsBot()) {
-      this._ejecutarTurnoBot(partidaId);
+      this.#ejecutarTurnoBot(partidaId);
     }
   }
 }

@@ -5,7 +5,7 @@ const { logContext } = require('../utils');
 class Carta {
   static COLORES = ['rojo', 'amarillo', 'verde', 'azul'];
   static ESPECIALES = ['roba-dos', 'reversa', 'salta'];
-  static TIPOS_ACUMULABLES = new Set(['roba-dos', 'roba-tres', 'roba-cuatro']);
+  static TIPOS_ACUMULABLES = new Set(['roba-dos', 'roba-cuatro']);
 
   constructor(color, tipo, numero = null) {
     logContext(logger, this);
@@ -43,7 +43,8 @@ class Carta {
   //   Se pueden jugar sobre cualquier carta; el color lo elige el jugador después.
   //
   // Cartas normales sin penalidad:
-  //   Válidas si comparten color, tipo, o —solo entre números— mismo número.
+  //   Válidas si comparten color, o tipo (solo en cartas no numéricas),
+  //   o mismo número entre cartas numéricas.
   //   Para comodines en mesa se usa `colorElegido` en lugar de `color` (que es null).
   static esJugadaValida(carta, enMesa, penalidad, tipoPenalidad) {
     logContext(logger, Carta);
@@ -58,10 +59,12 @@ class Carta {
     }
 
     const colorMesa = enMesa.colorElegido || enMesa.color;
+    const mismoTipoNoNumerico =
+      carta.tipo !== 'numero' && enMesa.tipo !== 'numero' && carta.tipo === enMesa.tipo;
 
     return (
       carta.color === colorMesa ||
-      carta.tipo === enMesa.tipo ||
+      mismoTipoNoNumerico ||
       (carta.tipo === 'numero' && enMesa.tipo === 'numero' && carta.numero === enMesa.numero)
     );
   }

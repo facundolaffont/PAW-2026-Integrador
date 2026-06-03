@@ -29,7 +29,6 @@ class Mazo {
     for (let i = 0; i < 4; i++) {
       cartas.push(new Carta(null, 'comodin'));
       cartas.push(new Carta(null, 'roba-cuatro'));
-      cartas.push(new Carta(null, 'roba-tres'));
     }
 
     const mazo = new Mazo(cartas);

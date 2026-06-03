@@ -7,11 +7,10 @@ const REGLAS_UNO = `
 REGLAS DEL UNO ARGENTINO:
 
 - Jugada válida: podés jugar una carta si coincide en COLOR o TIPO con la carta en mesa, o si es un comodín.
-- Comodines (comodin, roba-tres, roba-cuatro): se juegan sobre cualquier carta. Debés elegir el nuevo color (rojo, azul, verde, amarillo).
+- Comodines (comodin, roba-cuatro): se juegan sobre cualquier carta. Debés elegir el nuevo color (rojo, azul, verde, amarillo).
 - Roba Dos (+2): el siguiente jugador roba 2 cartas y pierde el turno. Se pueden apilar: si el siguiente tiene otro +2, puede jugarlo y acumular la penalidad.
-- Roba Tres (+3): igual que +2 pero acumula 3. Solo se apila con otro +3.
 - Roba Cuatro (+4): igual que +2 pero acumula 4. Solo se apila con otro +4.
-- Penalidad acumulada: cuando hay penalidad activa, SOLO podés jugar una carta del mismo tipo de penalidad para apilar, o robar todas las cartas acumuladas.
+- Penalidad acumulada: cuando hay penalidad activa, SOLO podés jugar una carta del mismo tipo de penalidad (+2 o +4) para apilar, o robar todas las cartas acumuladas.
 - Salta: el siguiente jugador pierde su turno.
 - Reversa: invierte el sentido del juego. Con 2 jugadores, actúa como Salta.
 - Fin de ronda: el primero en quedarse sin cartas gana la ronda y suma los puntos de las cartas restantes de los rivales.

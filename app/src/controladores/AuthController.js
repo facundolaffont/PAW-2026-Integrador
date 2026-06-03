@@ -20,6 +20,10 @@ class AuthController {
     const clave = password?.trim();
 
     if (!nombre) return { ok: false, status: 400, error: 'El nombre de usuario es requerido' };
+
+    // Verifica si el nombre tiene el formato correcto: se permiten letras acentuadas,
+    // números, guiones y guiones bajos, entre 3 y 50 caracteres. Si no se cumple el formato
+    // se devuelve error.
     if (!NOMBRE_REGEX.test(nombre))
       return {
         ok: false,
@@ -27,6 +31,8 @@ class AuthController {
         error: 'El nombre de usuario debe tener entre 3 y 50 caracteres (letras, números, _ o -)',
       };
 
+    // Verifica la cantidad mínima de la contraseña.
+    // Si no se cumple, se devuelve error.
     if (!clave || clave.length < PASSWORD_MIN)
       return {
         ok: false,
@@ -34,12 +40,14 @@ class AuthController {
         error: `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres`,
       };
 
+    // Verifica que el usuario no exista previamente. Si existe, se devuelve error.
     if (await this.persistencia.obtenerJugadorPorNombre(nombre))
       return { ok: false, status: 409, error: 'El nombre de usuario ya está en uso' };
 
+    // Asigna un ID único al jugador, hashea la contraseña, guarda el nuevo jugador en
+    // la base de datos y lo marca como logueado.
     const jugadorId = uuidv4();
     const passwordHash = await bcrypt.hash(clave, BCRYPT_ROUNDS);
-
     await this.persistencia.registrarJugador(jugadorId, nombre, passwordHash);
     this.persistencia.marcarJugadorLogueado(jugadorId);
 
@@ -59,7 +67,11 @@ class AuthController {
 
     // Mismo mensaje para usuario no encontrado y contraseña incorrecta:
     // no revelamos si el nombre de usuario existe o no.
-    const credencialesInvalidas = { ok: false, status: 401, error: 'Usuario o contraseña incorrectos' };
+    const credencialesInvalidas = {
+      ok: false,
+      status: 401,
+      error: 'Usuario o contraseña incorrectos',
+    };
 
     if (!jugador) return credencialesInvalidas;
 

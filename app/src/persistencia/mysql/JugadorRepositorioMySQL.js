@@ -14,6 +14,12 @@ class JugadorRepositorioMySQL {
     return new Usuario(jugadorId, nombreUsuario, passwordHash);
   }
 
+  /**
+   * Obtiene la instancia de un jugador a partir de su ID.
+   *
+   * @param {Number} jugadorId - Identificador numérico del jugador cuya instancia desea obtenerse.
+   * @returns {Usuario|null} - Instancia del jugador o null si no existe.
+   */
   async obtenerJugador(jugadorId) {
     logContext(logger, this);
     const [rows] = await pool.execute(
@@ -26,6 +32,12 @@ class JugadorRepositorioMySQL {
     return new Usuario(rows[0].id, rows[0].nombre_usuario, rows[0].password_hash);
   }
 
+  /**
+   * Obtiene la instancia de un jugador a partir de su nombre de usuario.
+   *
+   * @param {String} nombreUsuario - Nombre de usuario del jugador cuya instancia desea obtenerse.
+   * @returns {Usuario|null} - Instancia del jugador o null si no existe.
+   */
   async obtenerJugadorPorNombre(nombreUsuario) {
     logContext(logger, this);
     const [rows] = await pool.execute(

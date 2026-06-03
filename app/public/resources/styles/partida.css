@@ -6,13 +6,14 @@
 
 body {
   background-color: #2e6da4;
+  height: 100dvh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   font-family: Arial, sans-serif;
   color: white;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* ─── NAVBAR ─── */
@@ -121,6 +122,8 @@ body {
   gap: 6px;
   padding: 0 10px;
   align-self: stretch;
+  max-height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -142,6 +145,7 @@ body {
 .mano-lateral {
   display: flex;
   flex-direction: column;
+  height: 100%;
   overflow: hidden;
   max-height: 100%;
 }
@@ -168,9 +172,121 @@ body {
 .tablero-central {
   flex: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 20px;
+}
+
+.indicador-color {
+  width: clamp(100px, 24vw, 156px);
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #e9f2fb;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.indicador-color.color-rojo {
+  color: #ff9a9a;
+}
+
+.indicador-color.color-azul {
+  color: #9ac9ff;
+}
+
+.indicador-color.color-verde {
+  color: #9ee7a2;
+}
+
+.indicador-color.color-amarillo {
+  color: #ffe28a;
+}
+
+.selector-color-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 18, 31, 0.62);
+  z-index: 30;
+}
+
+.selector-color-panel {
+  width: min(320px, calc(100vw - 32px));
+  background: rgba(15, 42, 66, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+  padding: 16px;
+}
+
+.selector-color-titulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f7fb;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.selector-color-botones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.selector-color-boton,
+.selector-color-cancelar {
+  border: none;
+  border-radius: 10px;
+  min-height: 48px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.selector-color-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+}
+
+.selector-color-boton.color-rojo {
+  background: #d84c4c;
+}
+
+.selector-color-boton.color-azul {
+  background: #3d74d1;
+}
+
+.selector-color-boton.color-verde {
+  background: #3f9950;
+}
+
+.selector-color-boton.color-amarillo {
+  background: #d8b13f;
+  color: white;
+}
+
+.selector-color-muestra {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.selector-color-cancelar {
+  width: 100%;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e8eff7;
 }
 
 .mazo,
@@ -268,6 +384,7 @@ body {
   display: flex;
   flex-direction: column;
   width: 280px;
+  max-height: 70dvh;
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.2);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -275,7 +392,10 @@ body {
   padding: 16px;
   gap: 12px;
   min-height: 0;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .lista-mensajes {
@@ -317,10 +437,49 @@ body {
   background: rgba(255, 80, 80, 0.1);
 }
 
+.mensaje-item-tabla {
+  padding: 8px;
+}
+
+.puntajes-ronda-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d7e7f7;
+  margin-bottom: 6px;
+}
+
+.puntajes-ronda-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.puntajes-ronda-tabla th,
+.puntajes-ronda-tabla td {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.puntajes-ronda-tabla th:last-child,
+.puntajes-ronda-tabla td:last-child {
+  text-align: right;
+}
+
+.puntajes-ronda-tabla tbody tr.ganador-ronda td {
+  color: #ffe28a;
+  font-weight: 700;
+}
+
 .mensaje-hora {
+  display: block;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
-  margin-right: 4px;
+  margin-bottom: 2px;
+}
+
+.mensaje-texto {
+  display: block;
 }
 
 .lobby h1 {
@@ -507,6 +666,10 @@ body {
   .tablero-central {
     gap: 12px;
     padding: 8px 0;
+  }
+
+  .indicador-color {
+    width: clamp(80px, 30vw, 148px);
   }
 
   .mano-horizontal {
