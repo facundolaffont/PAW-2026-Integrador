@@ -1,0 +1,24 @@
+.github/workflows/deploy.yml
+  s_dd696a8d466aaf::t_d27767cda6bd5b 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "51334f98f9d653143fed9a368864fc517fc5ad5c",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
