@@ -1,0 +1,37 @@
+app/src/http/middleware/middlewareAuth.js
+  s_dd696a8d466aaf::t_ce8eb04d358a60 21-32
+app/src/http/handlers/manejadorAuth.js
+  s_dd696a8d466aaf::t_b21c7e3df26981 2
+app/src/app.js
+  s_dd696a8d466aaf::t_7fd539da67bacf 21
+app/src/http/handlers/manejadorFront.js
+  s_dd696a8d466aaf::t_b1f460b49ddaaa 75
+  s_dd696a8d466aaf::t_3e2a7e6904ee87 127
+  s_dd696a8d466aaf::t_a3381195dea58d 51
+  s_dd696a8d466aaf::t_a43f5d52ef538f 6
+  s_dd696a8d466aaf::t_b6d4d548d3d860 91
+  s_dd696a8d466aaf::t_3cab38adcdf72b 149
+app/Dockerfile
+  h_c044bf8701ab58 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "69a2ad2df03025048868e29b4512729c6e962449",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
