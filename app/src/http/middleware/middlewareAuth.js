@@ -24,6 +24,7 @@ function requireAuthWeb(req, res, next) {
   } catch {
     res.clearCookie('token');
     res.clearCookie('nombreUsuario');
+    res.clearCookie('jugadorId');
     res.redirect('/public/bienvenida');
   }
 }

@@ -1,6 +1,6 @@
 # PAW-2026-Integrador
 
-Repositorio del trabajo práctico integrador de la materia Programación en Ambiente Web (código 11086), de la carrera Licenciatura en Sistemas de Información, de la Universidad de Luján (UNLu).
+Repositorio del trabajo práctico integrador de la materia Programación en Ambiente Web (código 11086), de la carrera Licenciatura en Sistemas de Información, de la Universidad de Luján (UNLu)
 
 ## Integrantes
 

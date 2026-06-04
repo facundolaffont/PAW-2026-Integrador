@@ -41,6 +41,7 @@ class ManejadorAuth {
     logContext(logger, this);
     res.clearCookie('token');
     res.clearCookie('nombreUsuario');
+    res.clearCookie('jugadorId'); // limpia cookie residual de versión anterior
     res.status(204).send();
   }
 
