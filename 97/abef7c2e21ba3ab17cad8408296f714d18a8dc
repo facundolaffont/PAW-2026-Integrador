@@ -1,0 +1,76 @@
+app/src/http/middleware/middlewareAuth.js
+  s_dd696a8d466aaf::t_fdc9f3720e67ac 11
+  s_dd696a8d466aaf::t_8020bcf08772aa 6
+app/public/bienvenida.ejs
+  s_dd696a8d466aaf::t_044f95ff06aa5b 82
+app/public/login.ejs
+  s_dd696a8d466aaf::t_935a5b78ea00eb 40
+app/public/puntajes.ejs
+  s_dd696a8d466aaf::t_7177bf0ac02b88 70-72,74
+app/src/http/handlers/manejadorAuth.js
+  s_dd696a8d466aaf::t_e6a4ee232f14da 32-36,46,58,71-72,76-82,85
+app/public/inicio.ejs
+  s_dd696a8d466aaf::t_cc80e2107dcf83 6
+  s_dd696a8d466aaf::t_bcc70f86a06e30 25-26
+app/src/controladores/AuthController.js
+  s_dd696a8d466aaf::t_c66c684b7769fa 89-94
+app/public/partida.ejs
+  s_dd696a8d466aaf::t_ed9d401577c507 56,62-66,70
+  s_dd696a8d466aaf::t_db81a5c7250796 6
+DEPLOYMENT.md
+  s_00bf4669f67e56::t_c3fb0a866a162c 1-31
+app/public/crear-sala.ejs
+  s_dd696a8d466aaf::t_68d30b705251a0 97
+  s_dd696a8d466aaf::t_6553c3145ef373 6
+app/src/app.js
+  s_dd696a8d466aaf::t_99e0183c54726c 7
+  s_dd696a8d466aaf::t_3e32d9fa04e9c8 116
+  s_dd696a8d466aaf::t_05811bd4e8ec95 152-153
+app/public/partials/head.ejs
+  s_dd696a8d466aaf::t_15d60db214e3c2 59-65
+app/public/partials/navbar.ejs
+  s_dd696a8d466aaf::t_90c2fd92f57958 176,180-182
+app/public/registro.ejs
+  s_dd696a8d466aaf::t_ecf6c0c6134b78 54
+app/package.json
+  s_dd696a8d466aaf::t_7ebd89ce8accff 13
+app/public/salas.ejs
+  s_dd696a8d466aaf::t_15d2d2297e71ed 6
+  s_dd696a8d466aaf::t_409c458f274134 84
+app/public/resources/scripts/partida.js
+  s_dd696a8d466aaf::t_b2026063cc8e5a 733
+  s_dd696a8d466aaf::t_4948f887c9af49 766
+app/public/jugar.ejs
+  s_dd696a8d466aaf::t_c8829897c91ae6 6
+app/src/http/handlers/manejadorPartidas.js
+  s_dd696a8d466aaf::t_af367325782102 36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "97abef7c2e21ba3ab17cad8408296f714d18a8dc",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_00bf4669f67e56": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c05343e1-fa46-4acf-9a5b-cfd73f88906a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    },
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
