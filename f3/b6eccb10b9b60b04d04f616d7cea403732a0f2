@@ -1,0 +1,28 @@
+README.md
+  h_c044bf8701ab58 3
+app/src/http/middleware/middlewareAuth.js
+  s_dd696a8d466aaf::t_111024d9d55031 27
+app/src/http/handlers/manejadorAuth.js
+  s_dd696a8d466aaf::t_d7ba0148fbdfd5 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f3b6eccb10b9b60b04d04f616d7cea403732a0f2",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
