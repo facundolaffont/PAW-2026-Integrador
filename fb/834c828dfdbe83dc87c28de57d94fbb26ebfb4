@@ -1,0 +1,24 @@
+app/docker-compose.yml
+  s_00bf4669f67e56::t_bf0bc5ed598a5f 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "fb834c828dfdbe83dc87c28de57d94fbb26ebfb4",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_00bf4669f67e56": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c05343e1-fa46-4acf-9a5b-cfd73f88906a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
