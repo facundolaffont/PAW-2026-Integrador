@@ -1,5 +1,5 @@
 const express = require('express');
-const requireAuth = require('../middleware/middlewareAuth');
+const { requireAuth } = require('../middleware/middlewareAuth');
 const logger = require('../../logger');
 const { logContext } = require('../../utils');
 

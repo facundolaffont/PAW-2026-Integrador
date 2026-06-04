@@ -18,4 +18,15 @@ function requireAuth(req, res, next) {
   next();
 }
 
-module.exports = requireAuth;
+function requireAuthWeb(req, res, next) {
+  const jugadorId = req.cookies?.jugadorId;
+
+  if (!jugadorId || !db.jugadorEstaLogueado(jugadorId)) {
+    return res.redirect('/public/bienvenida');
+  }
+
+  req.jugadorId = jugadorId;
+  next();
+}
+
+module.exports = { requireAuth, requireAuthWeb };

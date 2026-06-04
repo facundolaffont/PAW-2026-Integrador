@@ -3,6 +3,7 @@ const axios = require('axios');
 const logger = require('../../logger');
 const EmptyException = require('../../errores/EmptyException');
 const { buildReglasLocals } = require('../seo/reglas');
+const { requireAuthWeb } = require('../middleware/middlewareAuth');
 
 class ManejadorFront {
   #logLevel = process.env.LOG_LEVEL || 'debug';
@@ -47,7 +48,7 @@ class ManejadorFront {
       });
     });
 
-    this.app.get('/public/', (req, res) => {
+    this.app.get('/public/', requireAuthWeb, (req, res) => {
       res.render('inicio', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Inicio',
@@ -71,7 +72,7 @@ class ManejadorFront {
       });
     });
 
-    this.app.get('/public/jugar', (req, res) => {
+    this.app.get('/public/jugar', requireAuthWeb, (req, res) => {
       res.render('jugar', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Jugar',
@@ -87,7 +88,7 @@ class ManejadorFront {
       });
     });
 
-    this.app.get('/public/crear-sala', (req, res) => {
+    this.app.get('/public/crear-sala', requireAuthWeb, (req, res) => {
       res.render('crear-sala', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Crear Sala',
@@ -123,7 +124,7 @@ class ManejadorFront {
       }
     });
 
-    this.app.get('/public/partida', (req, res) => {
+    this.app.get('/public/partida', requireAuthWeb, (req, res) => {
       res.render('partida', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Partida',
@@ -145,7 +146,7 @@ class ManejadorFront {
       });
     });
 
-    this.app.get('/public/salas', (req, res) => {
+    this.app.get('/public/salas', requireAuthWeb, (req, res) => {
       res.render('salas', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Salas',
