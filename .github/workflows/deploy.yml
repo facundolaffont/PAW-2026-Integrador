@@ -16,6 +16,7 @@ jobs:
           host: ${{ secrets.VM_IP }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
           envs: DB_USER,DB_PASSWORD,GEMINI_API_KEY,JWT_SECRET
           script: |
             cd /home/rrobles/PAW-2026-Integrador
