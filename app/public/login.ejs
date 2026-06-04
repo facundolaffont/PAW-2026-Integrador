@@ -37,8 +37,7 @@
     </div>
   </body>
   <script>
-    // Si ya hay sesión activa, ir directo al juego
-    if (sessionStorage.getItem('jugadorId')) {
+    if (getCookie('nombreUsuario')) {
       window.location.replace('/public/');
     }
 
@@ -80,8 +79,6 @@
           return;
         }
 
-        sessionStorage.setItem('jugadorId', data.jugadorId);
-        sessionStorage.setItem('nombreUsuario', data.nombreUsuario);
         window.location.href = '/public/';
       } catch (err) {
         console.error(err);

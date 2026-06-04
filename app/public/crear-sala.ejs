@@ -3,7 +3,7 @@
   <%- include('partials/head.ejs') %>
   <body>
     <script>
-      if (!sessionStorage.getItem('jugadorId')) window.location.href = '/public/bienvenida';
+      if (!getCookie('nombreUsuario')) window.location.href = '/public/bienvenida';
     </script>
     <%- include('partials/navbar.ejs') %>
     <div class="container-crear-sala">
@@ -80,7 +80,6 @@
         const error = document.getElementById('error');
         error.hidden = true;
 
-        const jugadorId = sessionStorage.getItem('jugadorId');
         const maxJugadores = parseInt(e.target.num_jugadores.value, 10);
         const cantidadBots = parseInt(e.target.cantidad_bots.value, 10);
 
@@ -95,7 +94,7 @@
           const response = await fetch('/api/partidas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jugadorId, maxJugadores, cantidadBots }),
+            body: JSON.stringify({ maxJugadores, cantidadBots }),
           });
           const data = await response.json();
 

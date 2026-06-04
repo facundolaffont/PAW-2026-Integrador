@@ -33,7 +33,8 @@ class ManejadorPartidas {
     try {
       logContext(logger, this);
 
-      const { jugadorId, maxJugadores, cantidadBots } = req.body;
+      const jugadorId = req.jugadorId;
+      const { maxJugadores, cantidadBots } = req.body;
 
       registerLog(logger, 'debug', 'Creando partida.', {
         jugadorId,

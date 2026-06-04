@@ -79,7 +79,7 @@
     </script>
   </body>
   <script>
-    if (sessionStorage.getItem('jugadorId')) {
+    if (getCookie('nombreUsuario')) {
       window.location.replace('/public/');
     }
   </script>

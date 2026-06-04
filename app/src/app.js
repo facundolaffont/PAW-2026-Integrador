@@ -4,6 +4,7 @@ dotenv.config();
 const http = require('http');
 const path = require('path');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const { WebSocketServer } = require('ws');
 const { URL } = require('url');
 const axios = require('axios');
@@ -112,6 +113,7 @@ class Servidor {
     logContext(logger, this);
 
     this.app.use(express.json());
+    this.app.use(cookieParser());
   }
 
   /**
@@ -146,11 +148,10 @@ class Servidor {
     // las conexiones invalidas con el código HTTP 400.
     this.server.on('upgrade', (req, socket, head) => {
       const url = new URL(req.url, `http://${req.headers.host}`);
-      const jugadorId = url.searchParams.get('jugadorId');
       const partidaId = url.searchParams.get('partidaId');
+      const cookieStr = req.headers.cookie || '';
+      const jugadorId = cookieStr.split(';').map(c => c.trim()).find(c => c.startsWith('jugadorId='))?.split('=')[1];
 
-      // Valida que se hayan proporcionado los parámetros necesarios para identificar al
-      // jugador y la partida. Si no, responde con un error HTTP 400 y cierra la conexión.
       if (!jugadorId || !partidaId) {
         socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
         socket.destroy();

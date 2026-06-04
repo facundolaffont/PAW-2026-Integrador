@@ -56,7 +56,13 @@
     <meta name="twitter:image" content="<%= _ogImage %>" />
   <% } %>
 
-  <script>window.__APP_LOG_LEVEL__ = '<%= logLevel %>';</script>
+  <script>
+    window.__APP_LOG_LEVEL__ = '<%= logLevel %>';
+    function getCookie(n) {
+      const m = document.cookie.split('; ').find(c => c.startsWith(n + '='));
+      return m ? decodeURIComponent(m.split('=')[1]) : null;
+    }
+  </script>
 
   <% if (typeof styles !== 'undefined' && styles.length) { %>
     <% styles.forEach(function(style) { %>

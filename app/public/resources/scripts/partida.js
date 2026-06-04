@@ -730,9 +730,7 @@ class Partida {
     }
 
     try {
-      const response = await fetch(`/api/partidas/${encodeURIComponent(this.partidaId)}`, {
-        headers: { 'X-Jugador-Id': this.jugadorId || '' },
-      });
+      const response = await fetch(`/api/partidas/${encodeURIComponent(this.partidaId)}`);
 
       // Si la respuesta no es exitosa, intenta obtener el mensaje de error del cuerpo de la respuesta y mostrarlo.
       // Si no se puede obtener un mensaje específico, muestra un mensaje genérico.
@@ -765,7 +763,7 @@ class Partida {
    */
   #conectarWS() {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${proto}//${window.location.host}/ws?jugadorId=${encodeURIComponent(this.jugadorId)}&partidaId=${encodeURIComponent(this.partidaId)}`;
+    const url = `${proto}//${window.location.host}/ws?partidaId=${encodeURIComponent(this.partidaId)}`;
     this.webSocket = new WebSocket(url);
 
     this.webSocket.addEventListener('open', () => {

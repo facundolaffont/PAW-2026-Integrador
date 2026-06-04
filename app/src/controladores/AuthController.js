@@ -86,6 +86,12 @@ class AuthController {
     };
   }
 
+  async obtenerSesion(jugadorId) {
+    if (!jugadorId || !this.persistencia.jugadorEstaLogueado(jugadorId)) return null;
+    const jugador = await this.persistencia.obtenerJugador(jugadorId);
+    return jugador ? { jugadorId, nombreUsuario: jugador.nombreUsuario } : null;
+  }
+
   async salir(jugadorId) {
     logContext(logger, this);
     if (!jugadorId?.trim()) return { ok: false, status: 400, error: 'jugadorId requerido' };

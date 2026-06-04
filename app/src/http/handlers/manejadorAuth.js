@@ -29,6 +29,11 @@ class ManejadorAuth {
     this.#registrarRutas();
   }
 
+  #setAuthCookies(res, jugadorId, nombreUsuario) {
+    res.cookie('jugadorId', jugadorId, { httpOnly: true, sameSite: 'strict' });
+    res.cookie('nombreUsuario', nombreUsuario, { sameSite: 'strict' });
+  }
+
   async registrar(req, res) {
     logContext(logger, this);
 
@@ -38,6 +43,7 @@ class ManejadorAuth {
       return res.status(result.status).json({ error: result.error });
     }
 
+    this.#setAuthCookies(res, result.data.jugadorId, result.data.nombreUsuario);
     res.status(201).json(result.data);
   }
 
@@ -49,25 +55,34 @@ class ManejadorAuth {
       return res.status(result.status).json({ error: result.error });
     }
 
+    this.#setAuthCookies(res, result.data.jugadorId, result.data.nombreUsuario);
     res.json(result.data);
   }
 
   async salir(req, res) {
     logContext(logger, this);
 
-    // Usamos el jugadorId verificado por el middleware, no el del body,
-    // para que un jugador solo pueda cerrar su propia sesión.
     const result = await this.controller.salir(req.jugadorId);
 
     if (!result.ok) {
       return res.status(result.status).json({ error: result.error });
     }
 
+    res.clearCookie('jugadorId');
+    res.clearCookie('nombreUsuario');
     res.status(204).send();
+  }
+
+  async me(req, res) {
+    logContext(logger, this);
+    const sesion = await this.controller.obtenerSesion(req.cookies?.jugadorId);
+    if (!sesion) return res.status(401).json({ error: 'No autorizado' });
+    res.json(sesion);
   }
 
   #registrarRutas() {
     logContext(logger, this);
+    this.router.get('/me', (req, res) => this.me(req, res));
     this.router.post('/registrarse', (req, res) => this.registrar(req, res));
     this.router.post('/ingresar', (req, res) => this.ingresar(req, res));
     this.router.post('/salir', requireAuth, (req, res) => this.salir(req, res));

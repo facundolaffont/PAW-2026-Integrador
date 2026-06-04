@@ -3,7 +3,7 @@
   <%- include('partials/head.ejs') %>
   <body>
     <script>
-      if (!sessionStorage.getItem('jugadorId')) window.location.href = '/public/bienvenida';
+      if (!getCookie('nombreUsuario')) window.location.href = '/public/bienvenida';
     </script>
     <nav class="navbar">
       <div class="navbar-logo">UNO Argentino</div>
@@ -48,39 +48,26 @@
     </div>
 
     <script>
-      // Re-login silencioso al cargar (cubre F5 y reinicio del server)
-      (function () {
-        const nombre = sessionStorage.getItem('nombreUsuario');
-        if (nombre) {
-          fetch('/api/ingresar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombreUsuario: nombre }),
-          }).catch(() => {});
-        }
-      })();
-
-      // Detección de cierre de navegador (mismo patrón que partials/navbar.ejs)
       document.addEventListener('click', (e) => {
         if (e.target.closest('a[href], button')) window.__navInterno = true;
       });
       window.addEventListener('pagehide', () => {
         if (window.__navInterno) return;
-        const jugadorId = sessionStorage.getItem('jugadorId');
-        if (!jugadorId) return;
-        const blob = new Blob([JSON.stringify({ jugadorId })], { type: 'application/json' });
-        navigator.sendBeacon('/api/salir', blob);
+        navigator.sendBeacon('/api/salir');
       });
     </script>
     <script type="module">
       import Partida from '/scripts/partida.js';
 
-      document.getElementById('navbar-usuario').textContent =
-        sessionStorage.getItem('nombreUsuario') || '';
+      const meRes = await fetch('/api/me');
+      if (!meRes.ok) { window.location.href = '/public/bienvenida'; throw null; }
+      const { jugadorId } = await meRes.json();
+
+      document.getElementById('navbar-usuario').textContent = getCookie('nombreUsuario') || '';
 
       const btnIniciar = document.getElementById('btn-iniciar');
       const partida = new Partida({
-        jugadorId: sessionStorage.getItem('jugadorId'),
+        jugadorId,
         partidaId: new URLSearchParams(window.location.search).get('partidaId'),
         estado: document.getElementById('estado-partida'),
         titulo: document.getElementById('lobby-titulo'),

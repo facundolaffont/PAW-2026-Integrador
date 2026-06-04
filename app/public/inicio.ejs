@@ -3,7 +3,7 @@
   <%- include('partials/head.ejs') %>
   <body>
     <script>
-      if (!sessionStorage.getItem('jugadorId')) window.location.href = '/public/bienvenida';
+      if (!getCookie('nombreUsuario')) window.location.href = '/public/bienvenida';
     </script>
     <%- include('partials/navbar.ejs') %>
     <div class="container-inicio">
@@ -21,20 +21,9 @@
     </div>
     <script>
       async function salir() {
-        const jugadorId = sessionStorage.getItem('jugadorId');
-
         try {
-          await fetch('/api/salir', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jugadorId }),
-          });
-        } catch (_) {
-          // Si falla la petición, igual se limpia sesión local y se redirige.
-        }
-
-        sessionStorage.removeItem('jugadorId');
-        sessionStorage.removeItem('nombreUsuario');
+          await fetch('/api/salir', { method: 'POST' });
+        } catch (_) {}
         window.location.href = '/public/bienvenida';
       }
     </script>

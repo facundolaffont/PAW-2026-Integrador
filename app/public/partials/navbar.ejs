@@ -173,27 +173,13 @@
 </nav>
 <script>
   (function () {
-    const nombre = sessionStorage.getItem('nombreUsuario');
+    const nombre = getCookie('nombreUsuario');
     if (nombre) document.getElementById('topbar-usuario').textContent = nombre;
 
-    // Función de logout: llama al servidor y redirige a bienvenida
     async function salir() {
-      const jugadorId = sessionStorage.getItem('jugadorId');
-      if (jugadorId) {
-        try {
-          await fetch('/api/salir', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Jugador-Id': jugadorId,
-            },
-          });
-        } catch (_) {
-          // Si falla la red, igual limpiamos la sesión local
-        }
-      }
-      sessionStorage.removeItem('jugadorId');
-      sessionStorage.removeItem('nombreUsuario');
+      try {
+        await fetch('/api/salir', { method: 'POST' });
+      } catch (_) {}
       window.location.href = '/public/bienvenida';
     }
 

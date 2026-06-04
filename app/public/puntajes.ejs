@@ -67,11 +67,10 @@
     <% } %>
   </body>
   <script>
-    // Resaltar la fila del jugador actual si está logueado
-    const jugadorActual = sessionStorage.getItem('jugadorId');
-    if (jugadorActual) {
-      const fila = document.querySelector(`tr[data-jugador-id="${jugadorActual}"]`);
+    fetch('/api/me').then(r => r.ok ? r.json() : null).then(data => {
+      if (!data) return;
+      const fila = document.querySelector(`tr[data-jugador-id="${data.jugadorId}"]`);
       if (fila) fila.classList.add('fila-actual');
-    }
+    });
   </script>
 </html>
