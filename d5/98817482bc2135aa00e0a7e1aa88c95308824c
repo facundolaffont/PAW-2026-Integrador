@@ -1,0 +1,24 @@
+app/Dockerfile
+  s_dd696a8d466aaf::t_21c51fff598697 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d598817482bc2135aa00e0a7e1aa88c95308824c",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
