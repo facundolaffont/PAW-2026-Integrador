@@ -26,6 +26,8 @@ class SalaDeJuego {
     this.mazo = new Mazo();
     this.descarte = [];
     this.turnoIdx = 0;
+    this.repartidorIdx = -1;
+    this.numeroRonda = 0;
     this.sentido = 1;
     this.penalidad = 0;
     this.tipoPenalidad = null;
@@ -142,10 +144,15 @@ class SalaDeJuego {
     logContext(logger, this);
     this.mazo = Mazo.crearCompleto();
     this.descarte = [];
-    this.turnoIdx = 0;
+    this.numeroRonda += 1;
+    this.repartidorIdx =
+      this.repartidorIdx === -1
+        ? this.jugadores.length - 1
+        : this._siguienteIndice(this.repartidorIdx, 1);
     this.sentido = 1;
     this.penalidad = 0;
     this.tipoPenalidad = null;
+    this.turnoIdx = this._siguienteIndice(this.repartidorIdx, this.sentido);
 
     for (const jugador of this.jugadores) {
       jugador.reiniciarMano();
@@ -161,6 +168,7 @@ class SalaDeJuego {
     } while (primera.esComodin);
 
     this.descarte.push(primera);
+    this._aplicarEfectoPrimeraCarta(primera);
   }
 
   // ─── Turno ───────────────────────────────────────────────────────────────
@@ -199,11 +207,33 @@ class SalaDeJuego {
     return this.descarte[this.descarte.length - 1];
   }
 
-  _avanzarTurno(saltar = false) {
+  _siguienteIndice(indiceBase, direccion = 1) {
     logContext(logger, this);
     const n = this.jugadores.length;
+    return (((indiceBase + direccion) % n) + n) % n;
+  }
+
+  _avanzarTurno(saltar = false) {
+    logContext(logger, this);
     const pasos = saltar ? 2 : 1;
-    this.turnoIdx = (((this.turnoIdx + this.sentido * pasos) % n) + n) % n;
+    this.turnoIdx = this._siguienteIndice(this.turnoIdx, this.sentido * pasos);
+  }
+
+  _aplicarEfectoPrimeraCarta(carta) {
+    logContext(logger, this);
+    switch (carta.tipo) {
+      case 'reversa':
+        this.sentido *= -1;
+        this.turnoIdx = this._siguienteIndice(this.repartidorIdx, this.sentido);
+        break;
+      case 'roba-dos':
+        this.penalidad = 2;
+        this.tipoPenalidad = 'roba-dos';
+        break;
+      case 'salta':
+        this.turnoIdx = this._siguienteIndice(this.turnoIdx, this.sentido);
+        break;
+    }
   }
 
   // ─── Jugadas ─────────────────────────────────────────────────────────────
@@ -431,6 +461,8 @@ class SalaDeJuego {
     return {
       partidaId: this.partidaId,
       estado: this.estado,
+      numeroRonda: this.numeroRonda,
+      repartidorId: this.jugadores[this.repartidorIdx]?.jugadorId || null,
       turno: this.jugadores[this.turnoIdx]?.jugadorId,
       sentido: this.sentido,
       cartaEnMesa: enMesa,

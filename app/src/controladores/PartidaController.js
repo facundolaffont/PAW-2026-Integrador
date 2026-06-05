@@ -306,6 +306,15 @@ class PartidaController {
       });
 
       this.#emitirEstadoPartida(sala);
+      this.#broadcast(sala, 'turno-cambiado', {
+        turno: sala.jugadorEnTurno().jugadorId,
+        sentido: sala.sentido,
+        penalidad: sala.penalidad,
+      });
+
+      if (sala.turnoEsBot()) {
+        this.#ejecutarTurnoBot(partidaId);
+      }
 
       return;
     }
@@ -519,6 +528,14 @@ class PartidaController {
             puntajesRonda: res.puntajesRonda,
           });
           this.#emitirEstadoPartida(salaActual);
+          this.#broadcast(salaActual, 'turno-cambiado', {
+            turno: salaActual.jugadorEnTurno().jugadorId,
+            sentido: salaActual.sentido,
+            penalidad: salaActual.penalidad,
+          });
+          if (salaActual.turnoEsBot()) {
+            this.#ejecutarTurnoBot(partidaId);
+          }
           return;
         } else {
           this.#broadcast(salaActual, 'carta-jugada', {
