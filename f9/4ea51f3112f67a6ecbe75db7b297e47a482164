@@ -1,0 +1,28 @@
+app/public/login.ejs
+  s_dd696a8d466aaf::t_25afba6aad8349 40
+app/public/registro.ejs
+  s_dd696a8d466aaf::t_131a12ecbacff2 54
+app/public/bienvenida.ejs
+  s_dd696a8d466aaf::t_013d5491192f6f 82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f94ea51f3112f67a6ecbe75db7b297e47a482164",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_dd696a8d466aaf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8306217a-ffc0-4018-922f-ccf87d82cbe0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
