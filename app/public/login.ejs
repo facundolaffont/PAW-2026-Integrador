@@ -37,9 +37,7 @@
     </div>
   </body>
   <script>
-    if (getCookie('nombreUsuario')) {
-      window.location.replace('/public/');
-    }
+    fetch('/api/me').then(r => { if (r.ok) window.location.replace('/public/'); });
 
     function togglePassword(inputId, btn) {
       const input = document.getElementById(inputId);
