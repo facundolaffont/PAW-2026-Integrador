@@ -26,6 +26,7 @@ class SalaDeJuego {
     this.mazo = new Mazo();
     this.descarte = [];
     this.turnoIdx = 0;
+    this.inicioRondaIdx = -1;
     this.repartidorIdx = -1;
     this.numeroRonda = 0;
     this.sentido = 1;
@@ -145,14 +146,19 @@ class SalaDeJuego {
     this.mazo = Mazo.crearCompleto();
     this.descarte = [];
     this.numeroRonda += 1;
-    this.repartidorIdx =
-      this.repartidorIdx === -1
-        ? this.jugadores.length - 1
-        : this._siguienteIndice(this.repartidorIdx, 1);
+
+    if (this.inicioRondaIdx === -1) {
+      const indiceCreador = this.jugadores.findIndex((j) => j.jugadorId === this.creadorId);
+      this.inicioRondaIdx = indiceCreador >= 0 ? indiceCreador : 0;
+    } else {
+      this.inicioRondaIdx = this._siguienteIndice(this.inicioRondaIdx, 1);
+    }
+
     this.sentido = 1;
+    this.repartidorIdx = this._siguienteIndice(this.inicioRondaIdx, -1);
     this.penalidad = 0;
     this.tipoPenalidad = null;
-    this.turnoIdx = this._siguienteIndice(this.repartidorIdx, this.sentido);
+    this.turnoIdx = this.inicioRondaIdx;
 
     for (const jugador of this.jugadores) {
       jugador.reiniciarMano();
@@ -224,7 +230,6 @@ class SalaDeJuego {
     switch (carta.tipo) {
       case 'reversa':
         this.sentido *= -1;
-        this.turnoIdx = this._siguienteIndice(this.repartidorIdx, this.sentido);
         break;
       case 'roba-dos':
         this.penalidad = 2;
@@ -462,6 +467,7 @@ class SalaDeJuego {
       partidaId: this.partidaId,
       estado: this.estado,
       numeroRonda: this.numeroRonda,
+      iniciadorRondaId: this.jugadores[this.inicioRondaIdx]?.jugadorId || null,
       repartidorId: this.jugadores[this.repartidorIdx]?.jugadorId || null,
       turno: this.jugadores[this.turnoIdx]?.jugadorId,
       sentido: this.sentido,
