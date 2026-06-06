@@ -276,7 +276,9 @@
 
         <footer class="reglas-footer">
           <p class="cierre">Listo. A jugar.</p>
-          <a href="/public/" class="btn-reglas">VOLVER AL INICIO</a>
+          <% if (!embed) { %>
+            <a href="/public/" class="btn-reglas">VOLVER AL INICIO</a>
+          <% } %>
           <a href="#" class="link-top">↑ Volver arriba</a>
         </footer>
       </article>

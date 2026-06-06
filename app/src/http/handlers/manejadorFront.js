@@ -125,9 +125,29 @@ class ManejadorFront {
     });
 
     this.app.get('/public/partida', requireAuthWeb, (req, res) => {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const partidaId = req.query.partidaId;
+      const sharePath = partidaId
+        ? `/public/partida?partidaId=${encodeURIComponent(partidaId)}`
+        : '/public/partida';
+
       res.render('partida', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Partida',
+        description: partidaId
+          ? 'Unite a una partida de UNO Argentino y jugá online con tus amigos.'
+          : 'Sala de partida de UNO Argentino para jugar online en tiempo real.',
+        ogTitle: partidaId
+          ? 'Te invitaron a una partida de UNO Argentino'
+          : 'Partida de UNO Argentino',
+        ogDescription: partidaId
+          ? 'Entrá al link y sumate a la sala para jugar UNO online.'
+          : 'Jugá una partida online de UNO Argentino en tiempo real.',
+        seo: {
+          canonicalUrl: `${baseUrl}${sharePath}`,
+          ogImage: `${baseUrl}/images/uno-logo.png`,
+          ogUrl: `${baseUrl}${sharePath}`,
+        },
         styles: ['/styles/partida.css'],
       });
     });
@@ -155,7 +175,11 @@ class ManejadorFront {
     });
 
     this.app.get('/public/reglas', (req, res) => {
-      res.render('reglas', { logLevel: this.#logLevel, ...buildReglasLocals(req) });
+      res.render('reglas', {
+        logLevel: this.#logLevel,
+        embed: req.query.embed === '1',
+        ...buildReglasLocals(req),
+      });
     });
   }
 }

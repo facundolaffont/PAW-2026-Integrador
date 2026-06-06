@@ -8,7 +8,9 @@
       <button class="btn-toggle-bitacora" id="btn-toggle-bitacora">Actividad</button>
       <div class="navbar-links">
         <span class="navbar-usuario" id="navbar-usuario"></span>
-        <a href="/public/reglas" target="_blank" rel="noopener" class="navbar-link">Reglas</a>
+        <button type="button" id="btn-reglas" class="navbar-link navbar-link-button">
+          Reglas
+        </button>
         <a href="#" id="salir" class="navbar-link">Salir</a>
       </div>
     </nav>
@@ -44,9 +46,65 @@
       </div>
     </div>
 
+    <button
+      type="button"
+      id="btn-compartir-float"
+      class="btn-compartir-float"
+      aria-label="Copiar link de la partida"
+      title="Copiar link de la partida"
+    >
+      <svg
+        class="btn-compartir-icono"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
+        <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
+      </svg>
+    </button>
+
+    <div id="modal-reglas" class="modal-reglas" hidden aria-hidden="true">
+      <div class="modal-reglas-backdrop" data-cerrar-reglas="true"></div>
+      <section
+        class="modal-reglas-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-reglas-titulo"
+      >
+        <button
+          type="button"
+          id="btn-cerrar-reglas"
+          class="modal-reglas-cerrar"
+          aria-label="Cerrar reglas"
+        >
+          ×
+        </button>
+        <div class="modal-reglas-header">
+          <h2 id="modal-reglas-titulo">Reglas del juego</h2>
+        </div>
+        <iframe
+          id="iframe-reglas"
+          class="modal-reglas-frame"
+          title="Reglas de UNO Argentino"
+          loading="lazy"
+        ></iframe>
+      </section>
+    </div>
+
     <script>
       document.addEventListener('click', (e) => {
-        if (e.target.closest('a[href], button')) window.__navInterno = true;
+        if (e.target.closest('a[href], [data-nav-interno="true"]')) window.__navInterno = true;
       });
       window.addEventListener('pagehide', () => {
         if (window.__navInterno) return;
@@ -85,6 +143,77 @@
 
       document.getElementById('btn-iniciar').addEventListener('click', () => {
         partida.iniciarPartida();
+      });
+
+      const btnCompartir = document.getElementById('btn-compartir-float');
+      const btnReglas = document.getElementById('btn-reglas');
+      const modalReglas = document.getElementById('modal-reglas');
+      const btnCerrarReglas = document.getElementById('btn-cerrar-reglas');
+      const iframeReglas = document.getElementById('iframe-reglas');
+      const partidaIdActual = new URLSearchParams(window.location.search).get('partidaId');
+
+      const copiarTexto = async (texto) => {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(texto);
+          return true;
+        }
+
+        const auxiliar = document.createElement('textarea');
+        auxiliar.value = texto;
+        auxiliar.setAttribute('readonly', '');
+        auxiliar.style.position = 'absolute';
+        auxiliar.style.left = '-9999px';
+        document.body.appendChild(auxiliar);
+        auxiliar.select();
+        const ok = document.execCommand('copy');
+        auxiliar.remove();
+        return ok;
+      };
+
+      btnCompartir.addEventListener('click', async () => {
+        const url = partidaIdActual
+          ? `${window.location.origin}/public/partida?partidaId=${encodeURIComponent(partidaIdActual)}`
+          : window.location.href;
+        const iconoOriginal = btnCompartir.innerHTML;
+
+        try {
+          await copiarTexto(url);
+          btnCompartir.classList.add('copiado');
+          btnCompartir.innerHTML = '✓';
+          btnCompartir.title = 'Link copiado';
+        } catch (_) {
+          btnCompartir.classList.add('error');
+          btnCompartir.innerHTML = '!';
+          btnCompartir.title = 'No se pudo copiar';
+        }
+
+        setTimeout(() => {
+          btnCompartir.classList.remove('copiado', 'error');
+          btnCompartir.innerHTML = iconoOriginal;
+          btnCompartir.title = 'Copiar link de la partida';
+        }, 1800);
+      });
+
+      const abrirReglas = () => {
+        if (!iframeReglas.src) iframeReglas.src = '/public/reglas?embed=1';
+        modalReglas.hidden = false;
+        modalReglas.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-reglas-abierto');
+      };
+
+      const cerrarReglas = () => {
+        modalReglas.hidden = true;
+        modalReglas.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-reglas-abierto');
+      };
+
+      btnReglas.addEventListener('click', abrirReglas);
+      btnCerrarReglas.addEventListener('click', cerrarReglas);
+      modalReglas.addEventListener('click', (e) => {
+        if (e.target.closest('[data-cerrar-reglas="true"]')) cerrarReglas();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modalReglas.hidden) cerrarReglas();
       });
 
       document.getElementById('salir').addEventListener('click', (e) => {

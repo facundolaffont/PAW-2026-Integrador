@@ -82,6 +82,7 @@ class Partida {
     this.jugadoresActuales = [];
     this.estadoMesaActual = null;
     this.selectorColorActivo = null;
+    this.numeroRondaActual = 0;
   }
 
   /**
@@ -194,6 +195,31 @@ class Partida {
 
     this.listaMensajes.prepend(li);
     this.listaMensajes.scrollTop = 0;
+  }
+
+  #actualizarEstadoPartida(estadoPartida) {
+    if (!estadoPartida) {
+      this.estado.textContent = 'Conectando...';
+      return;
+    }
+
+    if (estadoPartida.estado === 'jugando') {
+      const numeroRonda = Number(estadoPartida.numeroRonda) || 1;
+      this.estado.textContent = `Partida en curso · Ronda ${numeroRonda}`;
+      return;
+    }
+
+    if (estadoPartida.estado === 'esperando') {
+      this.estado.textContent = 'Esperando jugadores';
+      return;
+    }
+
+    if (estadoPartida.estado === 'terminada') {
+      this.estado.textContent = 'Partida terminada';
+      return;
+    }
+
+    this.estado.textContent = 'Conectado';
   }
 
   /**
@@ -557,13 +583,28 @@ class Partida {
 
     const penalidad = this.estadoMesaActual.penalidad || 0;
     const tipoPenalidad = this.estadoMesaActual.tipoPenalidad || null;
+    const cartaEnMesa = this.estadoMesaActual.cartaEnMesa || null;
+
+    if (!cartaEnMesa) return true;
 
     if (this.#esCartaSinColor(carta)) {
       if (penalidad > 0) return carta.tipo === tipoPenalidad;
       return true;
     }
 
-    return true;
+    if (penalidad > 0) return carta.tipo === tipoPenalidad;
+
+    const colorMesa = cartaEnMesa.colorElegido || cartaEnMesa.color;
+    const mismoTipoNoNumerico =
+      carta.tipo !== 'numero' &&
+      cartaEnMesa.tipo !== 'numero' &&
+      carta.tipo === cartaEnMesa.tipo;
+    const mismoNumero =
+      carta.tipo === 'numero' &&
+      cartaEnMesa.tipo === 'numero' &&
+      carta.numero === cartaEnMesa.numero;
+
+    return carta.color === colorMesa || mismoTipoNoNumerico || mismoNumero;
   }
 
   /**
@@ -578,6 +619,19 @@ class Partida {
     return jugadores.slice(idxActual).concat(jugadores.slice(0, idxActual));
   }
 
+  #obtenerRivalesSegunSentido(jugadores, sentido) {
+    const idxActual = jugadores.findIndex((j) => j.jugadorId === this.jugadorId);
+    if (idxActual < 0) return [];
+
+    const rivales = [];
+    for (let paso = 1; paso < jugadores.length; paso += 1) {
+      const idx = (((idxActual + sentido * paso) % jugadores.length) + jugadores.length) % jugadores.length;
+      rivales.push(jugadores[idx]);
+    }
+
+    return rivales;
+  }
+
   /**
    * Renderiza el estado completo de la mesa de juego para el jugador actual.
    *
@@ -589,9 +643,15 @@ class Partida {
 
     const jugadoresOrdenados = this.#ordenarJugadoresDesdeActual(estado.jugadores || []);
     const jugadorActual = jugadoresOrdenados[0];
-    const rivales = jugadoresOrdenados.slice(1);
+    const rivalesEnOrdenDeTurno = this.#obtenerRivalesSegunSentido(
+      estado.jugadores || [],
+      estado.sentido || 1
+    );
     const esMiTurno = estado.turno === this.jugadorId;
     const turnoActualId = estado.turno;
+    const manoActual = jugadorActual?.mano || [];
+    const tieneJugadaDisponible = manoActual.some((carta) => this.#esJugadaValidaEnCliente(carta));
+    const debeRobar = esMiTurno && !tieneJugadaDisponible;
     const claseNombreTurno = (jugador, claseBase) =>
       String(jugador?.jugadorId) === String(turnoActualId)
         ? `${claseBase} jugador-en-turno-nombre`
@@ -608,9 +668,19 @@ class Partida {
     // Ubica a los rivales para que el orden visual siga el sentido de juego.
     // Horario: abajo -> izquierda -> arriba -> derecha.
     // Antihorario: abajo -> derecha -> arriba -> izquierda.
-    const rivalIzquierda = rivales[0];
-    const rivalArriba = rivales[1];
-    const rivalDerecha = rivales[2];
+    let rivalIzquierda;
+    let rivalArriba;
+    let rivalDerecha;
+
+    if ((estado.sentido || 1) === -1) {
+      rivalDerecha = rivalesEnOrdenDeTurno[0];
+      rivalArriba = rivalesEnOrdenDeTurno[1];
+      rivalIzquierda = rivalesEnOrdenDeTurno[2];
+    } else {
+      rivalIzquierda = rivalesEnOrdenDeTurno[0];
+      rivalArriba = rivalesEnOrdenDeTurno[1];
+      rivalDerecha = rivalesEnOrdenDeTurno[2];
+    }
 
     this.vistaLobby.hidden = true;
     this.vistaMesa.hidden = false;
@@ -675,6 +745,10 @@ class Partida {
 
     const mazo = document.createElement('div');
     mazo.className = 'mazo';
+    if (debeRobar) {
+      mazo.classList.add('mazo-destacado');
+      mazo.title = 'No tenés una jugada válida. Robá del mazo.';
+    }
     mazo.appendChild(this.#crearCarta(null, true));
     if (esMiTurno) {
       mazo.style.cursor = 'pointer';
@@ -748,9 +822,13 @@ class Partida {
       nombreActual.textContent = textoTurnoJugador(jugadorActual);
       areaAbajo.appendChild(nombreActual);
       areaAbajo.appendChild(
-        this.#crearManoHorizontal(jugadorActual.mano || [], false, async (carta) => {
+        this.#crearManoHorizontal(manoActual, false, async (carta) => {
           if (!esMiTurno) return;
           if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+          if (!this.#esJugadaValidaEnCliente(carta)) {
+            this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
+            return;
+          }
 
           const payload = { accion: 'jugar-carta', cartaId: carta.id };
           if (this.#esCartaSinColor(carta)) {
@@ -888,12 +966,22 @@ class Partida {
       case 'estado-partida': {
         const estado = datos.estado;
         this.jugadoresActuales = estado.jugadores || [];
+        this.#actualizarEstadoPartida(estado);
         if (estado.estado === 'jugando') {
-          this.estado.textContent = 'Partida en curso';
           this.onCambioVisibilidad(false);
           if (!this.partidaIniciadaNotificada) {
             this.#mostrarMensaje('La partida ya empezó.');
             this.partidaIniciadaNotificada = true;
+          }
+          if (estado.numeroRonda && estado.numeroRonda !== this.numeroRondaActual) {
+            const jugadorEnTurno = (estado.jugadores || []).find(
+              (jugador) => String(jugador.jugadorId) === String(estado.turno)
+            );
+            const textoInicioRonda = jugadorEnTurno
+              ? `Comienza la ronda ${estado.numeroRonda}. Turno de ${jugadorEnTurno.nombreUsuario}.`
+              : `Comienza la ronda ${estado.numeroRonda}.`;
+            this.#mostrarMensaje(textoInicioRonda);
+            this.numeroRondaActual = estado.numeroRonda;
           }
           this.#renderMesa(estado);
         }
@@ -926,8 +1014,8 @@ class Partida {
         break;
       }
       case 'turno-cambiado': {
-        this.estado.textContent = 'Partida en curso';
         this.onCambioVisibilidad(false);
+        this.#actualizarEstadoPartida(this.estadoMesaActual);
 
         const robo = datos['robó'] || datos.robo;
         if (robo && robo.jugadorId != null) {
