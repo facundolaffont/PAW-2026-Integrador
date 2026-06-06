@@ -16,11 +16,13 @@ services:
       retries: 10
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE_PATH:-Dockerfile}
     ports:
-      - '80:3000'
+      - '${HOST_PORT:-80}:${PORT:-3000}'
     environment:
-      PORT: 3000
+      PORT: ${PORT:-3000}
       NODE_ENV: ${NODE_ENV:-development}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       GEMINI_API_KEY: ${GEMINI_API_KEY}

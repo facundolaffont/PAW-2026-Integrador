@@ -26,6 +26,7 @@ jobs:
               echo "NODE_ENV=production"
               echo "LOG_LEVEL=info"
               echo "PORT=3000"
+              echo "DOCKERFILE_PATH=Dockerfile.ci"
               echo "DB_HOST=mysql"
               echo "DB_PORT=3306"
               echo "DB_NAME=uno_argentino"

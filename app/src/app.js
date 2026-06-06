@@ -152,7 +152,10 @@ class Servidor {
       const partidaId = url.searchParams.get('partidaId');
 
       const cookieStr = req.headers.cookie || '';
-      const tokenCookie = cookieStr.split(';').map(c => c.trim()).find(c => c.startsWith('token='));
+      const tokenCookie = cookieStr
+        .split(';')
+        .map((c) => c.trim())
+        .find((c) => c.startsWith('token='));
       const rawToken = tokenCookie?.split('=')[1];
 
       let jugadorId;

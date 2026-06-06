@@ -20,7 +20,9 @@ Luego, ingresar en la carpeta `app/`, crear el archivo `.env`, tal como indica e
 ./run.sh
 ```
 
-Finalmente, ingresar a través del navegador a `localhost:3000`.
+Por defecto, Docker expone la app en el puerto `80` del host (para la nube). Para correr local sin usar dicho puerto, configurar `HOST_PORT` en el `.env` (por ejemplo `HOST_PORT=3000`). `PORT` define el puerto interno del contenedor (por defecto `3000`) y `HOST_PORT` el puerto de tu máquina.
+
+Finalmente, ingresar a través del navegador a `localhost:<HOST_PORT>` (por ejemplo, `localhost:3000`).
 
 ## Entregas
 

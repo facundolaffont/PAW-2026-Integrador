@@ -112,9 +112,10 @@ class ManejadorFront {
           maxJugadores,
           cantidadBots,
         };
+        const apiBaseUrl = `${req.protocol}://${req.get('host')}`;
 
         registerLog(logger, 'debug', 'Payload a enviar al backend.', { payload });
-        await axios.post('http://localhost:3000/api/partidas', payload, {
+        await axios.post(`${apiBaseUrl}/api/partidas`, payload, {
           headers: { 'Content-Type': 'application/json' },
         });
 
