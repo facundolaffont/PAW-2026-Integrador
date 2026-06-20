@@ -2,17 +2,19 @@
 <html lang="es">
   <%- include('partials/head.ejs') %>
   <body>
-    <main class="container-auth">
-      <img src="/images/uno-logo.png" alt="UNO Argentino" class="logo-auth" />
+    <main class="container-auth page-bienvenida">
+      <div class="bienvenida-hero">
+        <img src="/images/uno-logo.png" alt="UNO Argentino" class="logo-auth" />
 
-      <div class="bienvenida-box">
-        <h1 class="auth-title">Bienvenido a UNO Argentino</h1>
-        <p class="bienvenida-subtitle">El clásico juego de cartas, ahora online y gratis.</p>
-        <nav class="bienvenida-acciones" aria-label="Acciones principales">
-          <a href="/public/ingresar" class="btn-auth">INGRESAR</a>
-          <a href="/public/registrarse" class="btn-auth btn-auth-secundario">REGISTRARSE</a>
-        </nav>
-        <a href="/public/puntajes" class="auth-link">Ver ranking global →</a>
+        <div class="bienvenida-box">
+          <h1 class="auth-title">Bienvenido a UNO Argentino</h1>
+          <p class="bienvenida-subtitle">El clásico juego de cartas, ahora online y gratis.</p>
+          <nav class="bienvenida-acciones" aria-label="Acciones principales">
+            <a href="/public/ingresar" class="btn-auth">INGRESAR</a>
+            <a href="/public/registrarse" class="btn-auth btn-auth-secundario">REGISTRARSE</a>
+            <a href="/public/puntajes" class="btn-auth btn-auth-secundario">VER RANKING GLOBAL</a>
+          </nav>
+        </div>
       </div>
 
       <section class="bienvenida-info" aria-label="Información del juego">
@@ -79,6 +81,8 @@
     </script>
   </body>
   <script>
-    fetch('/api/me').then(r => { if (r.ok) window.location.replace('/public/'); });
+    fetch('/api/me').then((r) => {
+      if (r.ok) window.location.replace('/public/');
+    });
   </script>
 </html>

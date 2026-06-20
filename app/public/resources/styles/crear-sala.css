@@ -9,7 +9,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: calc(100dvh - var(--navbar-height, 0px));
+  box-sizing: border-box;
 }
 
 .form-crear-sala {
@@ -25,13 +26,21 @@ body {
   box-sizing: border-box;
 }
 
+.form-crear-sala h1,
 .form-crear-sala h2 {
   color: #2e6da4;
   margin-bottom: 18px;
   text-align: center;
 }
 
+.form-crear-sala form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .form-crear-sala label {
+  display: block;
   color: #2e6da4;
   font-size: 15px;
   margin-bottom: 4px;
@@ -39,6 +48,9 @@ body {
 }
 
 .input-crear {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px 14px;
   border-radius: 6px;
   border: 1px solid #b0cbe6;
@@ -73,10 +85,13 @@ body {
   color: #222;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 1000px) {
   .form-crear-sala {
     padding: 24px 16px 20px 16px;
+    align-items: center;
+    margin: auto 2rem;
   }
+  .form-crear-sala h1,
   .form-crear-sala h2 {
     font-size: 1.2rem;
   }

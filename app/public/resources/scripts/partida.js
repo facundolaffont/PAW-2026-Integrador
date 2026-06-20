@@ -129,10 +129,6 @@ class Partida {
     if (this.panelBitacora) {
       this.panelBitacora.classList.toggle('tab-chat', tab === 'chat');
     }
-
-    if (this.btnToggleBitacora) {
-      this.btnToggleBitacora.textContent = tab === 'chat' ? 'Chat' : 'Actividad';
-    }
   }
 
   enviarChat(texto) {
@@ -163,34 +159,79 @@ class Partida {
   #configurarBitacoraMobile() {
     if (!this.btnToggleBitacora || !this.panelBitacora) return;
 
-    const textoActivo = () => (this.tabActivo === 'chat' ? 'Chat' : 'Actividad');
+    let bitacoraAbiertaManualmente = false;
+    let ultimoAnchoViewport = window.innerWidth;
+
+    const actualizarTextoToggle = () => {
+      const oculto = this.panelBitacora.style.display === 'none';
+      this.btnToggleBitacora.textContent = oculto ? 'Mostrar panel' : 'Ocultar panel';
+    };
+
+    const actualizarEstadoBitacora = () => {
+      if (!this.lobbyPrincipal) return;
+      const oculto = this.panelBitacora.style.display === 'none';
+      this.lobbyPrincipal.classList.toggle('bitacora-oculta', oculto);
+    };
+
+    const esMobileVertical = () =>
+      window.matchMedia('(max-width: 1000px) and (orientation: portrait)').matches;
 
     const aplicarEstadoPorAncho = () => {
-      if (window.innerWidth <= 768) {
-        this.panelBitacora.style.display = 'none';
-        this.btnToggleBitacora.textContent = textoActivo();
+      if (esMobileVertical()) {
+        if (!bitacoraAbiertaManualmente) {
+          this.panelBitacora.style.display = 'none';
+        }
       } else {
+        bitacoraAbiertaManualmente = false;
         this.panelBitacora.style.display = '';
-        this.btnToggleBitacora.textContent = 'Ocultar';
       }
+      actualizarTextoToggle();
+      actualizarEstadoBitacora();
+    };
+
+    const cerrarBitacora = () => {
+      bitacoraAbiertaManualmente = false;
+      this.panelBitacora.style.display = 'none';
+      actualizarTextoToggle();
+      actualizarEstadoBitacora();
     };
 
     this.btnToggleBitacora.addEventListener('click', () => {
       const oculto = this.panelBitacora.style.display === 'none';
-      this.panelBitacora.style.display = oculto ? '' : 'none';
-      this.btnToggleBitacora.textContent = oculto ? 'Ocultar' : textoActivo();
+      if (oculto) {
+        bitacoraAbiertaManualmente = true;
+        this.panelBitacora.style.display = '';
+      } else {
+        cerrarBitacora();
+        return;
+      }
+      actualizarTextoToggle();
+      actualizarEstadoBitacora();
     });
 
     const btnCerrar = document.getElementById('btn-cerrar-bitacora');
     if (btnCerrar) {
-      btnCerrar.addEventListener('click', () => {
-        this.panelBitacora.style.display = 'none';
-        this.btnToggleBitacora.textContent = textoActivo();
-      });
+      btnCerrar.addEventListener('click', cerrarBitacora);
     }
 
+    // El teclado virtual en portrait dispara resize sin cambiar el ancho;
+    // ignorarlo evita que se cierre el panel mientras se escribe en el chat.
+    const onCambioViewport = () => {
+      const ancho = window.innerWidth;
+      if (ancho === ultimoAnchoViewport) return;
+      ultimoAnchoViewport = ancho;
+      aplicarEstadoPorAncho();
+    };
+
     aplicarEstadoPorAncho();
-    window.addEventListener('resize', aplicarEstadoPorAncho);
+    ultimoAnchoViewport = window.innerWidth;
+    window.addEventListener('resize', onCambioViewport);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        ultimoAnchoViewport = window.innerWidth;
+        aplicarEstadoPorAncho();
+      }, 150);
+    });
   }
 
   /**
@@ -652,9 +693,7 @@ class Partida {
 
     const colorMesa = cartaEnMesa.colorElegido || cartaEnMesa.color;
     const mismoTipoNoNumerico =
-      carta.tipo !== 'numero' &&
-      cartaEnMesa.tipo !== 'numero' &&
-      carta.tipo === cartaEnMesa.tipo;
+      carta.tipo !== 'numero' && cartaEnMesa.tipo !== 'numero' && carta.tipo === cartaEnMesa.tipo;
     const mismoNumero =
       carta.tipo === 'numero' &&
       cartaEnMesa.tipo === 'numero' &&
@@ -681,7 +720,8 @@ class Partida {
 
     const rivales = [];
     for (let paso = 1; paso < jugadores.length; paso += 1) {
-      const idx = (((idxActual + sentido * paso) % jugadores.length) + jugadores.length) % jugadores.length;
+      const idx =
+        (((idxActual + sentido * paso) % jugadores.length) + jugadores.length) % jugadores.length;
       rivales.push(jugadores[idx]);
     }
 
@@ -827,7 +867,9 @@ class Partida {
 
     const indicadorSentido = document.createElement('div');
     indicadorSentido.className = 'indicador-sentido';
-    const esVistaMobile = window.matchMedia('(max-width: 768px)').matches;
+    const esVistaMobile = window.matchMedia(
+      '(max-width: 768px), (max-width: 1000px) and (orientation: landscape)'
+    ).matches;
     indicadorSentido.textContent = esVistaMobile
       ? estado.sentido === -1
         ? 'Hacia arriba'

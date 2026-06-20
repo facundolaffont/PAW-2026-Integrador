@@ -9,7 +9,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: calc(100dvh - var(--navbar-height, 0px));
   padding: 20px;
   box-sizing: border-box;
 }
@@ -113,7 +113,7 @@ body {
   color: #222;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 1000px) {
   .puntajes-box {
     padding: 20px 14px;
   }
@@ -131,7 +131,8 @@ body {
     padding: 10px 20px;
   }
   .logo-puntajes {
-    width: 70px;
+    width: 12rem;
+    margin-top: 1rem;
   }
   .puntajes-box h2 {
     font-size: 1.1rem;

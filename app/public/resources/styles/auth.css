@@ -10,7 +10,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: calc(100dvh - var(--navbar-height, 0px));
   padding: 20px;
   box-sizing: border-box;
 }
@@ -97,6 +97,13 @@ body {
   color: #333;
 }
 
+.auth-form a.btn-auth {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn-auth:disabled {
   background: #e0e0e0;
   color: #999;
@@ -160,6 +167,14 @@ body {
   max-width: 360px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.bienvenida-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 360px;
 }
 
 .bienvenida-subtitle {
@@ -241,18 +256,20 @@ body {
   text-decoration: underline;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 1000px) {
   .auth-form,
   .bienvenida-box {
     padding: 1.5rem 1.2rem;
   }
   .logo-auth {
-    width: 100px;
+    width: 16rem;
+    margin-bottom: 3rem;
+    margin-top: 1rem;
   }
   .btn-auth {
     padding: 0.8rem 1rem;
     font-size: 1rem;
-    min-height: 44px;
+    /*! min-height: 44px; */
   }
   .auth-title {
     font-size: 1.2rem;

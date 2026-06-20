@@ -70,6 +70,8 @@ body {
   color: white;
   font-weight: bold;
   padding: 4px 10px;
+  align-items: center;
+  display: flex;
 }
 
 .btn-compartir-float {
@@ -205,6 +207,8 @@ body {
   align-items: center;
   min-height: 0;
   overflow: hidden;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 /* ─── JUGADORES ARRIBA Y ABAJO ─── */
@@ -453,6 +457,11 @@ body {
   align-items: center;
 }
 
+.cartas-row .carta-svg {
+  height: 6rem;
+  width: 4rem;
+}
+
 .mazo {
   border-radius: 14px;
   transition:
@@ -497,13 +506,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
 }
 
 /* ─── MANOS HORIZONTALES (arriba y abajo) ─── */
 .mano-horizontal {
   display: flex;
   max-width: 80vw;
-  overflow: hidden;
+  /*! overflow: hidden; */
 }
 
 .mano-horizontal .carta {
@@ -582,6 +592,10 @@ body {
 .lobby-principal.partida-activa {
   align-items: stretch;
   justify-content: stretch;
+}
+
+.lobby-principal.partida-activa #vista-lobby {
+  display: none;
 }
 
 /* ─── TABS ───── */
@@ -895,9 +909,10 @@ body {
   cursor: pointer;
   min-height: 44px;
   white-space: nowrap;
+  /*! margin-top: 0.4rem; */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
   body {
     height: auto;
     overflow-y: auto;
@@ -909,26 +924,6 @@ body {
     gap: 12px;
     overflow-y: auto;
     position: relative;
-  }
-
-  .lobby-bitacora {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    max-height: none;
-    overflow-y: auto;
-    background: rgba(0, 0, 0, 0.88);
-    border-left: none;
-    border-top: none;
-    z-index: 20;
-    backdrop-filter: blur(4px);
-  }
-
-  .btn-cerrar-bitacora {
-    display: block;
   }
 
   .lobby h1 {
@@ -952,15 +947,8 @@ body {
   .btn-iniciar {
     font-size: 15px;
     padding: 12px 28px;
-    min-height: 44px;
     width: 100%;
     max-width: 280px;
-  }
-
-  .btn-toggle-bitacora {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .zona-central {
@@ -978,18 +966,18 @@ body {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     margin-bottom: 6px;
   }
 
   .rival-mobile-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
-    gap: 6px;
     width: fit-content;
     max-width: 100%;
+    flex-direction: column;
   }
 
   .rival-mobile-row .info-jugador {
@@ -1068,9 +1056,7 @@ body {
   .info-jugador {
     font-size: 12px;
   }
-}
 
-@media (max-width: 480px) {
   .carta {
     width: clamp(34px, min(11vw, 7vh), 52px);
     height: clamp(48px, min(15.4vw, 9.8vh), 73px);
@@ -1089,15 +1075,14 @@ body {
     margin-left: -12px;
   }
 
+  .area-jugador-abajo .mano-horizontal .carta,
+  .area-jugador-abajo .mano-horizontal .carta-svg {
+    margin-left: 1px;
+  }
+
   .mano-lateral .carta,
   .mano-lateral .carta-svg {
     margin-left: -18px;
-  }
-
-  .lobby-bitacora {
-    min-height: 60vh;
-    max-height: 80vh;
-    padding: 12px;
   }
 
   .lista-mensajes {
@@ -1122,12 +1107,312 @@ body {
     font-size: 15px;
   }
 
+  
+}
+
+@media (max-width: 1000px) and (orientation: portrait) {
+  .navbar {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    row-gap: 4px;
+  }
+
+  .navbar::before {
+    content: '';
+    order: 3;
+    flex-basis: 100%;
+    width: 0;
+    height: 0;
+  }
+
+  .navbar-logo {
+    order: 1;
+    flex: 0 1 auto;
+  }
+
+  .btn-toggle-bitacora {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .navbar-info {
+    order: 4;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .navbar-links {
+    order: 5;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .lobby-bitacora {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    min-height: 60vh;
+    max-height: none;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.88);
+    border-left: none;
+    border-top: none;
+    z-index: 50;
+    backdrop-filter: blur(4px);
+    padding: 12px;
+  }
+
+  .btn-cerrar-bitacora {
+    display: block;
+  }
+
+  .btn-toggle-bitacora {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .btn-compartir-float {
-    right: 12px;
-    bottom: 12px;
+    right: 1.5rem;
+    bottom: 7rem;
     width: 46px;
     height: 46px;
     font-size: 20px;
+  }
+}
+
+@media (max-width: 1000px) and (orientation: landscape) {
+  .lobby {
+    flex-direction: row;
+    align-items: flex-start;
+    overflow: hidden;
+  }
+
+  .lobby-bitacora {
+    position: static;
+    width: min(280px, 32vw);
+    max-height: 70dvh;
+    min-height: 0;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    z-index: auto;
+    backdrop-filter: none;
+  }
+
+  .btn-cerrar-bitacora {
+    display: none;
+  }
+
+  .navbar {
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: flex-start;
+  }
+
+  .navbar-info {
+    order: 0;
+    width: auto;
+    text-align: left;
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 0.5rem;
+  }
+
+  .btn-toggle-bitacora {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .navbar-links {
+    flex-shrink: 0;
+  }
+
+  .lobby-principal {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  #vista-lobby {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+    grid-template-areas:
+      'jugadores titulo'
+      'jugadores info'
+      'jugadores subtitulo'
+      'jugadores iniciar';
+    column-gap: 18px;
+    row-gap: 8px;
+    align-items: start;
+    justify-items: stretch;
+  }
+
+  #lobby-titulo {
+    grid-area: titulo;
+    margin: 0;
+    align-self: end;
+    text-align: left;
+    font-size: 20px;
+  }
+
+  #lobby-info {
+    grid-area: info;
+    margin: 0;
+    align-self: start;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .lobby-subtitulo {
+    grid-area: subtitulo;
+    margin: 0;
+    align-self: end;
+    text-align: left;
+    font-size: 16px;
+  }
+
+  .lista-jugadores {
+    grid-area: jugadores;
+    margin: 0;
+    min-width: 0;
+    width: 100%;
+    align-self: start;
+  }
+
+  .btn-iniciar {
+    grid-area: iniciar;
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  .lobby-principal.partida-activa .mesa {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'rivales tablero'
+      'abajo tablero';
+    column-gap: 14px;
+    row-gap: 8px;
+    align-items: center;
+    justify-items: stretch;
+    align-content: start;
+    overflow-y: auto;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .lobby-principal.partida-activa.bitacora-oculta .mesa {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lobby-principal.partida-activa .area-jugador-arriba,
+  .lobby-principal.partida-activa .area-jugador-lateral {
+    display: none;
+  }
+
+  .lobby-principal.partida-activa .area-rivales-mobile {
+    grid-area: rivales;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+    margin: 0;
+    gap: 4px;
+  }
+
+  .lobby-principal.partida-activa .rival-mobile-row {
+    width: 100%;
+    max-width: none;
+  }
+
+  .lobby-principal.partida-activa .rival-mobile-row .info-jugador,
+  .lobby-principal.partida-activa .area-jugador-abajo .info-jugador {
+    font-size: 11px;
+    padding: 2px 2px;
+  }
+
+  .lobby-principal.partida-activa .mano-rival-mobile {
+    max-width: 100%;
+  }
+
+  .lobby-principal.partida-activa .area-jugador-abajo {
+    grid-area: abajo;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    padding-bottom: 0;
+  }
+
+  .lobby-principal.partida-activa .area-jugador-abajo .info-jugador {
+    padding-left: 5px;
+    align-self: flex-start;
+    width: fit-content;
+    display: inline-flex;
+    padding-right: 5px;
+  }
+
+  .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lobby-principal.partida-activa .mano-horizontal .carta,
+  .lobby-principal.partida-activa .mano-horizontal .carta-svg {
+    width: clamp(32px, min(8.2vw, 5.2vh), 48px);
+    height: clamp(46px, min(12vw, 7.4vh), 70px);
+    margin-left: -16px;
+  }
+
+  .lobby-principal.partida-activa .mano-horizontal .carta:first-child,
+  .lobby-principal.partida-activa .mano-horizontal .carta-svg:first-child {
+    margin-left: 0;
+  }
+
+  .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal .carta,
+  .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal .carta-svg {
+    width: clamp(38px, min(9.6vw, 6.1vh), 56px);
+    height: clamp(60px, min(13.8vw, 8.8vh), 80px);
+    margin-left: 1px;
+  }
+
+  .lobby-principal.partida-activa .zona-central {
+    grid-area: tablero;
+    width: auto;
+    min-width: 170px;
+    overflow: visible;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lobby-principal.partida-activa .tablero-central {
+    padding: 0;
+    gap: 10px;
+  }
+
+  .lobby-principal.partida-activa .mazo-wrapper {
+    align-items: center;
   }
 }
 

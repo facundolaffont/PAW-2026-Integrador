@@ -28,7 +28,15 @@
             required
             autocomplete="new-password"
           />
-          <button type="button" class="btn-toggle-password" onclick="togglePassword('password', this)" tabindex="-1" aria-label="Mostrar contraseña">👁</button>
+          <button
+            type="button"
+            class="btn-toggle-password"
+            onclick="togglePassword('password', this)"
+            tabindex="-1"
+            aria-label="Mostrar contraseña"
+          >
+            👁
+          </button>
         </div>
         <p class="auth-hint">Mínimo 4 caracteres</p>
 
@@ -41,17 +49,30 @@
             required
             autocomplete="new-password"
           />
-          <button type="button" class="btn-toggle-password" onclick="togglePassword('passwordConfirm', this)" tabindex="-1" aria-label="Mostrar contraseña">👁</button>
+          <button
+            type="button"
+            class="btn-toggle-password"
+            onclick="togglePassword('passwordConfirm', this)"
+            tabindex="-1"
+            aria-label="Mostrar contraseña"
+          >
+            👁
+          </button>
         </div>
 
         <p class="auth-error" id="error" hidden></p>
         <button type="submit" id="btn-submit" class="btn-auth">REGISTRARSE</button>
         <a href="/public/ingresar" class="auth-link">¿Ya tenés cuenta? Ingresá</a>
+        <a href="/public/bienvenida" class="btn-auth btn-auth-secundario"
+          >VOLVER AL MENÚ PRINCIPAL</a
+        >
       </form>
     </div>
   </body>
   <script>
-    fetch('/api/me').then(r => { if (r.ok) window.location.replace('/public/'); });
+    fetch('/api/me').then((r) => {
+      if (r.ok) window.location.replace('/public/');
+    });
 
     function togglePassword(inputId, btn) {
       const input = document.getElementById(inputId);
@@ -77,7 +98,8 @@
       // Validaciones del lado del cliente
       const NOMBRE_REGEX = /^[a-zA-Z0-9_\-áéíóúñüÁÉÍÓÚÑÜ]{3,50}$/;
       if (!NOMBRE_REGEX.test(nombreUsuario)) {
-        error.textContent = 'El nombre debe tener entre 3 y 50 caracteres (letras, números, _ o -).';
+        error.textContent =
+          'El nombre debe tener entre 3 y 50 caracteres (letras, números, _ o -).';
         error.hidden = false;
         return;
       }

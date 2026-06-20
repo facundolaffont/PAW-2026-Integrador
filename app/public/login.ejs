@@ -27,17 +27,30 @@
             required
             autocomplete="current-password"
           />
-          <button type="button" class="btn-toggle-password" onclick="togglePassword('password', this)" tabindex="-1" aria-label="Mostrar contraseña">👁</button>
+          <button
+            type="button"
+            class="btn-toggle-password"
+            onclick="togglePassword('password', this)"
+            tabindex="-1"
+            aria-label="Mostrar contraseña"
+          >
+            👁
+          </button>
         </div>
 
         <p class="auth-error" id="error" hidden></p>
         <button type="submit" id="btn-submit" class="btn-auth">INGRESAR</button>
         <a href="/public/registrarse" class="auth-link">¿No tenés cuenta? Registrate</a>
+        <a href="/public/bienvenida" class="btn-auth btn-auth-secundario"
+          >VOLVER AL MENÚ PRINCIPAL</a
+        >
       </form>
     </div>
   </body>
   <script>
-    fetch('/api/me').then(r => { if (r.ok) window.location.replace('/public/'); });
+    fetch('/api/me').then((r) => {
+      if (r.ok) window.location.replace('/public/');
+    });
 
     function togglePassword(inputId, btn) {
       const input = document.getElementById(inputId);

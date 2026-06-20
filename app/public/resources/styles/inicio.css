@@ -10,7 +10,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: calc(100dvh - var(--navbar-height, 0px));
+  box-sizing: border-box;
 }
 
 .logo-inicio {
@@ -44,9 +45,9 @@ body {
   color: #222;
 }
 
-@media (max-width: 420px) {
+@media (max-width: 1000px) {
   .logo-inicio {
-    width: 130px;
+    width: 16rem;
     margin-bottom: 30px;
   }
   .btn-inicio {
