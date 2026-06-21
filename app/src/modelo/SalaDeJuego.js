@@ -492,6 +492,7 @@ class SalaDeJuego {
     return {
       partidaId: this.partidaId,
       estado: this.estado,
+      creadorId: this.creadorId,
       numeroRonda: this.numeroRonda,
       iniciadorRondaId: this.jugadores[this.inicioRondaIdx]?.jugadorId || null,
       repartidorId: this.jugadores[this.repartidorIdx]?.jugadorId || null,

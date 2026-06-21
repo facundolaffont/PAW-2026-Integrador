@@ -322,6 +322,26 @@ class Partida {
   }
 
   /**
+   * Indica si el jugador actual es el creador de la sala.
+   *
+   * @param {string|number|null|undefined} creadorId - Identificador del creador.
+   * @returns {boolean}
+   */
+  #esCreadorDePartida(creadorId) {
+    return creadorId != null && String(creadorId) === String(this.jugadorId);
+  }
+
+  /**
+   * Muestra u oculta el botón de iniciar partida según rol y estado de la sala.
+   *
+   * @param {string} [estadoPartida='esperando'] - Estado actual de la partida.
+   * @returns {void}
+   */
+  #actualizarBotonIniciar(estadoPartida = 'esperando') {
+    this.onCambioVisibilidad(this.esCreador && estadoPartida === 'esperando');
+  }
+
+  /**
    * Inserta en la actividad una tabla con los puntajes acumulados al finalizar una ronda.
    *
    * @param {Object.<string, number>} [puntajesRonda={}] - Mapa de puntajes por jugador.
@@ -1158,11 +1178,11 @@ class Partida {
       }
 
       const sala = await response.json();
-      this.esCreador = sala.creadorId === this.jugadorId;
+      this.esCreador = this.#esCreadorDePartida(sala.creadorId);
       this.maxJugadores = sala.maxJugadores;
       this.titulo.textContent = `Sala de ${sala.jugadores[0] || 'jugador'}`;
       this.#pintarJugadores(sala.jugadores);
-      if (this.esCreador) this.onCambioVisibilidad(true);
+      this.#actualizarBotonIniciar(sala.estado);
     } catch (err) {
       logger.error('Error al cargar resumen de partida', {
         error: err,
@@ -1248,10 +1268,15 @@ class Partida {
     switch (evento) {
       case 'estado-partida': {
         const estado = datos.estado;
+        if (estado.creadorId != null) {
+          this.esCreador = this.#esCreadorDePartida(estado.creadorId);
+        }
         this.jugadoresActuales = estado.jugadores || [];
         this.#actualizarEstadoPartida(estado);
-        if (estado.estado === 'jugando') {
-          this.onCambioVisibilidad(false);
+        if (estado.estado === 'esperando') {
+          this.#actualizarBotonIniciar('esperando');
+        } else if (estado.estado === 'jugando') {
+          this.#actualizarBotonIniciar('jugando');
           if (!this.partidaIniciadaNotificada) {
             this.#mostrarMensaje('La partida ya empezó.');
             this.partidaIniciadaNotificada = true;
@@ -1268,7 +1293,7 @@ class Partida {
           }
           this.#renderMesa(estado);
         } else if (estado.estado === 'entre-rondas') {
-          this.onCambioVisibilidad(false);
+          this.#actualizarBotonIniciar('entre-rondas');
           this.estadoMesaActual = estado;
           this.#renderMesa(estado);
         }
@@ -1301,7 +1326,7 @@ class Partida {
         break;
       }
       case 'turno-cambiado': {
-        this.onCambioVisibilidad(false);
+        this.#actualizarBotonIniciar('jugando');
         this.#actualizarEstadoPartida(this.estadoMesaActual);
 
         const robo = datos['robó'] || datos.robo;

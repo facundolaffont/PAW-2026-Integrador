@@ -1053,6 +1053,10 @@ body {
   transition: background 0.2s;
 }
 
+.btn-iniciar[hidden] {
+  display: none !important;
+}
+
 .btn-iniciar:hover {
   background: #ffd600;
 }
