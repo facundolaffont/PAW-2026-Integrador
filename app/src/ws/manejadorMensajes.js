@@ -107,6 +107,9 @@ class ManejadorMensajes {
             case 'chat':
               this.#partidaController.enviarMensajeChat(partidaId, jugadorId, payload.texto);
               break;
+            case 'continuar-ronda':
+              this.#partidaController.continuarRonda(partidaId, jugadorId);
+              break;
             default:
               this.#manejadorConexiones.emitirA(jugadorId, 'error', {
                 mensaje: `Acción desconocida: ${accion}`,

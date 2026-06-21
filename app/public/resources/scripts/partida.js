@@ -302,6 +302,12 @@ class Partida {
       return;
     }
 
+    if (estadoPartida.estado === 'entre-rondas') {
+      const numeroRonda = Number(estadoPartida.numeroRonda) || 1;
+      this.estado.textContent = `Fin de ronda · Ronda ${numeroRonda}`;
+      return;
+    }
+
     if (estadoPartida.estado === 'esperando') {
       this.estado.textContent = 'Esperando jugadores';
       return;
@@ -435,6 +441,17 @@ class Partida {
     modal.hidden = true;
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-fin-abierto');
+    this.#enviarContinuarRonda();
+  }
+
+  /**
+   * Notifica al servidor que el jugador está listo para continuar tras el fin de ronda.
+   *
+   * @returns {void}
+   */
+  #enviarContinuarRonda() {
+    if (this.webSocket?.readyState !== WebSocket.OPEN) return;
+    this.webSocket.send(JSON.stringify({ accion: 'continuar-ronda' }));
   }
 
   /**
@@ -911,10 +928,11 @@ class Partida {
       estado.sentido || 1
     );
     const esMiTurno = estado.turno === this.jugadorId;
+    const juegoActivo = estado.estado === 'jugando';
     const turnoActualId = estado.turno;
     const manoActual = jugadorActual?.mano || [];
     const tieneJugadaDisponible = manoActual.some((carta) => this.#esJugadaValidaEnCliente(carta));
-    const debeRobar = esMiTurno && !tieneJugadaDisponible;
+    const debeRobar = juegoActivo && esMiTurno && !tieneJugadaDisponible;
     const claseNombreTurno = (jugador, claseBase) =>
       String(jugador?.jugadorId) === String(turnoActualId)
         ? `${claseBase} jugador-en-turno-nombre`
@@ -1013,7 +1031,7 @@ class Partida {
       mazo.title = 'No tenés una jugada válida. Robá del mazo.';
     }
     mazo.appendChild(this.#crearCarta(null, true));
-    if (esMiTurno) {
+    if (juegoActivo && esMiTurno) {
       mazo.style.cursor = 'pointer';
       mazo.addEventListener('click', () => {
         if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
@@ -1088,7 +1106,7 @@ class Partida {
       areaAbajo.appendChild(nombreActual);
       areaAbajo.appendChild(
         this.#crearManoHorizontal(manoActual, false, async (carta) => {
-          if (!esMiTurno) return;
+          if (!juegoActivo || !esMiTurno) return;
           if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
           if (!this.#esJugadaValidaEnCliente(carta)) {
             this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
@@ -1248,6 +1266,10 @@ class Partida {
             this.#mostrarMensaje(textoInicioRonda);
             this.numeroRondaActual = estado.numeroRonda;
           }
+          this.#renderMesa(estado);
+        } else if (estado.estado === 'entre-rondas') {
+          this.onCambioVisibilidad(false);
+          this.estadoMesaActual = estado;
           this.#renderMesa(estado);
         }
         this.#pintarJugadores(estado.jugadores || []);

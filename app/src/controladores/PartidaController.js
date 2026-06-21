@@ -257,7 +257,7 @@ class PartidaController {
 
     // Si la sala y el jugador existen, y el jugador ya está en la sala, reconecta al
     // usuario y notifica al resto de los participantes.
-    else if (sala.estado === 'jugando') {
+    else if (sala.estado === 'jugando' || sala.estado === 'entre-rondas') {
       const reconectado = this.cancelarAbandonoPendiente(partidaId, jugadorId);
       if (reconectado) {
         this.#broadcast(sala, 'jugador-reconectado', {
@@ -305,17 +305,6 @@ class PartidaController {
         puntajesRonda: res.puntajesRonda,
       });
 
-      this.#emitirEstadoPartida(sala);
-      this.#broadcast(sala, 'turno-cambiado', {
-        turno: sala.jugadorEnTurno().jugadorId,
-        sentido: sala.sentido,
-        penalidad: sala.penalidad,
-      });
-
-      if (sala.turnoEsBot()) {
-        this.#ejecutarTurnoBot(partidaId);
-      }
-
       return;
     }
 
@@ -326,6 +315,31 @@ class PartidaController {
     });
 
     this.#emitirEstadoPartida(sala);
+
+    if (sala.turnoEsBot()) {
+      this.#ejecutarTurnoBot(partidaId);
+    }
+  }
+
+  continuarRonda(partidaId, jugadorId) {
+    logContext(logger, this, { partidaId, jugadorId });
+
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    const res = sala.continuarRonda(jugadorId);
+
+    if (res.error) {
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      return;
+    }
+
+    if (!res.rondaIniciada) return;
+
+    this.#emitirEstadoPartida(sala);
+    this.#broadcast(sala, 'turno-cambiado', {
+      turno: sala.jugadorEnTurno().jugadorId,
+      sentido: sala.sentido,
+      penalidad: sala.penalidad,
+    });
 
     if (sala.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
@@ -527,15 +541,6 @@ class PartidaController {
             puntosGanados: res.puntosGanados,
             puntajesRonda: res.puntajesRonda,
           });
-          this.#emitirEstadoPartida(salaActual);
-          this.#broadcast(salaActual, 'turno-cambiado', {
-            turno: salaActual.jugadorEnTurno().jugadorId,
-            sentido: salaActual.sentido,
-            penalidad: salaActual.penalidad,
-          });
-          if (salaActual.turnoEsBot()) {
-            this.#ejecutarTurnoBot(partidaId);
-          }
           return;
         } else {
           this.#broadcast(salaActual, 'carta-jugada', {

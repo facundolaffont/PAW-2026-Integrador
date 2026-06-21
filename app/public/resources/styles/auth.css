@@ -279,7 +279,6 @@ body {
 @media (hover: none) and (pointer: coarse) {
   .btn-auth,
   .auth-link {
-    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;

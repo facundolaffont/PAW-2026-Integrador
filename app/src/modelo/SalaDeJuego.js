@@ -33,6 +33,8 @@ class SalaDeJuego {
     this.penalidad = 0;
     this.tipoPenalidad = null;
     this.puntajesRonda = {};
+    this.entreRondas = false;
+    this.continuaronRonda = new Set();
 
     // Chat de la sala
     this.mensajesChat = [];
@@ -367,7 +369,9 @@ class SalaDeJuego {
       return this._cerrarPartida(ganadorId, cartaFinal);
     }
 
-    this._iniciarRonda();
+    this.estado = 'entre-rondas';
+    this.entreRondas = true;
+    this.continuaronRonda = new Set();
 
     return {
       ok: true,
@@ -399,6 +403,28 @@ class SalaDeJuego {
     });
 
     return { ok: true, carta: cartaFinal, partidaTerminada: true, ranking };
+  }
+
+  continuarRonda(jugadorId) {
+    logContext(logger, this);
+    if (!this.entreRondas) return { error: 'No hay una ronda pendiente de continuar' };
+
+    const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
+    if (!jugador) return { error: 'No estás en la sala' };
+    if (jugador.esBot) return { error: 'Los bots no pueden continuar la ronda' };
+
+    this.continuaronRonda.add(jugadorId);
+
+    const humanos = this.jugadores.filter((j) => !j.esBot);
+    const todosListos = humanos.every((j) => this.continuaronRonda.has(j.jugadorId));
+    if (!todosListos) return { ok: true, esperando: true };
+
+    this.entreRondas = false;
+    this.continuaronRonda.clear();
+    this.estado = 'jugando';
+    this._iniciarRonda();
+
+    return { ok: true, rondaIniciada: true };
   }
 
   jugadorAbandonó(jugadorId) {
