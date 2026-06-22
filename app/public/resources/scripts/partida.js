@@ -90,6 +90,64 @@ class Partida {
     this.numeroRondaActual = 0;
     this.btnCantarUno = null;
     this.unoProgresoIntervalo = null;
+    this.turnoTimerSpan = null;
+    this.turnoTimerIntervalo = null;
+    this.turnoTimerDeadline = 0;
+    this.turnoTimerBeepDisparado = false;
+    this.audioCtx = null;
+  }
+
+  #asegurarAudioCtx() {
+    if (this.audioCtx) {
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      return this.audioCtx;
+    }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    try {
+      this.audioCtx = new Ctx();
+    } catch {
+      this.audioCtx = null;
+    }
+    return this.audioCtx;
+  }
+
+  #tocarTono({ frecuencia, duracion = 0.15, tipo = 'sine', volumen = 0.2, inicio = 0 } = {}) {
+    const ctx = this.#asegurarAudioCtx();
+    if (!ctx) return;
+    try {
+      const ahora = ctx.currentTime + Math.max(0, inicio);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = tipo;
+      osc.frequency.setValueAtTime(frecuencia, ahora);
+      // Attack/release para evitar clicks audibles.
+      gain.gain.setValueAtTime(0, ahora);
+      gain.gain.linearRampToValueAtTime(volumen, ahora + 0.01);
+      gain.gain.linearRampToValueAtTime(0, ahora + duracion);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ahora);
+      osc.stop(ahora + duracion + 0.02);
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch {}
+      };
+    } catch {}
+  }
+
+  #tocarSecuencia(notas = []) {
+    notas.forEach((nota) => this.#tocarTono(nota));
+  }
+
+  #vibrar(patron) {
+    if (!('vibrate' in navigator)) return;
+    try {
+      navigator.vibrate(patron);
+    } catch {}
   }
 
   /**
@@ -102,9 +160,75 @@ class Partida {
     this.#configurarTabs();
     this.#configurarChat();
     this.#configurarBotonUno();
+    this.#configurarTurnoTimer();
     this.#actualizarControlesLobby(undefined);
     const accesoOk = await this.#cargarResumen();
     if (accesoOk) this.#conectarWS();
+  }
+
+  #configurarTurnoTimer() {
+    const span = document.createElement('span');
+    span.className = 'turno-timer';
+    span.setAttribute('aria-hidden', 'true');
+    this.turnoTimerSpan = span;
+  }
+
+  #iniciarTurnoTimer(durationMs) {
+    if (!this.turnoTimerSpan) return;
+    this.#detenerTurnoTimer(false);
+    const total = Math.max(1, Number(durationMs) || 5000);
+    this.turnoTimerDeadline = Date.now() + total;
+    this.turnoTimerBeepDisparado = false;
+
+    const tick = () => {
+      const restanteMs = Math.max(0, this.turnoTimerDeadline - Date.now());
+      const segundos = Math.ceil(restanteMs / 1000);
+      this.turnoTimerSpan.textContent = `${segundos}s`;
+      this.turnoTimerSpan.classList.toggle('turno-timer--urgente', segundos <= 2);
+
+      // Beep + vibración al cruzar el umbral de 2s, sólo si es nuestro turno.
+      if (segundos <= 2 && !this.turnoTimerBeepDisparado) {
+        this.turnoTimerBeepDisparado = true;
+        const esMiTurno =
+          this.estadoMesaActual &&
+          String(this.estadoMesaActual.turno) === String(this.jugadorId);
+        if (esMiTurno) {
+          this.#tocarTono({ frecuencia: 880, duracion: 0.12, tipo: 'square', volumen: 0.18 });
+          this.#tocarTono({
+            frecuencia: 880,
+            duracion: 0.12,
+            tipo: 'square',
+            volumen: 0.18,
+            inicio: 0.18,
+          });
+          this.#vibrar(150);
+        }
+      }
+
+      if (restanteMs <= 0) {
+        clearInterval(this.turnoTimerIntervalo);
+        this.turnoTimerIntervalo = null;
+      }
+    };
+
+    tick();
+    this.turnoTimerIntervalo = setInterval(tick, 200);
+  }
+
+  #detenerTurnoTimer(quitar = true) {
+    if (this.turnoTimerIntervalo) {
+      clearInterval(this.turnoTimerIntervalo);
+      this.turnoTimerIntervalo = null;
+    }
+    this.turnoTimerBeepDisparado = false;
+    if (!this.turnoTimerSpan) return;
+    if (quitar) {
+      this.turnoTimerSpan.textContent = '';
+      this.turnoTimerSpan.classList.remove('turno-timer--urgente');
+      if (this.turnoTimerSpan.parentNode) {
+        this.turnoTimerSpan.parentNode.removeChild(this.turnoTimerSpan);
+      }
+    }
   }
 
   #configurarBotonUno() {
@@ -123,6 +247,7 @@ class Partida {
 
     boton.addEventListener('click', () => {
       if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+      this.#asegurarAudioCtx();
       this.webSocket.send(JSON.stringify({ accion: 'cantar-uno' }));
     });
 
@@ -307,6 +432,7 @@ class Partida {
    */
   iniciarPartida() {
     if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+    this.#asegurarAudioCtx();
     this.webSocket.send(JSON.stringify({ accion: 'iniciar-partida' }));
   }
 
@@ -1133,6 +1259,7 @@ class Partida {
       mazo.style.cursor = 'pointer';
       mazo.addEventListener('click', () => {
         if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+        this.#asegurarAudioCtx();
         this.webSocket.send(JSON.stringify({ accion: 'robar-carta' }));
       });
     }
@@ -1213,6 +1340,7 @@ class Partida {
         this.#crearManoHorizontal(manoActual, false, async (carta) => {
           if (!juegoActivo || !esMiTurno) return;
           if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+          this.#asegurarAudioCtx();
           if (!this.#esJugadaValidaEnCliente(carta)) {
             this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
             return;
@@ -1238,6 +1366,11 @@ class Partida {
     this.vistaMesa.appendChild(areaRivalesMobile);
     this.vistaMesa.appendChild(zonaCentral);
     this.vistaMesa.appendChild(areaAbajo);
+
+    if (juegoActivo && this.turnoTimerSpan) {
+      const elTurno = this.vistaMesa.querySelector('.jugador-en-turno-nombre');
+      if (elTurno) elTurno.appendChild(this.turnoTimerSpan);
+    }
   }
 
   /**
@@ -1424,18 +1557,40 @@ class Partida {
           const nombre = this.#nombreJugador(robo.jugadorId);
           const cantidad = Number(robo.cantidad) || 0;
           const palabraCarta = cantidad === 1 ? 'carta' : 'cartas';
-          this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}.`);
+          const sufijo = robo.auto ? ' (se le acabó el tiempo)' : '';
+          this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}${sufijo}.`);
+        }
+
+        if (datos.turno != null) {
+          this.#iniciarTurnoTimer(datos.tiempoTurnoMs || 5000);
+        } else {
+          this.#detenerTurnoTimer();
         }
 
         break;
       }
       case 'ronda-terminada': {
+        this.#detenerTurnoTimer();
+        this.#tocarSecuencia([
+          { frecuencia: 523.25, duracion: 0.18, tipo: 'triangle', volumen: 0.22 },
+          { frecuencia: 659.25, duracion: 0.18, tipo: 'triangle', volumen: 0.22, inicio: 0.16 },
+          { frecuencia: 783.99, duracion: 0.32, tipo: 'triangle', volumen: 0.22, inicio: 0.32 },
+        ]);
+        this.#vibrar([100, 50, 100]);
         this.#mostrarMensaje('Ronda terminada.');
         this.#mostrarTablaPuntajesRonda(datos.puntajesRonda || {}, datos.ganadorRonda);
         this.#mostrarModalFinRonda(datos.ganadorRonda, datos.puntajesRonda);
         break;
       }
       case 'partida-terminada': {
+        this.#detenerTurnoTimer();
+        this.#tocarSecuencia([
+          { frecuencia: 523.25, duracion: 0.18, tipo: 'triangle', volumen: 0.25 },
+          { frecuencia: 659.25, duracion: 0.18, tipo: 'triangle', volumen: 0.25, inicio: 0.18 },
+          { frecuencia: 783.99, duracion: 0.18, tipo: 'triangle', volumen: 0.25, inicio: 0.36 },
+          { frecuencia: 1046.5, duracion: 0.5, tipo: 'triangle', volumen: 0.28, inicio: 0.54 },
+        ]);
+        this.#vibrar([120, 60, 120, 60, 250]);
         const ganador = (datos.ranking || [])[0];
         this.#mostrarMensaje(`¡${ganador?.nombre || 'Un jugador'} ganó la partida!`);
         const puntajesFinales = {};

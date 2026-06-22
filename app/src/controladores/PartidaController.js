@@ -28,6 +28,8 @@ class PartidaController {
     this.GRACE_PERIOD_MS = 30000;
     this.unoTimers = new Map();
     this.UNO_TIMEOUT_MS = 2000;
+    this.turnoTimers = new Map();
+    this.TURNO_TIMEOUT_MS = 5000;
   }
 
   #cancelarUnoTimer(partidaId) {
@@ -36,6 +38,58 @@ class PartidaController {
     clearTimeout(timeoutId);
     this.unoTimers.delete(partidaId);
     return true;
+  }
+
+  #cancelarTurnoTimer(partidaId) {
+    const timeoutId = this.turnoTimers.get(partidaId);
+    if (timeoutId == null) return false;
+    clearTimeout(timeoutId);
+    this.turnoTimers.delete(partidaId);
+    return true;
+  }
+
+  #programarTurnoTimer(partidaId) {
+    this.#cancelarTurnoTimer(partidaId);
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    if (!sala || sala.estado !== 'jugando') return;
+
+    const jugadorEnTurnoId = sala.jugadorEnTurno().jugadorId;
+    const timeoutId = setTimeout(() => {
+      this.#ejecutarRoboAutomatico(partidaId, jugadorEnTurnoId).catch((err) => {
+        console.error('[turnoTimer] Error en robo automático:', err);
+      });
+    }, this.TURNO_TIMEOUT_MS);
+    this.turnoTimers.set(partidaId, timeoutId);
+  }
+
+  async #ejecutarRoboAutomatico(partidaId, jugadorIdEsperado) {
+    this.turnoTimers.delete(partidaId);
+
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    if (!sala || sala.estado !== 'jugando') return;
+
+    const jugadorEnTurno = sala.jugadorEnTurno();
+    if (!jugadorEnTurno || jugadorEnTurno.jugadorId !== jugadorIdEsperado) return;
+
+    const res = sala.robarCarta(jugadorIdEsperado);
+    if (res.error) return;
+
+    this.manejadorConexiones.emitirA(jugadorIdEsperado, 'cartas-robadas', {
+      cartasRobadas: res.cartasRobadas,
+    });
+    this.#broadcast(sala, 'turno-cambiado', {
+      turno: sala.jugadorEnTurno().jugadorId,
+      sentido: sala.sentido,
+      penalidad: 0,
+      tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
+      robó: { jugadorId: jugadorIdEsperado, cantidad: res.cantidad, auto: true },
+    });
+    this.#emitirEstadoPartida(sala);
+
+    this.#programarTurnoTimer(partidaId);
+    if (sala.turnoEsBot()) {
+      this.#ejecutarTurnoBot(partidaId);
+    }
   }
 
   #claveDesconexion(partidaId, jugadorId) {
@@ -84,8 +138,10 @@ class PartidaController {
     this.#broadcast(sala, 'turno-cambiado', {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
+      tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
     });
 
+    this.#programarTurnoTimer(partidaId);
     if (sala.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
     }
@@ -108,11 +164,13 @@ class PartidaController {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
       penalidad: 0,
+      tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
       robó: { jugadorId, cantidad: res.cantidad },
     });
 
     this.#emitirEstadoPartida(sala);
 
+    this.#programarTurnoTimer(partidaId);
     if (sala.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
     }
@@ -313,6 +371,7 @@ class PartidaController {
 
     if (res.partidaTerminada) {
       this.#cancelarUnoTimer(partidaId);
+      this.#cancelarTurnoTimer(partidaId);
       await this.persistencia.guardarResultadoPartida(partidaId, res.ranking);
 
       this.#broadcast(sala, 'partida-terminada', { ranking: res.ranking });
@@ -323,6 +382,7 @@ class PartidaController {
 
     if (res.rondaTerminada) {
       this.#cancelarUnoTimer(partidaId);
+      this.#cancelarTurnoTimer(partidaId);
       this.#broadcast(sala, 'ronda-terminada', {
         ganadorRonda: res.ganadorRonda,
         puntosGanados: res.puntosGanados,
@@ -338,10 +398,12 @@ class PartidaController {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
       penalidad: sala.penalidad,
+      tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
     });
 
     this.#emitirEstadoPartida(sala);
 
+    this.#programarTurnoTimer(partidaId);
     if (sala.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
     }
@@ -455,8 +517,10 @@ class PartidaController {
       turno: sala.jugadorEnTurno().jugadorId,
       sentido: sala.sentido,
       penalidad: sala.penalidad,
+      tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
     });
 
+    this.#programarTurnoTimer(partidaId);
     if (sala.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
     }
@@ -567,6 +631,9 @@ class PartidaController {
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala || sala.estado === 'terminada') return;
 
+    this.#cancelarUnoTimer(partidaId);
+    this.#cancelarTurnoTimer(partidaId);
+
     const info = sala.jugadorAbandonó(jugadorId);
 
     this.#broadcast(sala, 'jugador-abandono', {
@@ -606,6 +673,15 @@ class PartidaController {
         rivales
       );
 
+      // El timer global puede haber disparado un robo automático mientras esperábamos
+      // la decisión del LLM. Si el turno ya no es del bot, descartamos la decisión.
+      if (
+        salaActual.estado !== 'jugando' ||
+        salaActual.jugadorEnTurno()?.jugadorId !== bot.jugadorId
+      ) {
+        return;
+      }
+
       if (decision.robar) {
         const res = salaActual.robarCarta(bot.jugadorId);
 
@@ -618,6 +694,7 @@ class PartidaController {
           turno: salaActual.jugadorEnTurno().jugadorId,
           sentido: salaActual.sentido,
           penalidad: 0,
+          tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
           robó: { jugadorId: bot.jugadorId, cantidad: res.cantidad },
         });
         this.#emitirEstadoPartida(salaActual);
@@ -631,11 +708,13 @@ class PartidaController {
             turno: salaActual.jugadorEnTurno().jugadorId,
             sentido: salaActual.sentido,
             penalidad: 0,
+            tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
             robó: { jugadorId: bot.jugadorId, cantidad: resRobo.cantidad },
           });
           this.#emitirEstadoPartida(salaActual);
         } else if (res.partidaTerminada) {
           this.#cancelarUnoTimer(partidaId);
+          this.#cancelarTurnoTimer(partidaId);
           if (res.carta) {
             this.#broadcast(salaActual, 'carta-jugada', {
               jugadorId: bot.jugadorId,
@@ -648,6 +727,7 @@ class PartidaController {
           return;
         } else if (res.rondaTerminada) {
           this.#cancelarUnoTimer(partidaId);
+          this.#cancelarTurnoTimer(partidaId);
           if (res.carta) {
             this.#broadcast(salaActual, 'carta-jugada', {
               jugadorId: bot.jugadorId,
@@ -670,14 +750,19 @@ class PartidaController {
             turno: salaActual.jugadorEnTurno().jugadorId,
             sentido: salaActual.sentido,
             penalidad: salaActual.penalidad,
+            tiempoTurnoMs: this.TURNO_TIMEOUT_MS,
           });
           this.#emitirEstadoPartida(salaActual);
         }
       }
     } catch (err) {
       console.error('[Bot] Error inesperado:', err);
+      // Si el LLM falló (timeout, sin tokens, etc.), no reprogramamos: el robo automático
+      // del timer global ya se encarga del avance del turno.
+      return;
     }
 
+    this.#programarTurnoTimer(partidaId);
     if (salaActual.turnoEsBot()) {
       this.#ejecutarTurnoBot(partidaId);
     }
