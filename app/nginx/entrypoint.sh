@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-envsubst '${DOMAIN} ${APP_PORT}' \
-  < /etc/nginx/nginx.conf.template \
+sed -e "s|\${DOMAIN}|$DOMAIN|g" -e "s|\${APP_PORT}|$APP_PORT|g" \
+  /etc/nginx/nginx.conf.template \
   > /etc/nginx/conf.d/default.conf
 
 # Si no existe el certificado real, crea uno auto-firmado para que nginx pueda
