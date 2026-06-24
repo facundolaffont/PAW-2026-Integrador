@@ -1,0 +1,24 @@
+app/nginx/entrypoint.sh
+  s_acd3191f843d8e::t_a00c5076599b1a 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "c0cbb1dd8c39cb65194713835ee694574d54652e",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_acd3191f843d8e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fe32a68-9b16-45c9-a50b-9cbaf7ca5681",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
