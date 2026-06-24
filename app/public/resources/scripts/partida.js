@@ -190,8 +190,7 @@ class Partida {
       if (segundos <= 2 && !this.turnoTimerBeepDisparado) {
         this.turnoTimerBeepDisparado = true;
         const esMiTurno =
-          this.estadoMesaActual &&
-          String(this.estadoMesaActual.turno) === String(this.jugadorId);
+          this.estadoMesaActual && String(this.estadoMesaActual.turno) === String(this.jugadorId);
         if (esMiTurno) {
           this.#tocarTono({ frecuencia: 880, duracion: 0.12, tipo: 'square', volumen: 0.18 });
           this.#tocarTono({
@@ -1122,20 +1121,6 @@ class Partida {
     return jugadores.slice(idxActual).concat(jugadores.slice(0, idxActual));
   }
 
-  #obtenerRivalesSegunSentido(jugadores, sentido) {
-    const idxActual = jugadores.findIndex((j) => j.jugadorId === this.jugadorId);
-    if (idxActual < 0) return [];
-
-    const rivales = [];
-    for (let paso = 1; paso < jugadores.length; paso += 1) {
-      const idx =
-        (((idxActual + sentido * paso) % jugadores.length) + jugadores.length) % jugadores.length;
-      rivales.push(jugadores[idx]);
-    }
-
-    return rivales;
-  }
-
   /**
    * Renderiza el estado completo de la mesa de juego para el jugador actual.
    *
@@ -1147,10 +1132,7 @@ class Partida {
 
     const jugadoresOrdenados = this.#ordenarJugadoresDesdeActual(estado.jugadores || []);
     const jugadorActual = jugadoresOrdenados[0];
-    const rivalesEnOrdenDeTurno = this.#obtenerRivalesSegunSentido(
-      estado.jugadores || [],
-      estado.sentido || 1
-    );
+    const rivales = jugadoresOrdenados.slice(1);
     const esMiTurno = estado.turno === this.jugadorId;
     const juegoActivo = estado.estado === 'jugando';
     const turnoActualId = estado.turno;
@@ -1170,22 +1152,12 @@ class Partida {
         : `${jugador.nombreUsuario} (en turno)`;
     };
 
-    // Ubica a los rivales para que el orden visual siga el sentido de juego.
-    // Horario: abajo -> izquierda -> arriba -> derecha.
-    // Antihorario: abajo -> derecha -> arriba -> izquierda.
-    let rivalIzquierda;
-    let rivalArriba;
-    let rivalDerecha;
-
-    if ((estado.sentido || 1) === -1) {
-      rivalDerecha = rivalesEnOrdenDeTurno[0];
-      rivalArriba = rivalesEnOrdenDeTurno[1];
-      rivalIzquierda = rivalesEnOrdenDeTurno[2];
-    } else {
-      rivalIzquierda = rivalesEnOrdenDeTurno[0];
-      rivalArriba = rivalesEnOrdenDeTurno[1];
-      rivalDerecha = rivalesEnOrdenDeTurno[2];
-    }
+    // Las posiciones de los rivales se mantienen fijas según el orden de asiento,
+    // independientemente del sentido de juego. El indicador de sentido se encarga
+    // de comunicar la dirección actual (como en el UNO con jugadores sentados).
+    const rivalIzquierda = rivales[0];
+    const rivalArriba = rivales[1];
+    const rivalDerecha = rivales[2];
 
     this.vistaLobby.hidden = true;
     this.vistaMesa.hidden = false;
@@ -1562,7 +1534,7 @@ class Partida {
         }
 
         if (datos.turno != null) {
-          this.#iniciarTurnoTimer(datos.tiempoTurnoMs || 5000);
+          this.#iniciarTurnoTimer(datos.tiempoTurnoMs || 10000);
         } else {
           this.#detenerTurnoTimer();
         }
@@ -1651,10 +1623,7 @@ class Partida {
         const nombreEnUno = this.#nombreJugador(datos.jugadorEnUno);
         const cantidad = Number(datos.cantidad) || 2;
         const cartas = cantidad === 1 ? 'carta' : 'cartas';
-        const por =
-          datos.atrapadoPor === 'bot'
-            ? 'un bot'
-            : this.#nombreJugador(datos.atrapadoPor);
+        const por = datos.atrapadoPor === 'bot' ? 'un bot' : this.#nombreJugador(datos.atrapadoPor);
         this.#mostrarMensaje(
           `${nombreEnUno} no cantó UNO. ${por} lo atrapó: +${cantidad} ${cartas}.`,
           'error'

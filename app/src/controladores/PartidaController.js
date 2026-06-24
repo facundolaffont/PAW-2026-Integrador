@@ -29,7 +29,7 @@ class PartidaController {
     this.unoTimers = new Map();
     this.UNO_TIMEOUT_MS = 2000;
     this.turnoTimers = new Map();
-    this.TURNO_TIMEOUT_MS = 5000;
+    this.TURNO_TIMEOUT_MS = 10000;
   }
 
   #cancelarUnoTimer(partidaId) {
