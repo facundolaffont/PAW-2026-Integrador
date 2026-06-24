@@ -1,4 +1,4 @@
-import { frontLogger as logger } from '/scripts/logger.js';
+import { frontLogger as logger } from '/js/logger.js';
 
 class Partida {
   /**

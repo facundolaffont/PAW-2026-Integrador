@@ -155,7 +155,7 @@
       });
     </script>
     <script type="module">
-      import Partida from '/scripts/partida.js';
+      import Partida from '/js/partida.js';
 
       const meRes = await fetch('/api/me');
       if (!meRes.ok) { window.location.href = '/public/bienvenida'; throw null; }

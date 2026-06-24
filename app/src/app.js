@@ -74,11 +74,11 @@ class Servidor {
 
     // Establece el directorio donde se encuentran las plantillas EJS para renderizar las
     // vistas HTML.
-    this.app.set('views', path.join(__dirname, '../public'));
+    this.app.set('views', path.join(__dirname, '../views'));
 
     // Sirve archivos estáticos (CSS, imágenes, etc.), de forma tal que se puedan
-    // referenciar desde los EJS con rutas absolutas (ejemplo, /styles/inicio.css).
-    this.app.use(express.static(path.join(__dirname, '../public/resources/')));
+    // referenciar desde los EJS con rutas absolutas (ejemplo, /css/inicio.css).
+    this.app.use(express.static(path.join(__dirname, '../public')));
 
     /* Configuración de middleware, rutas HTTP y WebSocket. */
     this.#configurarMiddleware();

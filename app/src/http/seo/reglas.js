@@ -79,7 +79,7 @@ function buildReglasLocals(req) {
     ogImage,
     ogType: 'article',
     jsonLd,
-    styles: ['/styles/reglas.css'],
+    styles: ['/css/reglas.css'],
   };
 }
 

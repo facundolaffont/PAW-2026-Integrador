@@ -45,7 +45,7 @@ class ManejadorFront {
       res.render('bienvenida', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Bienvenida',
-        styles: ['/styles/auth.css'],
+        styles: ['/css/auth.css'],
         ...this.#buildSeoLocals(req, '/public/bienvenida'),
       });
     });
@@ -54,7 +54,7 @@ class ManejadorFront {
       res.render('inicio', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Inicio',
-        styles: ['/styles/inicio.css'],
+        styles: ['/css/inicio.css'],
       });
     });
 
@@ -62,7 +62,7 @@ class ManejadorFront {
       res.render('login', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Ingresar',
-        styles: ['/styles/auth.css'],
+        styles: ['/css/auth.css'],
       });
     });
 
@@ -70,7 +70,7 @@ class ManejadorFront {
       res.render('registro', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Registrarse',
-        styles: ['/styles/auth.css'],
+        styles: ['/css/auth.css'],
       });
     });
 
@@ -78,7 +78,7 @@ class ManejadorFront {
       res.render('jugar', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Jugar',
-        styles: ['/styles/auth.css'],
+        styles: ['/css/auth.css'],
       });
     });
 
@@ -86,7 +86,7 @@ class ManejadorFront {
       res.render('nombre-jugador', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Nombre de Jugador',
-        styles: ['/styles/nombre-jugador.css'],
+        styles: ['/css/nombre-jugador.css'],
       });
     });
 
@@ -94,7 +94,7 @@ class ManejadorFront {
       res.render('crear-sala', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Crear Sala',
-        styles: ['/styles/crear-sala.css'],
+        styles: ['/css/crear-sala.css'],
       });
     });
 
@@ -161,7 +161,7 @@ class ManejadorFront {
           ogImage: `${baseUrl}/images/uno-logo.png`,
           ogUrl: `${baseUrl}${sharePath}`,
         },
-        styles: ['/styles/partida.css'],
+        styles: ['/css/partida.css'],
       });
     });
 
@@ -173,7 +173,7 @@ class ManejadorFront {
       res.render('puntajes', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Puntajes',
-        styles: ['/styles/puntajes.css'],
+        styles: ['/css/puntajes.css'],
         puntajes,
         ...this.#buildSeoLocals(req, '/public/puntajes'),
       });
@@ -183,7 +183,7 @@ class ManejadorFront {
       res.render('salas', {
         logLevel: this.#logLevel,
         title: 'UNO Argentino - Salas',
-        styles: ['/styles/salas.css'],
+        styles: ['/css/salas.css'],
       });
     });
 
