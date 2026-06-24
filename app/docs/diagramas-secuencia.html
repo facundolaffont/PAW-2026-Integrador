@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNO Argentino — Diagramas de Secuencia</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-hover: #243044;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --text-muted: #8b9cb3;
+      --accent: #e63946;
+      --accent-soft: rgba(230, 57, 70, 0.15);
+      --green: #2ecc71;
+      --yellow: #f1c40f;
+      --blue: #3498db;
+      --sidebar-w: 280px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    nav {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    nav h1 {
+      font-size: 1.1rem;
+      padding: 0 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+
+    nav ul { list-style: none; }
+
+    nav a {
+      display: block;
+      padding: 0.55rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+
+    nav a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    nav a.active {
+      color: var(--text);
+      background: var(--accent-soft);
+      border-left-color: var(--accent);
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 2.5rem 4rem;
+      max-width: 1100px;
+    }
+
+    header.page-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header.page-header h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    header.page-header p {
+      color: var(--text-muted);
+      max-width: 65ch;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .legend .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-rest { background: var(--blue); }
+    .dot-ws { background: var(--green); }
+    .dot-poll { background: var(--yellow); }
+
+    section.flow {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    section.flow h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    section.flow .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    section.flow .badge.ws {
+      background: rgba(46, 204, 113, 0.15);
+      color: var(--green);
+    }
+
+    section.flow .badge.poll {
+      background: rgba(241, 196, 15, 0.15);
+      color: var(--yellow);
+    }
+
+    section.flow .description {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1.25rem;
+      max-width: 70ch;
+    }
+
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .diagram-card .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .files {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .files code {
+      background: var(--bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; }
+      nav {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      main { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav>
+      <h1>UNO Argentino</h1>
+      <ul>
+        <li><a href="#intro">Introducción</a></li>
+        <li><a href="#flujo-1">1. Registro</a></li>
+        <li><a href="#flujo-2">2. Login / Logout</a></li>
+        <li><a href="#flujo-3">3. Crear sala</a></li>
+        <li><a href="#flujo-4">4. Buscar y unirse</a></li>
+        <li><a href="#flujo-5">5. Lobby e inicio</a></li>
+        <li><a href="#flujo-6">6. Jugar turno</a></li>
+        <li><a href="#flujo-7">7. Fin de ronda</a></li>
+        <li><a href="#flujo-8">8. Desconexión</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <header class="page-header" id="intro">
+        <h2>Diagramas de Secuencia</h2>
+        <p>
+          Flujos principales de <strong>UNO Argentino</strong>: autenticación JWT,
+          gestión de salas vía REST, partida en tiempo real vía WebSocket y
+          persistencia de puntajes en MySQL.
+        </p>
+        <div class="legend">
+          <span><span class="dot dot-rest"></span> HTTP / REST</span>
+          <span><span class="dot dot-ws"></span> WebSocket</span>
+          <span><span class="dot dot-poll"></span> Polling (3 s)</span>
+        </div>
+      </header>
+
+      <!-- FLUJO 1 -->
+      <section class="flow" id="flujo-1">
+        <h3>1. Registro de usuario <span class="badge">REST</span></h3>
+        <p class="description">
+          Un visitante crea una cuenta. El servidor valida datos, hashea la contraseña
+          con bcrypt y almacena el jugador en MySQL. Emite un JWT en cookie httpOnly.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser
+    participant MA as ManejadorAuth
+    participant AC as AuthController
+    participant P as Persistencia
+    participant DB as MySQL
+
+    U->>B: Abre /public/registrarse
+    B->>MA: GET /api/me
+    MA-->>B: 401 (no autenticado)
+    U->>B: Completa formulario y envía
+    B->>MA: POST /api/registrarse {nombreUsuario, password}
+    MA->>AC: registrar(nombre, password)
+    AC->>AC: Validar nombre y contraseña
+    AC->>P: registrarJugador(usuario)
+    P->>DB: INSERT jugador
+    DB-->>P: jugadorId
+    P-->>AC: jugador creado
+    AC-->>MA: {jugadorId, nombreUsuario}
+    MA->>MA: Firmar JWT
+    MA-->>B: Set-Cookie: token (httpOnly)
+    B-->>U: Redirect /public/
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>registro.ejs</code>, <code>manejadorAuth.js</code>, <code>AuthController.js</code></p>
+      </section>
+
+      <!-- FLUJO 2 -->
+      <section class="flow" id="flujo-2">
+        <h3>2. Login y logout <span class="badge">REST</span></h3>
+        <p class="description">
+          Autenticación con credenciales existentes. Las páginas protegidas usan
+          <code>requireAuthWeb</code> para redirigir si el JWT es inválido o expiró.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser
+    participant MA as ManejadorAuth
+    participant AC as AuthController
+    participant P as Persistencia
+    participant MW as middlewareAuth
+
+    rect rgb(30, 40, 55)
+        Note over U,MW: Login
+        U->>B: Abre /public/ingresar
+        U->>B: Envía credenciales
+        B->>MA: POST /api/ingresar {nombreUsuario, password}
+        MA->>AC: ingresar(nombre, password)
+        AC->>P: buscarPorNombre(nombre)
+        P-->>AC: jugador + hash
+        AC->>AC: bcrypt.compare(password, hash)
+        AC-->>MA: {jugadorId, nombreUsuario}
+        MA-->>B: Set-Cookie: token
+        B-->>U: Redirect /public/
+    end
+
+    rect rgb(30, 40, 55)
+        Note over U,MW: Acceso a página protegida
+        U->>B: Navega /public/jugar
+        B->>MW: GET /public/jugar (cookie token)
+        MW->>MW: Verificar JWT
+        alt Token válido
+            MW-->>B: Renderizar página
+        else Token inválido / ausente
+            MW-->>B: Redirect /public/bienvenida
+        end
+    end
+
+    rect rgb(30, 40, 55)
+        Note over U,MW: Logout
+        U->>B: Clic "Salir"
+        B->>MA: POST /api/salir
+        MA-->>B: Clear-Cookie: token
+        B-->>U: Redirect /public/bienvenida
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>login.ejs</code>, <code>middlewareAuth.js</code>, <code>manejadorAuth.js</code></p>
+      </section>
+
+      <!-- FLUJO 3 -->
+      <section class="flow" id="flujo-3">
+        <h3>3. Crear sala de juego <span class="badge">REST</span></h3>
+        <p class="description">
+          El creador elige cantidad de jugadores (2–4) y bots (0–3). La sala se
+          guarda en memoria con el creador y los bots ya asignados.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser
+    participant MP as ManejadorPartidas
+    participant PC as PartidaController
+    participant S as SalaDeJuego
+    participant P as Persistencia
+
+    U->>B: /public/jugar → /public/crear-sala
+    U->>B: Configura maxJugadores y cantidadBots
+    B->>MP: POST /api/partidas {maxJugadores, cantidadBots}
+    Note over MP: requireAuth → req.jugadorId
+    MP->>PC: crearPartida(jugadorId, opts)
+    PC->>P: buscarJugador(jugadorId)
+    P-->>PC: datos jugador
+    PC->>PC: Validar límites y que no esté en otra partida
+    PC->>S: new SalaDeJuego(creador, bots)
+    S-->>PC: sala inicializada (estado: esperando)
+    PC->>P: guardarPartida(partidaId, sala)
+    P-->>PC: OK (memoria)
+    PC-->>MP: {partidaId, resumen}
+    MP-->>B: 201 Created
+    B-->>U: Redirect /public/partida?partidaId=X
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>crear-sala.ejs</code>, <code>manejadorPartidas.js</code>, <code>PartidaController.js</code>, <code>SalaDeJuego.js</code></p>
+      </section>
+
+      <!-- FLUJO 4 -->
+      <section class="flow" id="flujo-4">
+        <h3>4. Buscar y unirse a sala <span class="badge poll">REST + Polling</span></h3>
+        <p class="description">
+          El listado de salas disponibles se refresca cada 3 segundos. Al unirse,
+          el servidor valida que la sala exista y tenga lugar antes de renderizar la partida.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser
+    participant MP as ManejadorPartidas
+    participant PC as PartidaController
+    participant MF as ManejadorFront
+    participant P as Persistencia
+
+    U->>B: Abre /public/salas
+    loop Cada 3 segundos
+        B->>MP: GET /api/partidas
+        MP->>PC: listarPartidas()
+        PC->>P: listarPartidasDisponibles()
+        P-->>PC: salas con estado "esperando"
+        PC-->>MP: [{partidaId, jugadores, max...}]
+        MP-->>B: JSON lista de salas
+        B->>B: Actualizar tabla HTML
+    end
+
+    U->>B: Clic "UNIRSE" en una sala
+    B->>MF: GET /public/partida?partidaId=X
+    MF->>PC: obtenerPartida(id, jugadorId)
+    PC->>P: obtenerPartida(id)
+    P-->>PC: sala
+
+    alt Sala llena o no existe
+        PC-->>MF: error 403/404
+        MF-->>B: Redirect /public/salas?error=...
+    else Hay lugar
+        PC-->>MF: resumen partida
+        MF-->>B: Render partida.ejs
+        B-->>U: Pantalla de lobby
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>salas.ejs</code>, <code>manejadorFront.js</code>, <code>PartidaController.js</code></p>
+      </section>
+
+      <!-- FLUJO 5 -->
+      <section class="flow" id="flujo-5">
+        <h3>5. Lobby, conexión WS e inicio de partida <span class="badge ws">WebSocket</span></h3>
+        <p class="description">
+          Tras cargar la página, el cliente abre WebSocket autenticado por cookie JWT.
+          El creador inicia la partida cuando hay suficientes jugadores conectados.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser (partida.js)
+    participant App as app.js (WS)
+    participant MM as ManejadorMensajes
+    participant PC as PartidaController
+    participant MC as ManejadorConexiones
+    participant S as SalaDeJuego
+    participant Otros as Otros jugadores
+
+    B->>B: GET /api/me → jugadorId
+    B->>PC: GET /api/partidas/:id (resumen lobby)
+    PC-->>B: estado, jugadores, bots
+
+    B->>App: WebSocket /ws?partidaId=X (cookie JWT)
+    App->>App: Verificar JWT en upgrade
+    App->>MM: manejarConexion(ws, jugadorId, partidaId)
+    MM->>MC: registrar(jugadorId, ws)
+    MM->>PC: unirJugador(partidaId, jugadorId)
+    PC->>S: agregarJugador / reconectar
+    PC->>MC: emitirATodos("jugador-unido")
+    MC-->>Otros: {evento: jugador-unido}
+    PC->>MC: emitirA(jugadorId, "estado-partida")
+    MC-->>B: {evento: estado-partida, datos: {...}}
+
+    Note over U,S: Creador inicia cuando la sala está lista
+    U->>B: Clic "INICIAR PARTIDA"
+    B->>MM: {accion: iniciar-partida}
+    MM->>PC: iniciarPartida(partidaId, jugadorId)
+    PC->>S: iniciar() — repartir cartas
+    S-->>PC: estado = jugando
+    PC->>MC: emitirATodos("estado-partida")
+    PC->>MC: emitirATodos("turno-cambiado")
+    MC-->>B: estado inicial del juego
+    MC-->>Otros: estado inicial del juego
+
+    opt Turno de un bot
+        PC->>PC: ejecutarTurnoBot()
+        PC->>MC: emitirATodos(carta-jugada, turno-cambiado)
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>partida.js</code>, <code>app.js</code>, <code>manejadorMensajes.js</code>, <code>PartidaController.js</code></p>
+      </section>
+
+      <!-- FLUJO 6 -->
+      <section class="flow" id="flujo-6">
+        <h3>6. Jugar un turno (humano) <span class="badge ws">WebSocket</span></h3>
+        <p class="description">
+          El jugador en turno juega una carta o roba del mazo. El servidor valida
+          reglas UNO, penalidades y transmite el nuevo estado a todos los clientes.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Jugador en turno
+    participant B as Browser (partida.js)
+    participant MM as ManejadorMensajes
+    participant PC as PartidaController
+    participant S as SalaDeJuego
+    participant MC as ManejadorConexiones
+    participant Otros as Otros clientes
+
+    alt Jugar carta
+        U->>B: Clic en carta de la mano
+        opt Carta comodín (+4 / cambio color)
+            B->>B: Modal elegir color
+        end
+        B->>MM: {accion: jugar-carta, cartaId, colorElegido?}
+        MM->>PC: jugarCarta(partidaId, jugadorId, cartaId, color)
+    else Robar carta
+        U->>B: Clic "Robar"
+        B->>MM: {accion: robar-carta}
+        MM->>PC: robarCarta(partidaId, jugadorId)
+    end
+
+    PC->>S: jugarCarta / robarCarta
+    S->>S: Validar turno, carta legal, UNO, penalidades
+    S-->>PC: resultado {ok, eventos...}
+
+    PC->>MC: emitirATodos("carta-jugada")
+    MC-->>Otros: animación carta en mesa
+
+    opt Jugador robó
+        PC->>MC: emitirA(jugadorId, "cartas-robadas")
+        MC-->>B: cartas nuevas (solo al que robó)
+    end
+
+    PC->>MC: emitirATodos("turno-cambiado")
+    PC->>MC: emitirATodos("estado-partida")
+    MC-->>B: UI actualizada
+    MC-->>Otros: UI actualizada
+
+    opt Siguiente turno es bot
+        PC->>PC: ejecutarTurnoBot()
+        Note over PC: BotLLM.decidirJugada (Gemini)
+        PC->>MC: emitirATodos(eventos del bot)
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>partida.js</code>, <code>SalaDeJuego.js</code>, <code>BotLLM.js</code>, <code>manejadorMensajes.js</code></p>
+      </section>
+
+      <!-- FLUJO 7 -->
+      <section class="flow" id="flujo-7">
+        <h3>7. Fin de ronda y fin de partida <span class="badge ws">WebSocket</span></h3>
+        <p class="description">
+          Al vaciar la mano gana la ronda. Se acumulan puntos hasta 200.
+          Al terminar la partida se persisten deltas en MySQL y se elimina la sala de memoria.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Jugador
+    participant B as Browser (partida.js)
+    participant PC as PartidaController
+    participant S as SalaDeJuego
+    participant MC as ManejadorConexiones
+    participant P as Persistencia
+    participant DB as MySQL
+
+    Note over S: Jugador juega su última carta
+    S->>S: Detectar mano vacía
+    S->>S: estado = entre-rondas, calcular puntos ronda
+    PC->>MC: emitirATodos("ronda-terminada")
+    MC-->>B: {ganadorRonda, puntosGanados, puntajesRonda}
+    B->>B: Modal "Fin de ronda"
+
+    U->>B: Clic "Continuar"
+    B->>PC: {accion: continuar-ronda}
+    PC->>S: continuarRonda()
+
+    alt Nadie llegó a 200 pts
+        S->>S: Repartir nueva ronda
+        S-->>PC: estado = jugando
+        PC->>MC: emitirATodos("estado-partida")
+        PC->>MC: emitirATodos("turno-cambiado")
+    else Alguien ≥ 200 pts — partida terminada
+        S->>S: partidaTerminada = true
+        PC->>P: guardarResultadoPartida(ranking, deltas)
+        P->>DB: INSERT partida + partida_jugadores
+        DB-->>P: OK
+        PC->>P: eliminarPartida(partidaId)
+        PC->>MC: emitirATodos("partida-terminada")
+        MC-->>B: Modal ranking final + deltas globales
+        B->>B: Opción volver al inicio
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>SalaDeJuego.js</code>, <code>PartidaController.js</code>, <code>partida.js</code>, <code>Persistencia.js</code></p>
+      </section>
+
+      <!-- FLUJO 8 -->
+      <section class="flow" id="flujo-8">
+        <h3>8. Desconexión, reconexión y abandono <span class="badge ws">WebSocket</span></h3>
+        <p class="description">
+          Una desconexión inesperada activa un período de gracia de 30 s.
+          Reconectar cancela el abandono; salir explícitamente o vencer el timer
+          concreta el abandono con penalización de −50 pts.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant B as Browser (partida.js)
+    participant MM as ManejadorMensajes
+    participant PC as PartidaController
+    participant MC as ManejadorConexiones
+    participant P as Persistencia
+    participant Otros as Otros jugadores
+
+    rect rgb(30, 40, 55)
+        Note over U,Otros: Desconexión inesperada
+        B-xMM: WebSocket close (sin abandonar-partida)
+        MM->>PC: desconectar(partidaId, jugadorId)
+        PC->>PC: Iniciar timer 30 s (grace period)
+        PC->>MC: emitirATodos("jugador-desconectado")
+        MC-->>Otros: jugador marcado offline
+    end
+
+    rect rgb(30, 40, 55)
+        Note over U,Otros: Reconexión exitosa
+        B->>MM: WebSocket reconnect /ws?partidaId=X
+        MM->>PC: unirJugador(partidaId, jugadorId)
+        PC->>PC: Cancelar timer de gracia
+        PC->>MC: emitirATodos("jugador-reconectado")
+        PC->>MC: emitirA(jugadorId, "estado-partida")
+        MC-->>B: Estado completo sincronizado
+    end
+
+    rect rgb(30, 40, 55)
+        Note over U,Otros: Abandono explícito o gracia vencida
+        alt Usuario clic "Salir"
+            U->>B: Confirmar abandono
+            B->>MM: {accion: abandonar-partida}
+            MM->>PC: abandonarPartida(partidaId, jugadorId)
+        else Timer 30 s expira
+            PC->>PC: concretarAbandono(jugadorId)
+        end
+
+        alt En lobby (esperando)
+            PC->>PC: Remover jugador de sala
+            PC->>MC: emitirATodos("jugador-salio")
+            opt Sin humanos restantes
+                PC->>P: eliminarPartida(partidaId)
+            end
+        else Partida en curso
+            PC->>P: guardarResultadoPartida (delta −50)
+            PC->>P: eliminarPartida(partidaId)
+            PC->>MC: emitirATodos("jugador-abandono")
+            MC-->>Otros: Partida finalizada por abandono
+        end
+    end
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>partida.js</code>, <code>PartidaController.js</code> (<code>desconectar</code>, <code>abandonarPartida</code>)</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1a2332',
+        primaryTextColor: '#e7ecf3',
+        primaryBorderColor: '#2d3a4f',
+        lineColor: '#8b9cb3',
+        secondaryColor: '#243044',
+        tertiaryColor: '#0f1419',
+        actorBkg: '#1a2332',
+        actorBorder: '#e63946',
+        actorTextColor: '#e7ecf3',
+        signalColor: '#e7ecf3',
+        labelBoxBkgColor: '#243044',
+        labelBoxBorderColor: '#2d3a4f',
+        labelTextColor: '#e7ecf3',
+        noteBkgColor: '#243044',
+        noteBorderColor: '#2d3a4f',
+        noteTextColor: '#e7ecf3',
+        activationBkgColor: '#2d3a4f',
+        activationBorderColor: '#e63946',
+        sequenceNumberColor: '#8b9cb3'
+      },
+      sequence: {
+        diagramMarginX: 20,
+        diagramMarginY: 10,
+        actorMargin: 60,
+        width: 160,
+        height: 40,
+        boxMargin: 8,
+        boxTextMargin: 6,
+        noteMargin: 10,
+        messageMargin: 30,
+        mirrorActors: true,
+        useMaxWidth: true
+      }
+    });
+
+    // Resaltar enlace activo al hacer scroll
+    const sections = document.querySelectorAll('section.flow, header.page-header');
+    const navLinks = document.querySelectorAll('nav a');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+            });
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -70% 0px' }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>

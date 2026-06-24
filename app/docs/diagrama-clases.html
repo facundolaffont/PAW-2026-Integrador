@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNO Argentino — Diagrama de Clases</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-hover: #243044;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --text-muted: #8b9cb3;
+      --accent: #e63946;
+      --accent-soft: rgba(230, 57, 70, 0.15);
+      --green: #2ecc71;
+      --yellow: #f1c40f;
+      --blue: #3498db;
+      --purple: #9b59b6;
+      --orange: #e67e22;
+      --sidebar-w: 280px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    nav {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    nav h1 {
+      font-size: 1.1rem;
+      padding: 0 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+
+    nav ul { list-style: none; }
+
+    nav .nav-group {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 0.75rem 1.25rem 0.35rem;
+    }
+
+    nav a {
+      display: block;
+      padding: 0.55rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+
+    nav a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    nav a.active {
+      color: var(--text);
+      background: var(--accent-soft);
+      border-left-color: var(--accent);
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 2.5rem 4rem;
+      max-width: 1200px;
+    }
+
+    header.page-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header.page-header h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    header.page-header p {
+      color: var(--text-muted);
+      max-width: 65ch;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .legend .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-modelo { background: var(--green); }
+    .dot-persistencia { background: var(--blue); }
+    .dot-ws { background: var(--yellow); }
+    .dot-http { background: var(--purple); }
+    .dot-infra { background: var(--orange); }
+
+    section.flow {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    section.flow h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    section.flow .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    section.flow .badge.modelo {
+      background: rgba(46, 204, 113, 0.15);
+      color: var(--green);
+    }
+
+    section.flow .badge.persistencia {
+      background: rgba(52, 152, 219, 0.15);
+      color: var(--blue);
+    }
+
+    section.flow .badge.ws {
+      background: rgba(241, 196, 15, 0.15);
+      color: var(--yellow);
+    }
+
+    section.flow .badge.http {
+      background: rgba(155, 89, 182, 0.15);
+      color: var(--purple);
+    }
+
+    section.flow .badge.infra {
+      background: rgba(230, 126, 34, 0.15);
+      color: var(--orange);
+    }
+
+    section.flow .description {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1.25rem;
+      max-width: 70ch;
+    }
+
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .diagram-card.interactive {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .diagram-card .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .panzoom-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 20, 25, 0.5);
+    }
+
+    .panzoom-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .panzoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .panzoom-controls button {
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .panzoom-controls button:hover {
+      background: var(--border);
+      border-color: var(--text-muted);
+    }
+
+    .panzoom-level {
+      min-width: 3.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .panzoom-viewport {
+      position: relative;
+      height: min(70vh, 720px);
+      min-height: 420px;
+      overflow: hidden;
+      cursor: grab;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(139, 156, 179, 0.12) 1px, transparent 0);
+      background-size: 24px 24px;
+      touch-action: none;
+    }
+
+    .panzoom-viewport.is-dragging {
+      cursor: grabbing;
+    }
+
+    .diagram-card.interactive.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      border-radius: 0;
+      border: none;
+      margin: 0;
+      width: 100vw;
+      max-width: none;
+    }
+
+    .diagram-card.interactive.is-fullscreen .panzoom-toolbar {
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .panzoom-viewport.is-fullscreen {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+    }
+
+    .panzoom-content {
+      display: inline-block;
+      transform-origin: 0 0;
+      will-change: transform;
+      padding: 2rem;
+    }
+
+    .panzoom-content .mermaid {
+      display: block;
+    }
+
+    .panzoom-content svg {
+      display: block;
+      max-width: none !important;
+    }
+
+    .fullscreen-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0, 0, 0, 0.65);
+    }
+
+    .fullscreen-backdrop.active {
+      display: block;
+    }
+
+    .files {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .files code {
+      background: var(--bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; }
+      nav {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      main { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav>
+      <h1>UNO Argentino</h1>
+      <ul>
+        <li><a href="#intro">Introducción</a></li>
+        <li class="nav-group">Vista general</li>
+        <li><a href="#general">Diagrama completo</a></li>
+        <li class="nav-group">Por capa</li>
+        <li><a href="#modelo">Modelo de dominio</a></li>
+        <li><a href="#ia">Inteligencia artificial</a></li>
+        <li><a href="#persistencia">Persistencia</a></li>
+        <li><a href="#websocket">Tiempo real (WS)</a></li>
+        <li><a href="#http">Capa HTTP</a></li>
+        <li><a href="#infra">Infraestructura</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <header class="page-header" id="intro">
+        <h2>Diagrama de Clases</h2>
+        <p>
+          Estructura de clases de <strong>UNO Argentino</strong>: modelo de dominio del juego,
+          capa de persistencia (MySQL o memoria), controladores de partida en tiempo real,
+          API REST y servidor Express.
+        </p>
+        <div class="legend">
+          <span><span class="dot dot-modelo"></span> Modelo</span>
+          <span><span class="dot dot-persistencia"></span> Persistencia</span>
+          <span><span class="dot dot-ws"></span> WebSocket</span>
+          <span><span class="dot dot-http"></span> HTTP / REST</span>
+          <span><span class="dot dot-infra"></span> Infraestructura</span>
+        </div>
+      </header>
+
+      <!-- GENERAL -->
+      <section class="flow" id="general">
+        <h3>Diagrama completo <span class="badge">Overview</span></h3>
+        <p class="description">
+          Vista integrada de todas las clases y sus relaciones principales.
+          Usá la rueda del mouse para hacer zoom, arrastrá para moverte, o los
+          botones de la barra. Las flechas punteadas indican dependencia; las de
+          composición indican que una clase contiene instancias de otra.
+        </p>
+        <div class="diagram-card interactive" id="general-diagram-card">
+          <div class="panzoom-toolbar">
+            <span class="panzoom-hint">Rueda: zoom · Arrastrar: mover · Doble clic: acercar</span>
+            <div class="panzoom-controls">
+              <button type="button" data-action="zoom-out" title="Alejar">−</button>
+              <span class="panzoom-level" id="general-zoom-level">100%</span>
+              <button type="button" data-action="zoom-in" title="Acercar">+</button>
+              <button type="button" data-action="reset" title="Restablecer">⟲</button>
+              <button type="button" data-action="fit" title="Ajustar a la vista">Ajustar</button>
+              <button type="button" data-action="fullscreen" title="Pantalla completa">⛶</button>
+            </div>
+          </div>
+          <div class="panzoom-viewport" id="general-viewport">
+            <div class="panzoom-content" id="general-content">
+          <pre class="mermaid" id="general-mermaid">
+classDiagram
+    direction TB
+
+    class Carta {
+        +String id
+        +String color
+        +String tipo
+        +int numero
+        +get valor()
+        +get esComodin()
+        +static esJugadaValida()$
+    }
+
+    class Mazo {
+        -Carta[] cartas
+        +static crearCompleto()$
+        +mezclar()
+        +robar(cantidad)
+        +get cantidad()
+    }
+
+    class JugadorEnSala {
+        +String jugadorId
+        +String nombreUsuario
+        +Carta[] mano
+        +bool esBot
+        +recibirCartas()
+        +quitarCarta()
+        +get gano()
+    }
+
+    class SalaDeJuego {
+        +String partidaId
+        +String estado
+        +JugadorEnSala[] jugadores
+        +Mazo mazo
+        +Carta[] descarte
+        +iniciar()
+        +jugarCarta()
+        +robarCarta()
+        +estadoParaJugador()
+    }
+
+    class Usuario {
+        +String jugadorId
+        +String nombreUsuario
+        +String passwordHash
+    }
+
+    class BotLLM {
+        -GenerativeModel model
+        +decidirJugada()
+    }
+
+    class Persistencia {
+        -Map partidas
+        -repositorio
+        +registrarJugador()
+        +obtenerJugador()
+        +guardarPartida()
+        +obtenerPartida()
+        +listarPartidasDisponibles()
+    }
+
+    class JugadorRepositorioMySQL {
+        +registrarJugador()
+        +obtenerJugador()
+        +obtenerPuntajes()
+        +guardarResultadoPartida()
+    }
+
+    class JugadorRepositorioMemoria {
+        -Map jugadores
+        -Map puntajes
+        +registrarJugador()
+        +obtenerJugador()
+        +obtenerPuntajes()
+    }
+
+    class PartidaController {
+        -ManejadorConexiones conexiones
+        -Persistencia persistencia
+        -BotLLM botLLM
+        +crearPartida()
+        +unirJugador()
+        +iniciarPartida()
+        +jugarCarta()
+        +robarCarta()
+        +desconectar()
+        +abandonarPartida()
+    }
+
+    class ManejadorConexiones {
+        -Map conexiones
+        +registrar()
+        +emitirA()
+        +emitirATodos()
+    }
+
+    class ManejadorMensajes {
+        -PartidaController controller
+        -ManejadorConexiones conexiones
+        +manejarConexion()
+    }
+
+    class AuthController {
+        -Persistencia persistencia
+        +registrar()
+        +ingresar()
+    }
+
+    class PuntajesController {
+        -Persistencia persistencia
+        +listarPuntajes()
+    }
+
+    class ManejadorAuth {
+        +Router router
+        +registrar()
+        +ingresar()
+        +salir()
+    }
+
+    class ManejadorPartidas {
+        +Router router
+        +listar()
+        +crear()
+        +obtener()
+    }
+
+    class ManejadorPuntajes {
+        +Router router
+        +listar()
+    }
+
+    class ManejadorFront {
+        +registrarRutas()
+    }
+
+    class Servidor {
+        -Express app
+        -HttpServer server
+        -WebSocketServer wss
+        -PartidaController partidaController
+        -ManejadorMensajes manejador
+        +iniciar()
+    }
+
+    class Logger {
+        +debug()
+        +info()
+        +error()
+    }
+
+    class AppException {
+        +String message
+    }
+
+    class NullException
+    class EmptyException
+
+    Mazo o-- Carta
+    SalaDeJuego o-- JugadorEnSala
+    SalaDeJuego o-- Mazo
+    SalaDeJuego ..> Carta
+    JugadorEnSala o-- Carta
+    BotLLM ..> Carta
+    Persistencia o-- SalaDeJuego
+    Persistencia --> JugadorRepositorioMySQL : DB_HOST
+    Persistencia --> JugadorRepositorioMemoria : sin DB
+    JugadorRepositorioMySQL ..> Usuario : crea
+    JugadorRepositorioMemoria ..> Usuario : crea
+    ManejadorMensajes --> PartidaController
+    ManejadorMensajes --> ManejadorConexiones
+    PartidaController --> ManejadorConexiones
+    PartidaController --> BotLLM
+    PartidaController ..> Persistencia
+    PartidaController ..> SalaDeJuego
+    AuthController ..> Persistencia
+    PuntajesController ..> Persistencia
+    ManejadorAuth --> AuthController
+    ManejadorPartidas --> PartidaController
+    ManejadorPuntajes --> PuntajesController
+    ManejadorFront --> PartidaController
+    ManejadorFront --> PuntajesController
+    Servidor --> ManejadorConexiones
+    Servidor --> PartidaController
+    Servidor --> ManejadorMensajes
+    Servidor --> ManejadorAuth
+    Servidor --> ManejadorPartidas
+    Servidor --> ManejadorPuntajes
+    Servidor --> ManejadorFront
+    NullException --|> AppException
+    EmptyException --|> AppException
+          </pre>
+            </div>
+          </div>
+        </div>
+        <p class="files">Directorio principal: <code>app/src/</code></p>
+      </section>
+
+      <div class="fullscreen-backdrop" id="fullscreen-backdrop"></div>
+
+      <!-- MODELO -->
+      <section class="flow" id="modelo">
+        <h3>Modelo de dominio <span class="badge modelo">Modelo</span></h3>
+        <p class="description">
+          Entidades del juego UNO: cartas, mazo, jugadores en sala y la sala que
+          encapsula toda la lógica de reglas, turnos, penalidades y rondas.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction LR
+
+    class Carta {
+        +String id
+        +String color
+        +String tipo
+        +int numero
+        +String colorElegido
+        +get valor() int
+        +get esComodin() bool
+        +get esAcumulable() bool
+        +static COLORES$ String[]
+        +static ESPECIALES$ String[]
+        +static esJugadaValida(carta, enMesa, penalidad, tipo)$ bool
+    }
+
+    class Mazo {
+        -Carta[] cartas
+        +static crearCompleto()$ Mazo
+        +mezclar() void
+        +robar(cantidad) Carta[]
+        +agregar(carta) void
+        +get cantidad() int
+        +get estaVacio() bool
+    }
+
+    class JugadorEnSala {
+        +String jugadorId
+        +String nombreUsuario
+        +Carta[] mano
+        +bool esBot
+        +bool canto
+        +recibirCartas(cartas) void
+        +quitarCarta(cartaId) Carta
+        +reiniciarMano() void
+        +get cantidadCartas() int
+        +get gano() bool
+    }
+
+    class Usuario {
+        +String jugadorId
+        +String nombreUsuario
+        +String passwordHash
+    }
+
+    class SalaDeJuego {
+        +String partidaId
+        +String creadorId
+        +int maxJugadores
+        +String estado
+        +JugadorEnSala[] jugadores
+        +Mazo mazo
+        +Carta[] descarte
+        +int turnoIdx
+        +int sentido
+        +int penalidad
+        +String tipoPenalidad
+        +Object puntajesRonda
+        +agregarBot(nombre) String
+        +agregarJugador(id, nombre) Object
+        +validarIngreso(jugadorId) Object
+        +resumenPublico() Object
+        +iniciar(jugadorId) Object
+        +jugadorEnTurno() JugadorEnSala
+        +turnoEsBot() bool
+        +estadoParaBot() Object
+        +jugarCarta(jugadorId, cartaId, color) Object
+        +robarCarta(jugadorId) Object
+        +cantarUno(jugadorId) Object
+        +continuarRonda(jugadorId) Object
+        +jugadorAbandonó(jugadorId) Object
+        +estadoParaJugador(jugadorId) Object
+        +agregarMensajeChat(jugadorId, texto) Object
+    }
+
+    Mazo o-- "*" Carta : contiene
+    JugadorEnSala o-- "*" Carta : mano
+    SalaDeJuego o-- "*" JugadorEnSala : jugadores
+    SalaDeJuego *-- Mazo : mazo
+    SalaDeJuego o-- "*" Carta : descarte
+    SalaDeJuego ..> Carta : valida jugadas
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>modelo/Carta.js</code>, <code>Mazo.js</code>, <code>JugadorEnSala.js</code>, <code>SalaDeJuego.js</code>, <code>Usuario.js</code></p>
+      </section>
+
+      <!-- IA -->
+      <section class="flow" id="ia">
+        <h3>Inteligencia artificial <span class="badge modelo">Modelo</span></h3>
+        <p class="description">
+          Los bots usan Gemini 1.5 Flash para decidir jugadas. Si la API falla o
+          devuelve una jugada inválida, cae a un modo fallback determinista.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class BotLLM {
+        -GenerativeModel model
+        +decidirJugada(mano, cartaEnMesa, penalidad, tipo, rivales) Object
+        -_armarPrompt(...) String
+        -_fallback(cartasValidas, mano) Object
+    }
+
+    class Carta {
+        +static esJugadaValida(carta, enMesa, penalidad, tipo)$ bool
+    }
+
+    class SalaDeJuego {
+        +estadoParaBot() Object
+        +turnoEsBot() bool
+        +jugadorEnTurno() JugadorEnSala
+    }
+
+    class PartidaController {
+        -BotLLM botLLM
+        -#ejecutarTurnoBot(partidaId) void
+    }
+
+    BotLLM ..> Carta : valida jugadas
+    PartidaController --> BotLLM : consulta turno bot
+    PartidaController ..> SalaDeJuego : estadoParaBot()
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>modelo/BotLLM.js</code>, <code>controladores/PartidaController.js</code></p>
+      </section>
+
+      <!-- PERSISTENCIA -->
+      <section class="flow" id="persistencia">
+        <h3>Persistencia <span class="badge persistencia">Persistencia</span></h3>
+        <p class="description">
+          <code>Persistencia</code> es un singleton que delega jugadores y puntajes
+          al repositorio activo (MySQL si <code>DB_HOST</code> está definido, memoria
+          en caso contrario). Las partidas activas viven siempre en un <code>Map</code> en memoria.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class Persistencia {
+        -Map~String, SalaDeJuego~ partidas
+        -repositorio
+        +registrarJugador(id, nombre, hash) Usuario
+        +obtenerJugador(id) Usuario
+        +obtenerJugadorPorNombre(nombre) Usuario
+        +obtenerPuntajes() Object[]
+        +guardarResultadoPartida(id, ranking) void
+        +guardarPartida(id, sala) void
+        +obtenerPartida(id) SalaDeJuego
+        +eliminarPartida(id) void
+        +listarPartidasDisponibles() Object[]
+        +jugadorEstaEnPartida(id) bool
+    }
+
+    class JugadorRepositorioMySQL {
+        +registrarJugador(id, nombre, hash) Usuario
+        +obtenerJugador(id) Usuario
+        +obtenerJugadorPorNombre(nombre) Usuario
+        +obtenerPuntajes() Object[]
+        +guardarResultadoPartida(id, ranking) void
+    }
+
+    class JugadorRepositorioMemoria {
+        -Map jugadores
+        -Map puntajes
+        +registrarJugador(id, nombre, hash) Usuario
+        +obtenerJugador(id) Usuario
+        +obtenerJugadorPorNombre(nombre) Usuario
+        +obtenerPuntajes() Object[]
+        +guardarResultadoPartida(id, ranking) void
+    }
+
+    class Usuario {
+        +String jugadorId
+        +String nombreUsuario
+        +String passwordHash
+    }
+
+    class SalaDeJuego
+
+    class conexion {
+        Pool MySQL
+    }
+
+    Persistencia o-- "*" SalaDeJuego : partidas activas
+    Persistencia --> JugadorRepositorioMySQL : si DB_HOST
+    Persistencia --> JugadorRepositorioMemoria : si no DB
+    JugadorRepositorioMySQL ..> Usuario : instancia
+    JugadorRepositorioMySQL ..> conexion : pool
+    JugadorRepositorioMemoria ..> Usuario : instancia
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>persistencia/Persistencia.js</code>, <code>mysql/JugadorRepositorioMySQL.js</code>, <code>memoria/JugadorRepositorioMemoria.js</code>, <code>mysql/conexion.js</code></p>
+      </section>
+
+      <!-- WEBSOCKET -->
+      <section class="flow" id="websocket">
+        <h3>Tiempo real (WebSocket) <span class="badge ws">WebSocket</span></h3>
+        <p class="description">
+          <code>PartidaController</code> orquesta la lógica de partida y emite eventos
+          vía <code>ManejadorConexiones</code>. <code>ManejadorMensajes</code> traduce
+          mensajes JSON del cliente a llamadas al controlador.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class ManejadorMensajes {
+        -PartidaController #partidaController
+        -ManejadorConexiones #manejadorConexiones
+        +manejarConexion(ws, jugadorId, partidaId) Promise
+    }
+
+    class PartidaController {
+        -ManejadorConexiones manejadorConexiones
+        -Persistencia persistencia
+        -BotLLM botLLM
+        -Map desconexionesPendientes
+        -Map unoTimers
+        -Map turnoTimers
+        +listarPartidas() Object[]
+        +crearPartida(jugadorId, max, bots) Object
+        +obtenerPartida(id, jugadorId) Object
+        +unirJugador(partidaId, jugadorId) Object
+        +iniciarPartida(partidaId, jugadorId) void
+        +jugarCarta(partidaId, jugadorId, cartaId, color) void
+        +robarCarta(partidaId, jugadorId) void
+        +cantarUno(partidaId, jugadorId) void
+        +continuarRonda(partidaId, jugadorId) void
+        +enviarMensajeChat(partidaId, jugadorId, texto) void
+        +desconectar(partidaId, jugadorId) Promise
+        +abandonarPartida(partidaId, jugadorId) Promise
+        -#ejecutarTurnoBot(partidaId) void
+        -#broadcast(sala, evento, datos) void
+        -#emitirEstadoPartida(sala) void
+    }
+
+    class ManejadorConexiones {
+        -Map~String, WebSocket~ conexiones
+        +registrar(jugadorId, ws) void
+        +desregistrar(jugadorId) void
+        +emitirA(jugadorId, evento, datos) void
+        +emitirATodos(jugadoresIds, evento, datos) void
+    }
+
+    class SalaDeJuego
+    class Persistencia
+    class BotLLM
+
+    ManejadorMensajes --> PartidaController : delega acciones
+    ManejadorMensajes --> ManejadorConexiones : registra WS
+    PartidaController --> ManejadorConexiones : emite eventos
+    PartidaController ..> Persistencia
+    PartidaController ..> SalaDeJuego
+    PartidaController --> BotLLM
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>ws/manejadorMensajes.js</code>, <code>ws/manejadorConexiones.js</code>, <code>controladores/PartidaController.js</code></p>
+      </section>
+
+      <!-- HTTP -->
+      <section class="flow" id="http">
+        <h3>Capa HTTP <span class="badge http">HTTP</span></h3>
+        <p class="description">
+          Los <em>handlers</em> exponen rutas Express y delegan en los controladores.
+          <code>ManejadorFront</code> renderiza vistas EJS. El middleware
+          <code>requireAuth</code> / <code>requireAuthWeb</code> valida el JWT en cookie.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class Servidor {
+        -Express app
+        +#configurarRutasHttp() void
+    }
+
+    class ManejadorAuth {
+        +Router router
+        -AuthController controller
+        +registrar(req, res) void
+        +ingresar(req, res) void
+        +salir(req, res) void
+        +me(req, res) void
+        -#emitirToken(res, id, nombre) void
+    }
+
+    class ManejadorPartidas {
+        +Router router
+        -PartidaController controller
+        +listar(req, res) void
+        +crear(req, res) void
+        +obtener(req, res) void
+    }
+
+    class ManejadorPuntajes {
+        +Router router
+        -PuntajesController controller
+        +listar(req, res) void
+    }
+
+    class ManejadorFront {
+        -Express app
+        -PuntajesController puntajesController
+        -PartidaController partidaController
+        +#registrarRutas() void
+    }
+
+    class AuthController {
+        -Persistencia persistencia
+        +registrar(nombre, password) Object
+        +ingresar(nombre, password) Object
+    }
+
+    class PuntajesController {
+        -Persistencia persistencia
+        +listarPuntajes() Object[]
+    }
+
+    class PartidaController {
+        +listarPartidas()
+        +crearPartida()
+        +obtenerPartida()
+    }
+
+    class middlewareAuth {
+        +requireAuth(req, res, next)
+        +requireAuthWeb(req, res, next)
+    }
+
+    class Persistencia
+
+    Servidor --> ManejadorAuth
+    Servidor --> ManejadorPartidas
+    Servidor --> ManejadorPuntajes
+    Servidor --> ManejadorFront
+    ManejadorAuth --> AuthController
+    ManejadorPartidas --> PartidaController
+    ManejadorPuntajes --> PuntajesController
+    ManejadorFront --> PuntajesController
+    ManejadorFront --> PartidaController
+    ManejadorFront ..> middlewareAuth : requireAuthWeb
+    AuthController ..> Persistencia
+    PuntajesController ..> Persistencia
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>http/handlers/*.js</code>, <code>controladores/AuthController.js</code>, <code>PuntajesController.js</code>, <code>http/middleware/middlewareAuth.js</code></p>
+      </section>
+
+      <!-- INFRA -->
+      <section class="flow" id="infra">
+        <h3>Infraestructura <span class="badge infra">Infra</span></h3>
+        <p class="description">
+          <code>Servidor</code> arma Express, HTTP y WebSocket. <code>Logger</code> es
+          un singleton Winston usado en toda la app. Las excepciones de dominio extienden
+          <code>AppException</code>.
+        </p>
+        <div class="diagram-card">
+          <pre class="mermaid">
+classDiagram
+    direction TB
+
+    class Servidor {
+        -int puerto
+        -Express app
+        -HttpServer server
+        -WebSocketServer wss
+        -PartidaController partidaController
+        -ManejadorMensajes manejador
+        +constructor(puerto)
+        +iniciar() void
+        -#configurarMiddleware() void
+        -#configurarRutasHttp() void
+        -#configurarWebSocket() void
+    }
+
+    class Logger {
+        -Logger _instance$
+        -Winston _logger
+        +debug(exec, msg, meta) void
+        +info(exec, msg, meta) void
+        +error(exec, msg, meta) void
+    }
+
+    class AppException {
+        +String message
+        +String name
+    }
+
+    class NullException {
+        +constructor(campo)
+    }
+
+    class EmptyException {
+        +constructor(campo)
+    }
+
+    class utils {
+        +logContext(logger, ctx)
+        +registerLog(logger, level, msg, meta)
+        +handleErrorByEnv(...)
+    }
+
+  Servidor ..> Logger : usa
+  Servidor ..> utils : usa
+  NullException --|> AppException
+  EmptyException --|> AppException
+  AppException --|> Error
+          </pre>
+        </div>
+        <p class="files">Archivos: <code>app.js</code>, <code>logger.js</code>, <code>utils.js</code>, <code>errores/*.js</code></p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const mermaidTheme = {
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1a2332',
+        primaryTextColor: '#e7ecf3',
+        primaryBorderColor: '#2d3a4f',
+        lineColor: '#8b9cb3',
+        secondaryColor: '#243044',
+        tertiaryColor: '#0f1419',
+        classText: '#e7ecf3',
+        noteBkgColor: '#243044',
+        noteBorderColor: '#2d3a4f',
+        noteTextColor: '#e7ecf3'
+      }
+    };
+
+    mermaid.initialize({
+      startOnLoad: false,
+      ...mermaidTheme,
+      class: {
+        hideEmptyMembersBox: true,
+        useMaxWidth: true
+      }
+    });
+
+    class DiagramPanZoom {
+      constructor(viewport, content, levelEl, cardEl, backdropEl) {
+        this.viewport = viewport;
+        this.content = content;
+        this.levelEl = levelEl;
+        this.cardEl = cardEl;
+        this.backdropEl = backdropEl;
+        this.scale = 1;
+        this.minScale = 1;
+        this.maxScale = 6;
+        this.panX = 0;
+        this.panY = 0;
+        this.isDragging = false;
+        this.dragPointerId = null;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.panStartX = 0;
+        this.panStartY = 0;
+        this.isFullscreen = false;
+        this.fullscreenBtn = cardEl.querySelector('[data-action="fullscreen"]');
+
+        this.#bindEvents();
+      }
+
+      #bindEvents() {
+        this.viewport.addEventListener('wheel', (e) => this.#onWheel(e), { passive: false });
+        this.viewport.addEventListener('pointerdown', (e) => this.#onPointerDown(e));
+        this.viewport.addEventListener('pointermove', (e) => this.#onPointerMove(e));
+        this.viewport.addEventListener('pointerup', (e) => this.#onPointerUp(e));
+        this.viewport.addEventListener('pointercancel', (e) => this.#onPointerUp(e));
+        this.viewport.addEventListener('dblclick', (e) => this.#onDoubleClick(e));
+
+        this.cardEl.querySelector('.panzoom-controls').addEventListener('click', (e) => {
+          const action = e.target.closest('button')?.dataset.action;
+          if (!action) return;
+          if (action === 'zoom-in') this.zoomBy(1.2);
+          if (action === 'zoom-out') this.zoomBy(1 / 1.2);
+          if (action === 'reset') this.reset();
+          if (action === 'fit') this.fit();
+          if (action === 'fullscreen') this.toggleFullscreen();
+        });
+
+        this.backdropEl.addEventListener('click', () => {
+          if (this.isFullscreen) this.toggleFullscreen();
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.isFullscreen) this.toggleFullscreen();
+        });
+      }
+
+      #onWheel(e) {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+        this.zoomAt(e.clientX, e.clientY, factor);
+      }
+
+      #onPointerDown(e) {
+        if (e.button !== 0) return;
+        this.isDragging = true;
+        this.dragPointerId = e.pointerId;
+        this.dragStartX = e.clientX;
+        this.dragStartY = e.clientY;
+        this.panStartX = this.panX;
+        this.panStartY = this.panY;
+        this.viewport.classList.add('is-dragging');
+        this.viewport.setPointerCapture(e.pointerId);
+      }
+
+      #onPointerMove(e) {
+        if (!this.isDragging || e.pointerId !== this.dragPointerId) return;
+        this.panX = this.panStartX + (e.clientX - this.dragStartX);
+        this.panY = this.panStartY + (e.clientY - this.dragStartY);
+        this.#applyTransform();
+      }
+
+      #onPointerUp(e) {
+        if (e.pointerId !== this.dragPointerId) return;
+        this.isDragging = false;
+        this.dragPointerId = null;
+        this.viewport.classList.remove('is-dragging');
+        if (this.viewport.hasPointerCapture(e.pointerId)) {
+          this.viewport.releasePointerCapture(e.pointerId);
+        }
+      }
+
+      #onDoubleClick(e) {
+        this.zoomAt(e.clientX, e.clientY, 1.35);
+      }
+
+      zoomBy(factor) {
+        const rect = this.viewport.getBoundingClientRect();
+        this.zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+      }
+
+      zoomAt(clientX, clientY, factor) {
+        const rect = this.viewport.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const next = Math.min(this.maxScale, Math.max(this.minScale, this.scale * factor));
+        const ratio = next / this.scale;
+        this.panX = x - (x - this.panX) * ratio;
+        this.panY = y - (y - this.panY) * ratio;
+        this.scale = next;
+        this.#applyTransform();
+      }
+
+      #clampPan() {
+        const scaledW = this.content.offsetWidth * this.scale;
+        const scaledH = this.content.offsetHeight * this.scale;
+        const vw = this.viewport.clientWidth;
+        const vh = this.viewport.clientHeight;
+        const margin = 24;
+
+        let minX;
+        let maxX;
+        let minY;
+        let maxY;
+
+        if (scaledW <= vw) {
+          const centered = (vw - scaledW) / 2;
+          minX = maxX = centered;
+        } else {
+          maxX = margin;
+          minX = vw - scaledW - margin;
+        }
+
+        if (scaledH <= vh) {
+          const centered = (vh - scaledH) / 2;
+          minY = maxY = centered;
+        } else {
+          maxY = margin;
+          minY = vh - scaledH - margin;
+        }
+
+        this.panX = Math.min(maxX, Math.max(minX, this.panX));
+        this.panY = Math.min(maxY, Math.max(minY, this.panY));
+      }
+
+      reset() {
+        this.zoomToMax();
+      }
+
+      zoomToMax() {
+        this.scale = this.maxScale;
+        this.panX = 32;
+        this.panY = 32;
+        this.#applyTransform();
+      }
+
+      fit() {
+        const svg = this.content.querySelector('svg');
+        if (!svg) return;
+
+        const bbox = svg.getBBox();
+        const padding = 48;
+        const vw = this.viewport.clientWidth;
+        const vh = this.viewport.clientHeight;
+        const scaleX = (vw - padding) / bbox.width;
+        const scaleY = (vh - padding) / bbox.height;
+
+        this.scale = Math.max(this.minScale, Math.min(scaleX, scaleY, 1.5));
+        this.panX = (vw - bbox.width * this.scale) / 2;
+        this.panY = (vh - bbox.height * this.scale) / 2;
+        this.#applyTransform();
+      }
+
+      toggleFullscreen() {
+        this.isFullscreen = !this.isFullscreen;
+        this.cardEl.classList.toggle('is-fullscreen', this.isFullscreen);
+        this.viewport.classList.toggle('is-fullscreen', this.isFullscreen);
+        this.backdropEl.classList.toggle('active', this.isFullscreen);
+        this.fullscreenBtn.textContent = this.isFullscreen ? '⤢' : '⛶';
+        this.fullscreenBtn.title = this.isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa';
+        requestAnimationFrame(() => this.fit());
+      }
+
+      #applyTransform() {
+        this.#clampPan();
+        this.content.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale})`;
+        this.levelEl.textContent = `${Math.round(this.scale * 100)}%`;
+      }
+    }
+
+    async function renderDiagrams() {
+      const general = document.getElementById('general-mermaid');
+      const others = [...document.querySelectorAll('pre.mermaid')].filter((el) => el !== general);
+
+      mermaid.initialize({
+        startOnLoad: false,
+        ...mermaidTheme,
+        class: { hideEmptyMembersBox: true, useMaxWidth: false }
+      });
+      await mermaid.run({ nodes: [general], suppressErrors: true });
+
+      mermaid.initialize({
+        startOnLoad: false,
+        ...mermaidTheme,
+        class: { hideEmptyMembersBox: true, useMaxWidth: true }
+      });
+      await mermaid.run({ nodes: others, suppressErrors: true });
+
+      const panzoom = new DiagramPanZoom(
+        document.getElementById('general-viewport'),
+        document.getElementById('general-content'),
+        document.getElementById('general-zoom-level'),
+        document.getElementById('general-diagram-card'),
+        document.getElementById('fullscreen-backdrop')
+      );
+      panzoom.zoomToMax();
+    }
+
+    renderDiagrams();
+
+    const sections = document.querySelectorAll('section.flow, header.page-header');
+    const navLinks = document.querySelectorAll('nav a');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach((link) => {
+              link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+            });
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -70% 0px' }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
