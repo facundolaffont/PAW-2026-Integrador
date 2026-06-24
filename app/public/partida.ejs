@@ -146,6 +146,9 @@
       document.addEventListener('click', (e) => {
         if (e.target.closest('a[href], [data-nav-interno="true"]')) window.__navInterno = true;
       });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) window.__navInterno = true;
+      });
       window.addEventListener('pagehide', () => {
         if (window.__navInterno) return;
         navigator.sendBeacon('/api/salir');
