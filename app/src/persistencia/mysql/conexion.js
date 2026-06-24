@@ -9,8 +9,14 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || 'uno',
   password: process.env.DB_PASSWORD || 'uno',
   database: process.env.DB_NAME || 'uno',
+
+  // Si están todas las conexiones ocupadas,
+  // la próxima petición espera encolada.
   waitForConnections: true,
+
+  // Habilita 10 conexiones reutilizables.
   connectionLimit: 10,
+
 });
 
 module.exports = pool;
