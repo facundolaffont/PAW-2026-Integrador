@@ -1,0 +1,26 @@
+app/init-letsencrypt.sh
+  s_acd3191f843d8e::t_404dbc568dfc4c 33
+.github/workflows/deploy.yml
+  s_acd3191f843d8e::t_624fb345ef5983 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "3a104daa2545ae248be352c48f6d82b6e11f71ce",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_acd3191f843d8e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fe32a68-9b16-45c9-a50b-9cbaf7ca5681",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
