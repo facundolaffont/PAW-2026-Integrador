@@ -1,0 +1,38 @@
+app/docker-compose.yml
+  s_acd3191f843d8e::t_d9b1411e276e74 44-71,74-75
+app/src/app.js
+  s_acd3191f843d8e::t_61c365221ff152 47-50
+.github/workflows/deploy.yml
+  s_acd3191f843d8e::t_36cf087bc755d1 20,37-38,40,46-47
+app/nginx/entrypoint.sh
+  s_acd3191f843d8e::t_9bed7b445f3979 1-13
+app/init-letsencrypt.sh
+  s_acd3191f843d8e::t_1acebe0f2dbf3d 1-45
+app/src/http/handlers/manejadorAuth.js
+  s_acd3191f843d8e::t_e5d5d84903bc1a 20-22
+DEPLOYMENT.md
+  s_acd3191f843d8e::t_00ad23db3500c5 5,9,13-14,18,20-37,41-53,62
+app/nginx/nginx.conf.template
+  s_acd3191f843d8e::t_21950ba0d1a63b 1-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "69469b1ecacc643c9f9740fe83b4dbfdfc17c442",
+  "prompts": {},
+  "humans": {
+    "h_c044bf8701ab58": {
+      "author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  },
+  "sessions": {
+    "s_acd3191f843d8e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fe32a68-9b16-45c9-a50b-9cbaf7ca5681",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "rrobles_meli <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
