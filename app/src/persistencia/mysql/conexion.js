@@ -1,3 +1,6 @@
+// Variante del paquete de Node.js mysql2
+// que expone una API basada en Promises en
+// lugar de callbacks.
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
