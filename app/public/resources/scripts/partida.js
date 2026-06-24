@@ -95,6 +95,16 @@ class Partida {
     this.turnoTimerDeadline = 0;
     this.turnoTimerBeepDisparado = false;
     this.audioCtx = null;
+    this.animacionesActivas = 0;
+    this.animacionesPendientes = 0;
+    this.colaAnimaciones = Promise.resolve();
+    this.estadoPendienteRender = null;
+    this.idsManoPropia = new Set();
+    this.cartasAnimadasRecientemente = new Set();
+    this.ultimaCartaDescarteId = null;
+    this.DURACION_ANIMACION_CARTA_MS = 480;
+    this.DURACION_ANIMACION_CARTA_MS_REDUCIDA = 220;
+    this.RETARDO_ENTRE_CARTAS_MS = 90;
   }
 
   #asegurarAudioCtx() {
@@ -906,11 +916,275 @@ class Partida {
     img.className = 'carta-svg';
     img.src = this.#urlCarta(carta, reverso);
     img.alt = reverso ? 'Carta oculta' : 'Carta';
+    if (carta?.id) {
+      img.dataset.cartaId = carta.id;
+    }
     if (!reverso && typeof onClick === 'function') {
       img.style.cursor = 'pointer';
       img.addEventListener('click', onClick);
     }
     return img;
+  }
+
+  #animacionesHabilitadas() {
+    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  #duracionAnimacionCarta() {
+    return this.#animacionesHabilitadas()
+      ? this.DURACION_ANIMACION_CARTA_MS
+      : this.DURACION_ANIMACION_CARTA_MS_REDUCIDA;
+  }
+
+  #hayAnimacionesEnCurso() {
+    return this.animacionesActivas > 0 || this.animacionesPendientes > 0;
+  }
+
+  #encolarAnimacion(ejecutar) {
+    if (!this.#animacionesHabilitadas()) {
+      return Promise.resolve();
+    }
+
+    this.animacionesPendientes += 1;
+
+    const tarea = this.colaAnimaciones.then(async () => {
+      this.animacionesActivas += 1;
+      try {
+        await ejecutar();
+      } finally {
+        this.animacionesActivas -= 1;
+        this.animacionesPendientes -= 1;
+        this.#aplicarEstadoPendiente();
+      }
+    });
+
+    this.colaAnimaciones = tarea.catch(() => {});
+    return tarea;
+  }
+
+  #encolarAccionPostAnimacion(ejecutar) {
+    this.colaAnimaciones = this.colaAnimaciones
+      .then(() => ejecutar())
+      .catch(() => {});
+  }
+
+  #solicitarRenderMesa(estado) {
+    if (this.#hayAnimacionesEnCurso() && this.#animacionesHabilitadas()) {
+      this.estadoPendienteRender = estado;
+      this.estadoMesaActual = estado;
+      return;
+    }
+    this.#renderMesa(estado);
+  }
+
+  #aplicarEstadoPendiente() {
+    if (this.#hayAnimacionesEnCurso() || !this.estadoPendienteRender) return;
+    const estado = this.estadoPendienteRender;
+    this.estadoPendienteRender = null;
+    this.#renderMesa(estado);
+  }
+
+  #crearMazoVisual() {
+    const carta = this.#crearCarta(null, true);
+    carta.classList.add('mazo-carta');
+    return carta;
+  }
+
+  #reponerCartaMazo(mazo) {
+    if (!mazo) return;
+    mazo.querySelector('.mazo-carta')?.remove();
+    mazo.appendChild(this.#crearMazoVisual());
+  }
+
+  #obtenerCartaTopeMazo() {
+    return this.vistaMesa?.querySelector('.mazo .mazo-carta');
+  }
+
+  #obtenerMazoEl() {
+    return this.vistaMesa?.querySelector('.mazo');
+  }
+
+  #obtenerDescarteEl() {
+    return this.vistaMesa?.querySelector('.carta-descarte');
+  }
+
+  #etiquetarMano(mano, jugadorId) {
+    if (mano && jugadorId != null) {
+      mano.dataset.jugadorId = String(jugadorId);
+    }
+    return mano;
+  }
+
+  #obtenerZonaMano(jugadorId) {
+    if (!this.vistaMesa || this.vistaMesa.hidden || jugadorId == null) return null;
+
+    const manos = this.vistaMesa.querySelectorAll(`[data-jugador-id="${String(jugadorId)}"]`);
+    for (const mano of manos) {
+      const rect = mano.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) return mano;
+    }
+
+    return manos[0] || null;
+  }
+
+  #obtenerUltimaCartaEnMano(jugadorId) {
+    const mano = this.#obtenerZonaMano(jugadorId);
+    if (!mano) return null;
+
+    const cartas = mano.querySelectorAll('.carta-svg');
+    return cartas.length > 0 ? cartas[cartas.length - 1] : mano;
+  }
+
+  #obtenerCartaOrigenDescarte(jugadorId, carta) {
+    if (String(jugadorId) === String(this.jugadorId) && carta?.id) {
+      const cartaPropia = this.vistaMesa?.querySelector(
+        `.area-jugador-abajo .carta-svg[data-carta-id="${carta.id}"]`
+      );
+      if (cartaPropia) return cartaPropia;
+    }
+
+    return this.#obtenerUltimaCartaEnMano(jugadorId);
+  }
+
+  #obtenerRectDestinoMano(manoEl) {
+    const cartas = manoEl.querySelectorAll('.carta-svg');
+    if (cartas.length === 0) {
+      return this.#obtenerRectCarta(manoEl);
+    }
+
+    const ultima = cartas[cartas.length - 1].getBoundingClientRect();
+    const esLateral = manoEl.classList.contains('mano-lateral');
+
+    if (esLateral) {
+      return {
+        left: ultima.left,
+        top: ultima.top + ultima.height * 0.35,
+        width: ultima.width,
+        height: ultima.height,
+      };
+    }
+
+    return {
+      left: ultima.left + ultima.width * 0.55,
+      top: ultima.top,
+      width: ultima.width,
+      height: ultima.height,
+    };
+  }
+
+  #obtenerRectCarta(el) {
+    if (!el) return null;
+    const carta = el.classList?.contains('carta-svg') ? el : el.querySelector('.carta-svg');
+    return (carta || el).getBoundingClientRect();
+  }
+
+  #animarCartaVolando(origenEl, destinoEl, carta, { reverso = false, desdeMazo = false } = {}) {
+    if (!origenEl || !destinoEl || !this.#animacionesHabilitadas()) {
+      return Promise.resolve();
+    }
+
+    const origen = this.#obtenerRectCarta(origenEl);
+    const destino = destinoEl.dataset?.jugadorId
+      ? this.#obtenerRectDestinoMano(destinoEl)
+      : this.#obtenerRectCarta(
+          destinoEl.querySelector?.('.carta-svg:last-child') ||
+            destinoEl.querySelector?.('.carta-svg') ||
+            destinoEl
+        );
+    if (!origen?.width || !destino?.width) return Promise.resolve();
+
+    const voladora = this.#crearCarta(carta, reverso);
+    voladora.classList.add('carta-voladora');
+    voladora.style.width = `${origen.width}px`;
+    voladora.style.height = `${origen.height}px`;
+    voladora.style.left = `${origen.left}px`;
+    voladora.style.top = `${origen.top}px`;
+
+    const deltaX = destino.left - origen.left;
+    const deltaY = destino.top - origen.top;
+
+    voladora.style.setProperty('--carta-vuelo-duracion', `${this.#duracionAnimacionCarta()}ms`);
+
+    const opacidadOrigen = origenEl.style.opacity;
+    const cartaOrigen = origenEl.classList?.contains('carta-svg')
+      ? origenEl
+      : origenEl.querySelector?.('.carta-svg');
+
+    if (desdeMazo) {
+      const mazo = origenEl.closest('.mazo');
+      origenEl.remove();
+      if (mazo) this.#reponerCartaMazo(mazo);
+    } else if (cartaOrigen) {
+      cartaOrigen.style.opacity = '0';
+    }
+
+    document.body.appendChild(voladora);
+
+    return new Promise((resolve) => {
+      const limpiar = () => {
+        voladora.remove();
+        if (!desdeMazo && cartaOrigen) {
+          cartaOrigen.style.opacity = opacidadOrigen;
+        }
+        resolve();
+      };
+
+      const onFin = (evento) => {
+        if (evento.propertyName !== 'transform') return;
+        voladora.removeEventListener('transitionend', onFin);
+        limpiar();
+      };
+
+      voladora.addEventListener('transitionend', onFin);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          voladora.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        });
+      });
+
+      setTimeout(limpiar, this.#duracionAnimacionCarta() + 120);
+    });
+  }
+
+  async #animarCartaADescarte(jugadorId, carta) {
+    const descarte = this.#obtenerDescarteEl();
+    const origen = this.#obtenerCartaOrigenDescarte(jugadorId, carta);
+    if (!descarte || !origen) return;
+
+    await this.#animarCartaVolando(origen, descarte, carta, { reverso: false });
+  }
+
+  async #animarCartasDesdeMazo(jugadorId, cartas = [], cantidadSinDetalle = 0) {
+    const mano = this.#obtenerZonaMano(jugadorId);
+    if (!mano) return;
+
+    const cantidad = cartas.length || cantidadSinDetalle;
+    if (!cantidad) return;
+
+    const esYo = String(jugadorId) === String(this.jugadorId);
+
+    for (let i = 0; i < cantidad; i += 1) {
+      const carta = cartas[i] || null;
+      const cartaTope = this.#obtenerCartaTopeMazo();
+      if (!cartaTope) return;
+
+      if (carta?.id) {
+        this.cartasAnimadasRecientemente.add(carta.id);
+      }
+
+      await this.#animarCartaVolando(cartaTope, mano, carta, {
+        reverso: !esYo || !carta,
+        desdeMazo: true,
+      });
+
+      this.#agregarCartaVisibleAMano(jugadorId, carta);
+
+      if (i < cantidad - 1) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, this.RETARDO_ENTRE_CARTAS_MS);
+        });
+      }
+    }
   }
 
   /**
@@ -921,12 +1195,16 @@ class Partida {
    * @param {?Function} [onCartaClick=null] - Callback para clicks sobre cartas visibles.
    * @returns {HTMLDivElement} Contenedor de la mano horizontal.
    */
-  #crearManoHorizontal(cartas, reverso = false, onCartaClick = null) {
+  #crearManoHorizontal(cartas, reverso = false, onCartaClick = null, cartasNuevas = null) {
     const mano = document.createElement('div');
     mano.className = 'mano-horizontal';
     cartas.forEach((carta) => {
       const clickHandler = !reverso && carta?.id ? () => onCartaClick?.(carta) : null;
-      mano.appendChild(this.#crearCarta(carta, reverso, clickHandler));
+      const cartaEl = this.#crearCarta(carta, reverso, clickHandler);
+      if (carta?.id && cartasNuevas?.has(carta.id) && !this.cartasAnimadasRecientemente.has(carta.id)) {
+        cartaEl.classList.add('carta-nueva');
+      }
+      mano.appendChild(cartaEl);
     });
     return mano;
   }
@@ -1109,6 +1387,67 @@ class Partida {
     return carta.color === colorMesa || mismoTipoNoNumerico || mismoNumero;
   }
 
+  async #manejarJugarCartaPropia(carta) {
+    const estado = this.estadoMesaActual;
+    if (!estado || estado.estado !== 'jugando') return;
+    if (String(estado.turno) !== String(this.jugadorId)) return;
+    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+    this.#asegurarAudioCtx();
+    if (!this.#esJugadaValidaEnCliente(carta)) {
+      this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
+      return;
+    }
+
+    const payload = { accion: 'jugar-carta', cartaId: carta.id };
+    if (this.#esCartaSinColor(carta)) {
+      const colorElegido = await this.#pedirColorComodin();
+      if (!colorElegido) return;
+      payload.colorElegido = colorElegido;
+    }
+
+    this.webSocket.send(JSON.stringify(payload));
+  }
+
+  #incorporarCartaRobadaEnEstado(jugadorId, carta = null) {
+    if (!this.estadoMesaActual?.jugadores) return;
+
+    const jugador = this.estadoMesaActual.jugadores.find(
+      (j) => String(j.jugadorId) === String(jugadorId)
+    );
+    if (!jugador) return;
+
+    if (String(jugadorId) === String(this.jugadorId) && carta?.id) {
+      if (!Array.isArray(jugador.mano)) jugador.mano = [];
+      if (!jugador.mano.some((c) => c.id === carta.id)) {
+        jugador.mano.push(carta);
+        this.idsManoPropia.add(carta.id);
+      }
+      return;
+    }
+
+    jugador.cantidadCartas = (jugador.cantidadCartas || 0) + 1;
+  }
+
+  #agregarCartaVisibleAMano(jugadorId, carta = null) {
+    const mano = this.#obtenerZonaMano(jugadorId);
+    if (!mano) return;
+
+    const esYo = String(jugadorId) === String(this.jugadorId);
+
+    if (esYo && carta?.id) {
+      if (mano.querySelector(`[data-carta-id="${carta.id}"]`)) return;
+      const cartaEl = this.#crearCarta(carta, false, () => this.#manejarJugarCartaPropia(carta));
+      cartaEl.classList.add('carta-nueva');
+      mano.appendChild(cartaEl);
+      this.#incorporarCartaRobadaEnEstado(jugadorId, carta);
+      return;
+    }
+
+    const cartaEl = this.#crearCarta(null, true);
+    cartaEl.classList.add('carta-nueva');
+    mano.appendChild(cartaEl);
+  }
+
   /**
    * Reordena la lista de jugadores para que el jugador actual quede en la primera posición.
    *
@@ -1137,6 +1476,13 @@ class Partida {
     const juegoActivo = estado.estado === 'jugando';
     const turnoActualId = estado.turno;
     const manoActual = jugadorActual?.mano || [];
+    const idsManoAnteriores = this.idsManoPropia;
+    const idsCartasNuevas = new Set(
+      idsManoAnteriores.size > 0
+        ? manoActual.map((carta) => carta.id).filter((id) => id && !idsManoAnteriores.has(id))
+        : []
+    );
+    this.idsManoPropia = new Set(manoActual.map((carta) => carta.id).filter(Boolean));
     const tieneJugadaDisponible = manoActual.some((carta) => this.#esJugadaValidaEnCliente(carta));
     const debeRobar = juegoActivo && esMiTurno && !tieneJugadaDisponible;
     const claseNombreTurno = (jugador, claseBase) =>
@@ -1175,7 +1521,10 @@ class Partida {
       nombre.textContent = textoTurnoJugador(rivalArriba);
       areaArriba.appendChild(nombre);
       areaArriba.appendChild(
-        this.#crearManoHorizontal(this.#crearCartasPlaceholder(rivalArriba.cantidadCartas), true)
+        this.#etiquetarMano(
+          this.#crearManoHorizontal(this.#crearCartasPlaceholder(rivalArriba.cantidadCartas), true),
+          rivalArriba.jugadorId
+        )
       );
     }
 
@@ -1191,9 +1540,12 @@ class Partida {
       nombreRival.className = claseNombreTurno(rival, 'info-jugador');
       nombreRival.textContent = textoTurnoJugador(rival);
 
-      const manoRival = this.#crearManoHorizontal(
-        this.#crearCartasPlaceholder(rival.cantidadCartas),
-        true
+      const manoRival = this.#etiquetarMano(
+        this.#crearManoHorizontal(
+          this.#crearCartasPlaceholder(rival.cantidadCartas),
+          true
+        ),
+        rival.jugadorId
       );
       manoRival.classList.add('mano-rival-mobile');
 
@@ -1213,7 +1565,10 @@ class Partida {
       nombreIzq.textContent = textoTurnoJugador(rivalIzquierda);
       lateralIzq.appendChild(nombreIzq);
       lateralIzq.appendChild(
-        this.#crearManoLateral(this.#crearCartasPlaceholder(rivalIzquierda.cantidadCartas), true)
+        this.#etiquetarMano(
+          this.#crearManoLateral(this.#crearCartasPlaceholder(rivalIzquierda.cantidadCartas), true),
+          rivalIzquierda.jugadorId
+        )
       );
     }
 
@@ -1226,7 +1581,7 @@ class Partida {
       mazo.classList.add('mazo-destacado');
       mazo.title = 'No tenés una jugada válida. Robá del mazo.';
     }
-    mazo.appendChild(this.#crearCarta(null, true));
+    mazo.appendChild(this.#crearMazoVisual());
     if (juegoActivo && esMiTurno) {
       mazo.style.cursor = 'pointer';
       mazo.addEventListener('click', () => {
@@ -1240,6 +1595,10 @@ class Partida {
     descarte.className = 'carta-descarte';
     const descarteVisible = estado.descarte || [];
     const ultimaCarta = descarteVisible[descarteVisible.length - 1] || estado.cartaEnMesa || null;
+    if (ultimaCarta?.id && ultimaCarta.id !== this.ultimaCartaDescarteId) {
+      descarte.classList.add('carta-descarte-actualizada');
+    }
+    this.ultimaCartaDescarteId = ultimaCarta?.id ?? null;
     descarte.appendChild(this.#crearCarta(ultimaCarta, false));
 
     const colorActual = ultimaCarta?.colorElegido || ultimaCarta?.color || null;
@@ -1285,7 +1644,10 @@ class Partida {
       nombreDer.textContent = textoTurnoJugador(rivalDerecha);
       lateralDer.appendChild(nombreDer);
       lateralDer.appendChild(
-        this.#crearManoLateral(this.#crearCartasPlaceholder(rivalDerecha.cantidadCartas), true)
+        this.#etiquetarMano(
+          this.#crearManoLateral(this.#crearCartasPlaceholder(rivalDerecha.cantidadCartas), true),
+          rivalDerecha.jugadorId
+        )
       );
     }
 
@@ -1309,28 +1671,15 @@ class Partida {
 
       areaAbajo.appendChild(headerActual);
       areaAbajo.appendChild(
-        this.#crearManoHorizontal(manoActual, false, async (carta) => {
-          if (!juegoActivo || !esMiTurno) return;
-          if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
-          this.#asegurarAudioCtx();
-          if (!this.#esJugadaValidaEnCliente(carta)) {
-            this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
-            return;
-          }
-
-          const payload = { accion: 'jugar-carta', cartaId: carta.id };
-          if (this.#esCartaSinColor(carta)) {
-            if (!this.#esJugadaValidaEnCliente(carta)) {
-              this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
-              return;
-            }
-            const colorElegido = await this.#pedirColorComodin();
-            if (!colorElegido) return;
-            payload.colorElegido = colorElegido;
-          }
-
-          this.webSocket.send(JSON.stringify(payload));
-        })
+        this.#etiquetarMano(
+          this.#crearManoHorizontal(
+            manoActual,
+            false,
+            (carta) => this.#manejarJugarCartaPropia(carta),
+            idsCartasNuevas
+          ),
+          jugadorActual.jugadorId
+        )
       );
     }
 
@@ -1343,6 +1692,7 @@ class Partida {
       const elTurno = this.vistaMesa.querySelector('.jugador-en-turno-nombre');
       if (elTurno) elTurno.appendChild(this.turnoTimerSpan);
     }
+    this.cartasAnimadasRecientemente.clear();
   }
 
   /**
@@ -1487,10 +1837,10 @@ class Partida {
             this.#mostrarMensaje(textoInicioRonda);
             this.numeroRondaActual = estado.numeroRonda;
           }
-          this.#renderMesa(estado);
+          this.#solicitarRenderMesa(estado);
         } else if (estado.estado === 'entre-rondas') {
           this.estadoMesaActual = estado;
-          this.#renderMesa(estado);
+          this.#solicitarRenderMesa(estado);
         }
         this.#pintarJugadores(estado.jugadores || []);
         // Hidratar el historial de chat la primera vez que llega estado-partida
@@ -1508,6 +1858,13 @@ class Partida {
           ? ` (elige ${this.#nombreColor(datos.carta.colorElegido)})`
           : '';
         this.#mostrarMensaje(`${nombre} jugó ${carta}${colorElegido}.`);
+        this.#encolarAnimacion(() => this.#animarCartaADescarte(datos.jugadorId, datos.carta));
+        break;
+      }
+      case 'cartas-robadas': {
+        this.#encolarAnimacion(() =>
+          this.#animarCartasDesdeMazo(this.jugadorId, datos.cartasRobadas || [])
+        );
         break;
       }
       case 'jugador-unido': {
@@ -1531,6 +1888,12 @@ class Partida {
           const palabraCarta = cantidad === 1 ? 'carta' : 'cartas';
           const sufijo = robo.auto ? ' (se le acabó el tiempo)' : '';
           this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}${sufijo}.`);
+
+          if (String(robo.jugadorId) !== String(this.jugadorId) && cantidad > 0) {
+            this.#encolarAnimacion(() =>
+              this.#animarCartasDesdeMazo(robo.jugadorId, [], cantidad)
+            );
+          }
         }
 
         if (datos.turno != null) {
@@ -1551,7 +1914,9 @@ class Partida {
         this.#vibrar([100, 50, 100]);
         this.#mostrarMensaje('Ronda terminada.');
         this.#mostrarTablaPuntajesRonda(datos.puntajesRonda || {}, datos.ganadorRonda);
-        this.#mostrarModalFinRonda(datos.ganadorRonda, datos.puntajesRonda);
+        this.#encolarAccionPostAnimacion(() => {
+          this.#mostrarModalFinRonda(datos.ganadorRonda, datos.puntajesRonda);
+        });
         break;
       }
       case 'partida-terminada': {
