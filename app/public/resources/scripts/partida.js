@@ -94,6 +94,7 @@ class Partida {
     this.turnoTimerIntervalo = null;
     this.turnoTimerDeadline = 0;
     this.turnoTimerBeepDisparado = false;
+    this.turnoTimerPendienteMs = null;
     this.audioCtx = null;
     this.animacionesActivas = 0;
     this.animacionesPendientes = 0;
@@ -217,11 +218,33 @@ class Partida {
       if (restanteMs <= 0) {
         clearInterval(this.turnoTimerIntervalo);
         this.turnoTimerIntervalo = null;
+        this.turnoTimerSpan.textContent = '';
+        this.turnoTimerSpan.classList.remove('turno-timer--urgente');
       }
     };
 
     tick();
     this.turnoTimerIntervalo = setInterval(tick, 200);
+  }
+
+  #aplicarTimerTurnoPendiente(turnoEsperado = null) {
+    if (this.turnoTimerPendienteMs == null) return;
+    if (!this.estadoMesaActual || this.estadoMesaActual.estado !== 'jugando') return;
+
+    const turno = turnoEsperado ?? this.estadoMesaActual.turno;
+    if (turno == null) return;
+    if (String(this.estadoMesaActual.turno) !== String(turno)) return;
+    if (this.vistaMesa?.hidden) return;
+
+    if (this.turnoTimerSpan) {
+      const slot = this.#obtenerSlotTimerTurnoVisible();
+      if (!slot) return;
+      slot.appendChild(this.turnoTimerSpan);
+    }
+
+    const ms = this.turnoTimerPendienteMs;
+    this.turnoTimerPendienteMs = null;
+    this.#iniciarTurnoTimer(ms);
   }
 
   #detenerTurnoTimer(quitar = true) {
@@ -231,9 +254,10 @@ class Partida {
     }
     this.turnoTimerBeepDisparado = false;
     if (!this.turnoTimerSpan) return;
+    this.turnoTimerSpan.textContent = '';
+    this.turnoTimerSpan.classList.remove('turno-timer--urgente');
     if (quitar) {
-      this.turnoTimerSpan.textContent = '';
-      this.turnoTimerSpan.classList.remove('turno-timer--urgente');
+      this.turnoTimerPendienteMs = null;
       if (this.turnoTimerSpan.parentNode) {
         this.turnoTimerSpan.parentNode.removeChild(this.turnoTimerSpan);
       }
@@ -1015,6 +1039,20 @@ class Partida {
     return mano;
   }
 
+  #obtenerSlotTimerTurnoVisible() {
+    const nombresEnTurno = this.vistaMesa?.querySelectorAll('.jugador-en-turno-nombre');
+    if (!nombresEnTurno?.length) return null;
+
+    for (const nombre of nombresEnTurno) {
+      const rect = nombre.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return nombre.querySelector('.turno-timer-slot');
+      }
+    }
+
+    return null;
+  }
+
   #obtenerZonaMano(jugadorId) {
     if (!this.vistaMesa || this.vistaMesa.hidden || jugadorId == null) return null;
 
@@ -1490,12 +1528,32 @@ class Partida {
         ? `${claseBase} jugador-en-turno-nombre`
         : claseBase;
 
-    const textoTurnoJugador = (jugador) => {
-      if (!jugador) return '';
-      if (String(jugador.jugadorId) !== String(turnoActualId)) return jugador.nombreUsuario;
-      return String(jugador.jugadorId) === String(this.jugadorId)
-        ? `${jugador.nombreUsuario} (tu turno)`
-        : `${jugador.nombreUsuario} (en turno)`;
+    const crearEtiquetaNombreJugador = (jugador, claseBase) => {
+      const etiqueta = document.createElement('div');
+      etiqueta.className = claseNombreTurno(jugador, claseBase);
+
+      const texto = document.createElement('span');
+      texto.className = 'jugador-nombre-texto';
+      texto.textContent = jugador.nombreUsuario;
+      etiqueta.appendChild(texto);
+
+      if (juegoActivo) {
+        const enTurno = String(jugador.jugadorId) === String(turnoActualId);
+        const esYo = String(jugador.jugadorId) === String(this.jugadorId);
+
+        const sufijo = document.createElement('span');
+        sufijo.className = 'jugador-nombre-sufijo-turno';
+        sufijo.textContent = esYo ? ' (tu turno)' : ' (en turno)';
+        if (!enTurno) sufijo.classList.add('jugador-nombre-turno-inactivo');
+        etiqueta.appendChild(sufijo);
+
+        const timerSlot = document.createElement('span');
+        timerSlot.className = 'turno-timer-slot';
+        if (!enTurno) timerSlot.classList.add('turno-timer-slot--inactivo');
+        etiqueta.appendChild(timerSlot);
+      }
+
+      return etiqueta;
     };
 
     // Las posiciones de los rivales se mantienen fijas según el orden de asiento,
@@ -1507,19 +1565,19 @@ class Partida {
 
     this.vistaLobby.hidden = true;
     this.vistaMesa.hidden = false;
+    this.vistaMesa.classList.toggle('juego-activo', juegoActivo);
     this.lobbyPrincipal.classList.add('partida-activa');
     this.info.textContent = '';
 
     this.vistaMesa.innerHTML = '';
 
+    const usaRivalesEnListaMobile = window.matchMedia('(max-width: 1000px)').matches;
+
     const areaArriba = document.createElement('div');
     areaArriba.className = 'area-jugador-arriba';
 
-    if (rivalArriba) {
-      const nombre = document.createElement('div');
-      nombre.className = claseNombreTurno(rivalArriba, 'info-jugador');
-      nombre.textContent = textoTurnoJugador(rivalArriba);
-      areaArriba.appendChild(nombre);
+    if (rivalArriba && !usaRivalesEnListaMobile) {
+      areaArriba.appendChild(crearEtiquetaNombreJugador(rivalArriba, 'info-jugador'));
       areaArriba.appendChild(
         this.#etiquetarMano(
           this.#crearManoHorizontal(this.#crearCartasPlaceholder(rivalArriba.cantidadCartas), true),
@@ -1536,9 +1594,7 @@ class Partida {
       const filaRival = document.createElement('div');
       filaRival.className = 'rival-mobile-row';
 
-      const nombreRival = document.createElement('div');
-      nombreRival.className = claseNombreTurno(rival, 'info-jugador');
-      nombreRival.textContent = textoTurnoJugador(rival);
+      filaRival.appendChild(crearEtiquetaNombreJugador(rival, 'info-jugador'));
 
       const manoRival = this.#etiquetarMano(
         this.#crearManoHorizontal(
@@ -1549,7 +1605,6 @@ class Partida {
       );
       manoRival.classList.add('mano-rival-mobile');
 
-      filaRival.appendChild(nombreRival);
       filaRival.appendChild(manoRival);
       areaRivalesMobile.appendChild(filaRival);
     });
@@ -1560,10 +1615,7 @@ class Partida {
     const lateralIzq = document.createElement('div');
     lateralIzq.className = 'area-jugador-lateral izquierda';
     if (rivalIzquierda) {
-      const nombreIzq = document.createElement('div');
-      nombreIzq.className = claseNombreTurno(rivalIzquierda, 'nombre-lateral');
-      nombreIzq.textContent = textoTurnoJugador(rivalIzquierda);
-      lateralIzq.appendChild(nombreIzq);
+      lateralIzq.appendChild(crearEtiquetaNombreJugador(rivalIzquierda, 'nombre-lateral'));
       lateralIzq.appendChild(
         this.#etiquetarMano(
           this.#crearManoLateral(this.#crearCartasPlaceholder(rivalIzquierda.cantidadCartas), true),
@@ -1639,10 +1691,7 @@ class Partida {
     const lateralDer = document.createElement('div');
     lateralDer.className = 'area-jugador-lateral derecha';
     if (rivalDerecha) {
-      const nombreDer = document.createElement('div');
-      nombreDer.className = claseNombreTurno(rivalDerecha, 'nombre-lateral');
-      nombreDer.textContent = textoTurnoJugador(rivalDerecha);
-      lateralDer.appendChild(nombreDer);
+      lateralDer.appendChild(crearEtiquetaNombreJugador(rivalDerecha, 'nombre-lateral'));
       lateralDer.appendChild(
         this.#etiquetarMano(
           this.#crearManoLateral(this.#crearCartasPlaceholder(rivalDerecha.cantidadCartas), true),
@@ -1662,10 +1711,7 @@ class Partida {
       const headerActual = document.createElement('div');
       headerActual.className = 'jugador-actual-header';
 
-      const nombreActual = document.createElement('div');
-      nombreActual.className = claseNombreTurno(jugadorActual, 'info-jugador');
-      nombreActual.textContent = textoTurnoJugador(jugadorActual);
-      headerActual.appendChild(nombreActual);
+      headerActual.appendChild(crearEtiquetaNombreJugador(jugadorActual, 'info-jugador'));
 
       if (juegoActivo && this.btnCantarUno) headerActual.appendChild(this.btnCantarUno);
 
@@ -1689,9 +1735,12 @@ class Partida {
     this.vistaMesa.appendChild(areaAbajo);
 
     if (juegoActivo && this.turnoTimerSpan) {
-      const elTurno = this.vistaMesa.querySelector('.jugador-en-turno-nombre');
-      if (elTurno) elTurno.appendChild(this.turnoTimerSpan);
+      const slot = this.#obtenerSlotTimerTurnoVisible();
+      if (slot && !slot.contains(this.turnoTimerSpan)) {
+        slot.appendChild(this.turnoTimerSpan);
+      }
     }
+    this.#aplicarTimerTurnoPendiente();
     this.cartasAnimadasRecientemente.clear();
   }
 
@@ -1897,7 +1946,9 @@ class Partida {
         }
 
         if (datos.turno != null) {
-          this.#iniciarTurnoTimer(datos.tiempoTurnoMs || 10000);
+          this.#detenerTurnoTimer(false);
+          this.turnoTimerPendienteMs = datos.tiempoTurnoMs || 10000;
+          this.#aplicarTimerTurnoPendiente(datos.turno);
         } else {
           this.#detenerTurnoTimer();
         }

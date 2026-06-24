@@ -407,20 +407,129 @@ body {
 }
 
 .info-jugador {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 8px;
   font-size: 13px;
+  font-weight: 700;
   letter-spacing: 1px;
   color: #cdd8e3;
   padding: 5px;
   border-radius: 5px;
+  box-sizing: border-box;
+  background-color: transparent;
 }
 
-.jugador-en-turno-nombre {
-  color: white;
-  font-weight: bolder;
-  background-color: black;
+.mesa.juego-activo .info-jugador {
+  display: grid;
+  grid-template-columns: max-content 11ch 44px;
+  column-gap: 8px;
+  align-items: center;
+  color: #ffffff;
+  contain: layout style;
+}
+
+.mesa.juego-activo .nombre-lateral {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: inline-block;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: #ffffff;
+  padding: 10px 6px;
+  width: auto;
+  max-width: none;
+  border-radius: 5px;
+}
+
+.mesa.juego-activo .izquierda .nombre-lateral {
+  transform: rotate(180deg);
+}
+
+.mesa.juego-activo .derecha .nombre-lateral {
+  writing-mode: vertical-lr;
+  transform: none;
+}
+
+.mesa.juego-activo .nombre-lateral .jugador-nombre-texto,
+.mesa.juego-activo .nombre-lateral .jugador-nombre-sufijo-turno,
+.mesa.juego-activo .nombre-lateral .turno-timer-slot {
+  display: inline;
+  grid-column: auto;
+  grid-row: auto;
+  width: auto;
+  height: auto;
+  writing-mode: inherit;
+  text-orientation: inherit;
+}
+
+.mesa.juego-activo .nombre-lateral .jugador-nombre-sufijo-turno {
+  min-width: 5.75em;
+}
+
+.mesa.juego-activo .nombre-lateral .turno-timer-slot {
+  display: inline-block;
+  min-width: 0;
+}
+
+.mesa.juego-activo .nombre-lateral .turno-timer {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+  padding: 2px 6px;
+  writing-mode: inherit;
+  text-orientation: inherit;
+}
+
+.jugador-en-turno-nombre::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: #000000;
+  z-index: -1;
+}
+
+.jugador-nombre-texto {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.jugador-nombre-sufijo-turno {
+  grid-column: 2;
+  grid-row: 1;
+  width: 11ch;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.nombre-lateral .jugador-nombre-sufijo-turno {
+  min-width: 5.75em;
+  width: auto;
+  height: auto;
+  display: inline-block;
+}
+
+.turno-timer-slot {
+  grid-column: 3;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.jugador-nombre-turno-inactivo,
+.turno-timer-slot--inactivo {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .puntaje {
@@ -457,12 +566,24 @@ body {
 }
 
 .nombre-lateral {
+  position: relative;
+  isolation: isolate;
   writing-mode: vertical-rl;
   font-size: 13px;
+  font-weight: 700;
   letter-spacing: 2px;
   color: #cdd8e3;
   padding: 5px;
   border-radius: 5px;
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.nombre-lateral .turno-timer-slot {
+  writing-mode: inherit;
+  width: auto;
+  height: auto;
+  min-height: 0;
 }
 
 .izquierda .nombre-lateral {
@@ -692,6 +813,7 @@ body {
   flex-direction: column;
   gap: 8px;
   align-items: center;
+  margin-top: 0.5rem;
 }
 
 /* ─── MANOS HORIZONTALES (arriba y abajo) ─── */
@@ -1248,9 +1370,12 @@ body {
   }
 
   .mano-horizontal {
-    max-width: 92vw;
+    max-width: 100%;
+    width: 100%;
     overflow-x: auto;
-    padding: 4px 0;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mano-horizontal .carta,
@@ -1261,6 +1386,18 @@ body {
   .mano-horizontal .carta:first-child,
   .mano-horizontal .carta-svg:first-child {
     margin-left: 0;
+  }
+
+  .mesa {
+    margin-left: 0;
+    margin-right: 0;
+    overflow: visible;
+  }
+
+  .area-jugador-abajo {
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .navbar {
@@ -1319,16 +1456,6 @@ body {
     height: clamp(50px, min(16.2vw, 10.3vh), 77px);
   }
 
-  .mano-horizontal .carta,
-  .mano-horizontal .carta-svg {
-    margin-left: -12px;
-  }
-
-  .area-jugador-abajo .mano-horizontal .carta,
-  .area-jugador-abajo .mano-horizontal .carta-svg {
-    margin-left: 1px;
-  }
-
   .mano-lateral .carta,
   .mano-lateral .carta-svg {
     margin-left: -18px;
@@ -1355,8 +1482,6 @@ body {
   .navbar-logo {
     font-size: 15px;
   }
-
-  
 }
 
 @media (max-width: 1000px) and (orientation: portrait) {
@@ -1437,6 +1562,26 @@ body {
     height: 46px;
     font-size: 20px;
   }
+
+  .area-jugador-abajo .mano-horizontal {
+    gap: 2px;
+  }
+
+  .area-jugador-abajo .mano-horizontal .carta-svg {
+    margin-left: 0;
+  }
+
+  .area-jugador-abajo .mano-horizontal .carta-svg:not(:first-child) {
+    margin-left: 0;
+  }
+
+  .mano-rival-mobile {
+    gap: 0;
+  }
+
+  .mano-rival-mobile .carta-svg:not(:first-child) {
+    margin-left: -16px;
+  }
 }
 
 @media (max-width: 1000px) and (orientation: landscape) {
@@ -1444,30 +1589,16 @@ body {
     flex-direction: row;
     align-items: flex-start;
     overflow: hidden;
-  }
-
-  .lobby-bitacora {
-    position: static;
-    width: min(280px, 32vw);
-    max-height: 70dvh;
-    min-height: 0;
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.2);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 16px;
-    z-index: auto;
-    backdrop-filter: none;
-  }
-
-  .btn-cerrar-bitacora {
-    display: none;
+    padding: 4px 8px;
+    gap: 6px;
   }
 
   .navbar {
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 8px;
     justify-content: flex-start;
+    margin-bottom: 4px;
+    padding: 4px 10px;
   }
 
   .navbar-info {
@@ -1494,6 +1625,24 @@ body {
     flex-shrink: 0;
   }
 
+  .lobby-bitacora {
+    position: static;
+    width: min(260px, 30vw);
+    max-height: calc(100dvh - var(--navbar-height, 36px) - 12px);
+    min-height: 0;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: auto;
+    backdrop-filter: none;
+  }
+
+  .btn-cerrar-bitacora {
+    display: none;
+  }
+
   .lobby-principal {
     align-items: stretch;
     justify-content: flex-start;
@@ -1518,7 +1667,8 @@ body {
     grid-area: titulo;
     margin: 0;
     align-self: end;
-    text-align: left;
+    justify-self: center;
+    text-align: center;
     font-size: 20px;
   }
 
@@ -1526,7 +1676,8 @@ body {
     grid-area: info;
     margin: 0;
     align-self: start;
-    text-align: left;
+    justify-self: center;
+    text-align: center;
     font-size: 14px;
   }
 
@@ -1534,7 +1685,8 @@ body {
     grid-area: subtitulo;
     margin: 0;
     align-self: end;
-    text-align: left;
+    justify-self: center;
+    text-align: center;
     font-size: 16px;
   }
 
@@ -1548,20 +1700,21 @@ body {
 
   .btn-iniciar {
     grid-area: iniciar;
-    width: 100%;
+    width: auto;
     max-width: none;
-    justify-self: stretch;
+    justify-self: center;
   }
 
   .lobby-principal.partida-activa .mesa {
     display: grid;
     width: 100%;
+    max-height: calc(100dvh - var(--navbar-height, 36px) - 8px);
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'rivales tablero'
       'abajo tablero';
-    column-gap: 14px;
-    row-gap: 8px;
+    column-gap: 10px;
+    row-gap: 4px;
     align-items: center;
     justify-items: stretch;
     align-content: start;
@@ -1586,7 +1739,7 @@ body {
     width: 100%;
     align-items: stretch;
     margin: 0;
-    gap: 4px;
+    gap: 2px;
     min-width: 0;
   }
 
@@ -1594,12 +1747,13 @@ body {
     width: 100%;
     max-width: none;
     min-width: 0;
+    gap: 1px;
   }
 
-  .lobby-principal.partida-activa .rival-mobile-row .info-jugador,
-  .lobby-principal.partida-activa .area-jugador-abajo .info-jugador {
-    font-size: 11px;
-    padding: 2px 2px;
+  .mesa.juego-activo .rival-mobile-row .info-jugador,
+  .mesa.juego-activo .area-jugador-abajo .info-jugador {
+    font-size: 10px;
+    padding: 2px 5px;
   }
 
   .lobby-principal.partida-activa .mano-rival-mobile {
@@ -1610,18 +1764,43 @@ body {
   .lobby-principal.partida-activa .area-jugador-abajo {
     grid-area: abajo;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
     width: 100%;
     padding-bottom: 0;
     min-width: 0;
   }
 
-  .lobby-principal.partida-activa .area-jugador-abajo .info-jugador {
-    padding-left: 5px;
-    align-self: flex-start;
-    width: fit-content;
-    display: inline-flex;
-    padding-right: 5px;
+  .lobby-principal.partida-activa .jugador-actual-header {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .mesa.juego-activo .area-jugador-abajo .jugador-actual-header .info-jugador {
+    align-self: center;
+    width: max-content;
+    padding: 2px 5px;
+    grid-template-columns: max-content 10ch 36px;
+  }
+
+  .mesa.juego-activo .area-jugador-abajo .jugador-actual-header .turno-timer-slot {
+    width: 36px;
+    min-width: 36px;
+    height: 18px;
+  }
+
+  .mesa.juego-activo .area-jugador-abajo .jugador-actual-header .turno-timer {
+    font-size: 10px;
+    width: 32px;
+    min-width: 24px;
+    padding: 1px 5px;
+  }
+
+  .lobby-principal.partida-activa .jugador-actual-header .btn-cantar-uno {
+    font-size: 12px;
+    padding: 4px 19px;
+    letter-spacing: 1.5px;
+    min-height: 32px;
   }
 
   .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal {
@@ -1629,13 +1808,14 @@ body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     min-width: 0;
+    padding: 0;
   }
 
   .lobby-principal.partida-activa .mano-horizontal .carta,
   .lobby-principal.partida-activa .mano-horizontal .carta-svg {
-    width: clamp(32px, min(8.2vw, 5.2vh), 48px);
-    height: clamp(46px, min(12vw, 7.4vh), 70px);
-    margin-left: -16px;
+    width: clamp(26px, min(6.5vw, 4.2vh), 38px);
+    height: clamp(38px, min(9.5vw, 6vh), 52px);
+    margin-left: -12px;
   }
 
   .lobby-principal.partida-activa .mano-horizontal .carta:first-child,
@@ -1645,15 +1825,15 @@ body {
 
   .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal .carta,
   .lobby-principal.partida-activa .area-jugador-abajo .mano-horizontal .carta-svg {
-    width: clamp(38px, min(9.6vw, 6.1vh), 56px);
-    height: clamp(60px, min(13.8vw, 8.8vh), 80px);
+    width: clamp(45px, min(7.5vw, 4.8vh), 44px);
+    height: clamp(65px, min(11vw, 7vh), 58px);
     margin-left: 1px;
   }
 
   .lobby-principal.partida-activa .zona-central {
     grid-area: tablero;
     width: auto;
-    min-width: 170px;
+    min-width: 150px;
     overflow: visible;
     flex-direction: column;
     align-items: center;
@@ -1662,28 +1842,57 @@ body {
 
   .lobby-principal.partida-activa .tablero-central {
     padding: 0;
-    gap: 10px;
+    gap: 6px;
+  }
+
+  .lobby-principal.partida-activa .cartas-row .carta-svg {
+    width: clamp(4.2rem, 7.5vh, 3rem);
+    height: clamp(6.2rem, 10.5vh, 4.2rem);
+  }
+
+  .lobby-principal.partida-activa .indicador-color,
+  .lobby-principal.partida-activa .indicador-sentido {
+    font-size: 15px;
+    padding: 3px 6px;
+  }
+
+  .lobby-principal.partida-activa .indicador-color {
+    width: clamp(72px, 22vw, 120px);
+    width: 13rem;
+  }
+
+  .lobby-principal.partida-activa .indicador-sentido {
+    width: clamp(88px, 24vw, 132px);
+  }
+
+  .lobby-principal.partida-activa {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .lobby-principal.partida-activa .mazo-wrapper {
     align-items: center;
+    gap: 4px;
   }
 }
 
 /* ─── TIMER DE TURNO ─── */
 .turno-timer {
   display: inline-block;
-  margin-left: 8px;
   padding: 2px 8px;
   border-radius: 999px;
   background-color: rgba(0, 0, 0, 0.35);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
   vertical-align: middle;
   min-width: 28px;
+  width: 36px;
   text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .turno-timer:empty {
@@ -1697,10 +1906,10 @@ body {
 
 @keyframes pulso-timer {
   from {
-    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
   }
   to {
-    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0);
   }
 }
 
@@ -1730,7 +1939,9 @@ body {
   align-items: center;
   justify-content: center;
   opacity: 0.9;
-  transition: opacity 160ms ease, transform 120ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 120ms ease;
   overflow: hidden;
   line-height: 1;
   flex-shrink: 0;
@@ -1773,10 +1984,14 @@ body {
 
 @keyframes pulso-uno {
   from {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(255, 235, 59, 0.6);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.25),
+      0 0 0 0 rgba(255, 235, 59, 0.6);
   }
   to {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 8px rgba(255, 235, 59, 0);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.25),
+      0 0 0 8px rgba(255, 235, 59, 0);
   }
 }
 
