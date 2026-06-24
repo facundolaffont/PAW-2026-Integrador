@@ -36,6 +36,8 @@ class SalaDeJuego {
     this.entreRondas = false;
     this.continuaronRonda = new Set();
 
+    this.unoPendiente = null;
+
     // Chat de la sala
     this.mensajesChat = [];
     this.MAX_MENSAJES_CHAT = 100;
@@ -297,12 +299,30 @@ class SalaDeJuego {
     this.descarte.push(carta);
 
     if (jugador.gano) {
+      this.unoPendiente = null;
       return this._cerrarRonda(jugadorId, carta);
+    }
+
+    let unoInfo = null;
+    if (jugador.mano.length === 1) {
+      this.unoPendiente = null;
+      jugador.canto = false;
+
+      if (jugador.esBot) {
+        jugador.canto = true;
+        unoInfo = { unoAutoCantadoBot: { jugadorEnUno: jugador.jugadorId } };
+      } else {
+        const hayBots = this.jugadores.some(
+          (j) => j.esBot && j.jugadorId !== jugador.jugadorId
+        );
+        this.unoPendiente = { jugadorId: jugador.jugadorId, hayBots, resuelto: false };
+        unoInfo = { unoPendiente: { jugadorEnUno: jugador.jugadorId, timeoutMs: 2000 } };
+      }
     }
 
     const { turnoIdx, sentido } = this._aplicarEfecto(carta);
 
-    return { ok: true, carta, turnoIdx, sentido };
+    return { ok: true, carta, turnoIdx, sentido, ...(unoInfo || {}) };
   }
 
   _aplicarEfecto(carta) {
@@ -349,7 +369,70 @@ class SalaDeJuego {
     const robadas = this._robarDelMazo(jugador, cantidad);
     this._avanzarTurno(false);
 
-    return { ok: true, cantidad, cartasRobadas: robadas, turnoIdx: this.turnoIdx };
+    let unoCancelado = false;
+    if (this.unoPendiente && this.unoPendiente.jugadorId === jugadorId) {
+      this.unoPendiente = null;
+      unoCancelado = true;
+    }
+
+    return {
+      ok: true,
+      cantidad,
+      cartasRobadas: robadas,
+      turnoIdx: this.turnoIdx,
+      unoCancelado,
+    };
+  }
+
+  cantarUno(jugadorId) {
+    logContext(logger, this);
+
+    if (!this.unoPendiente || this.unoPendiente.resuelto) {
+      return { error: 'No hay UNO pendiente' };
+    }
+
+    const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
+    if (!jugador) return { error: 'No estás en la sala' };
+    if (jugador.esBot) return { error: 'Los bots no cantan UNO' };
+
+    const jugadorEnUno = this.unoPendiente.jugadorId;
+    this.unoPendiente.resuelto = true;
+
+    if (jugadorId === jugadorEnUno) {
+      const enUno = this.jugadores.find((j) => j.jugadorId === jugadorEnUno);
+      if (enUno) enUno.canto = true;
+      this.unoPendiente = null;
+      return { ok: true, salvado: true, jugadorEnUno };
+    }
+
+    const enUno = this.jugadores.find((j) => j.jugadorId === jugadorEnUno);
+    const cartasRobadas = enUno ? this._robarDelMazo(enUno, 2) : [];
+    this.unoPendiente = null;
+
+    return {
+      ok: true,
+      atrapado: true,
+      jugadorEnUno,
+      atrapadoPor: jugadorId,
+      cartasRobadas,
+    };
+  }
+
+  resolverUnoPorTimeout() {
+    logContext(logger, this);
+
+    if (!this.unoPendiente || this.unoPendiente.resuelto) return { noop: true };
+
+    const { jugadorId: jugadorEnUno, hayBots } = this.unoPendiente;
+    this.unoPendiente.resuelto = true;
+    this.unoPendiente = null;
+
+    if (!hayBots) return { vencido: true, jugadorEnUno };
+
+    const enUno = this.jugadores.find((j) => j.jugadorId === jugadorEnUno);
+    const cartasRobadas = enUno ? this._robarDelMazo(enUno, 2) : [];
+
+    return { atrapadoPorBot: true, jugadorEnUno, cartasRobadas };
   }
 
   _robarDelMazo(jugador, cantidad) {

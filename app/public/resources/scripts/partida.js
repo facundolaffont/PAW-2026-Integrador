@@ -88,6 +88,66 @@ class Partida {
     this.estadoMesaActual = null;
     this.selectorColorActivo = null;
     this.numeroRondaActual = 0;
+    this.btnCantarUno = null;
+    this.unoProgresoIntervalo = null;
+    this.turnoTimerSpan = null;
+    this.turnoTimerIntervalo = null;
+    this.turnoTimerDeadline = 0;
+    this.turnoTimerBeepDisparado = false;
+    this.audioCtx = null;
+  }
+
+  #asegurarAudioCtx() {
+    if (this.audioCtx) {
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      return this.audioCtx;
+    }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    try {
+      this.audioCtx = new Ctx();
+    } catch {
+      this.audioCtx = null;
+    }
+    return this.audioCtx;
+  }
+
+  #tocarTono({ frecuencia, duracion = 0.15, tipo = 'sine', volumen = 0.2, inicio = 0 } = {}) {
+    const ctx = this.#asegurarAudioCtx();
+    if (!ctx) return;
+    try {
+      const ahora = ctx.currentTime + Math.max(0, inicio);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = tipo;
+      osc.frequency.setValueAtTime(frecuencia, ahora);
+      // Attack/release para evitar clicks audibles.
+      gain.gain.setValueAtTime(0, ahora);
+      gain.gain.linearRampToValueAtTime(volumen, ahora + 0.01);
+      gain.gain.linearRampToValueAtTime(0, ahora + duracion);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ahora);
+      osc.stop(ahora + duracion + 0.02);
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch {}
+      };
+    } catch {}
+  }
+
+  #tocarSecuencia(notas = []) {
+    notas.forEach((nota) => this.#tocarTono(nota));
+  }
+
+  #vibrar(patron) {
+    if (!('vibrate' in navigator)) return;
+    try {
+      navigator.vibrate(patron);
+    } catch {}
   }
 
   /**
@@ -99,9 +159,135 @@ class Partida {
     this.#configurarBitacoraMobile();
     this.#configurarTabs();
     this.#configurarChat();
+    this.#configurarBotonUno();
+    this.#configurarTurnoTimer();
     this.#actualizarControlesLobby(undefined);
     const accesoOk = await this.#cargarResumen();
     if (accesoOk) this.#conectarWS();
+  }
+
+  #configurarTurnoTimer() {
+    const span = document.createElement('span');
+    span.className = 'turno-timer';
+    span.setAttribute('aria-hidden', 'true');
+    this.turnoTimerSpan = span;
+  }
+
+  #iniciarTurnoTimer(durationMs) {
+    if (!this.turnoTimerSpan) return;
+    this.#detenerTurnoTimer(false);
+    const total = Math.max(1, Number(durationMs) || 5000);
+    this.turnoTimerDeadline = Date.now() + total;
+    this.turnoTimerBeepDisparado = false;
+
+    const tick = () => {
+      const restanteMs = Math.max(0, this.turnoTimerDeadline - Date.now());
+      const segundos = Math.ceil(restanteMs / 1000);
+      this.turnoTimerSpan.textContent = `${segundos}s`;
+      this.turnoTimerSpan.classList.toggle('turno-timer--urgente', segundos <= 2);
+
+      // Beep + vibración al cruzar el umbral de 2s, sólo si es nuestro turno.
+      if (segundos <= 2 && !this.turnoTimerBeepDisparado) {
+        this.turnoTimerBeepDisparado = true;
+        const esMiTurno =
+          this.estadoMesaActual && String(this.estadoMesaActual.turno) === String(this.jugadorId);
+        if (esMiTurno) {
+          this.#tocarTono({ frecuencia: 880, duracion: 0.12, tipo: 'square', volumen: 0.18 });
+          this.#tocarTono({
+            frecuencia: 880,
+            duracion: 0.12,
+            tipo: 'square',
+            volumen: 0.18,
+            inicio: 0.18,
+          });
+          this.#vibrar(150);
+        }
+      }
+
+      if (restanteMs <= 0) {
+        clearInterval(this.turnoTimerIntervalo);
+        this.turnoTimerIntervalo = null;
+      }
+    };
+
+    tick();
+    this.turnoTimerIntervalo = setInterval(tick, 200);
+  }
+
+  #detenerTurnoTimer(quitar = true) {
+    if (this.turnoTimerIntervalo) {
+      clearInterval(this.turnoTimerIntervalo);
+      this.turnoTimerIntervalo = null;
+    }
+    this.turnoTimerBeepDisparado = false;
+    if (!this.turnoTimerSpan) return;
+    if (quitar) {
+      this.turnoTimerSpan.textContent = '';
+      this.turnoTimerSpan.classList.remove('turno-timer--urgente');
+      if (this.turnoTimerSpan.parentNode) {
+        this.turnoTimerSpan.parentNode.removeChild(this.turnoTimerSpan);
+      }
+    }
+  }
+
+  #configurarBotonUno() {
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.id = 'btn-cantar-uno';
+    boton.className = 'btn-cantar-uno';
+    boton.setAttribute('aria-label', 'Cantar UNO');
+    boton.title = 'Cantar UNO';
+    boton.textContent = 'UNO';
+
+    const progreso = document.createElement('span');
+    progreso.className = 'btn-cantar-uno-progreso';
+    progreso.setAttribute('aria-hidden', 'true');
+    boton.appendChild(progreso);
+
+    boton.addEventListener('click', () => {
+      if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+      this.#asegurarAudioCtx();
+      this.webSocket.send(JSON.stringify({ accion: 'cantar-uno' }));
+    });
+
+    this.btnCantarUno = boton;
+  }
+
+  #mostrarBotonUno(visible) {
+    if (!this.btnCantarUno) return;
+    if (!visible) {
+      this.#detenerAnimacionUno();
+      if (this.btnCantarUno.parentNode) this.btnCantarUno.parentNode.removeChild(this.btnCantarUno);
+    }
+  }
+
+  #iniciarAnimacionUno(timeoutMs) {
+    if (!this.btnCantarUno) return;
+    this.btnCantarUno.classList.add('activo');
+    this.#detenerAnimacionUno(false);
+
+    const inicio = Date.now();
+    const total = Math.max(1, Number(timeoutMs) || 2000);
+    const actualizar = () => {
+      const transcurrido = Date.now() - inicio;
+      const porcentaje = Math.min(100, (transcurrido / total) * 100);
+      this.btnCantarUno.style.setProperty('--uno-progreso', `${porcentaje}%`);
+      if (porcentaje >= 100) this.#detenerAnimacionUno();
+    };
+    actualizar();
+    this.unoProgresoIntervalo = setInterval(actualizar, 60);
+  }
+
+  #detenerAnimacionUno(quitarClase = true) {
+    if (this.unoProgresoIntervalo) {
+      clearInterval(this.unoProgresoIntervalo);
+      this.unoProgresoIntervalo = null;
+    }
+    if (!this.btnCantarUno) return;
+    if (quitarClase) {
+      this.btnCantarUno.classList.remove('activo');
+      this.btnCantarUno.style.setProperty('--uno-progreso', '0%');
+    }
   }
 
   #configurarChat() {
@@ -245,6 +431,7 @@ class Partida {
    */
   iniciarPartida() {
     if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+    this.#asegurarAudioCtx();
     this.webSocket.send(JSON.stringify({ accion: 'iniciar-partida' }));
   }
 
@@ -303,8 +490,11 @@ class Partida {
     if (estadoPartida.estado === 'jugando') {
       const numeroRonda = Number(estadoPartida.numeroRonda) || 1;
       this.estado.textContent = `Partida en curso · Ronda ${numeroRonda}`;
+      this.#mostrarBotonUno(true);
       return;
     }
+
+    this.#mostrarBotonUno(false);
 
     if (estadoPartida.estado === 'entre-rondas') {
       const numeroRonda = Number(estadoPartida.numeroRonda) || 1;
@@ -931,20 +1121,6 @@ class Partida {
     return jugadores.slice(idxActual).concat(jugadores.slice(0, idxActual));
   }
 
-  #obtenerRivalesSegunSentido(jugadores, sentido) {
-    const idxActual = jugadores.findIndex((j) => j.jugadorId === this.jugadorId);
-    if (idxActual < 0) return [];
-
-    const rivales = [];
-    for (let paso = 1; paso < jugadores.length; paso += 1) {
-      const idx =
-        (((idxActual + sentido * paso) % jugadores.length) + jugadores.length) % jugadores.length;
-      rivales.push(jugadores[idx]);
-    }
-
-    return rivales;
-  }
-
   /**
    * Renderiza el estado completo de la mesa de juego para el jugador actual.
    *
@@ -956,10 +1132,7 @@ class Partida {
 
     const jugadoresOrdenados = this.#ordenarJugadoresDesdeActual(estado.jugadores || []);
     const jugadorActual = jugadoresOrdenados[0];
-    const rivalesEnOrdenDeTurno = this.#obtenerRivalesSegunSentido(
-      estado.jugadores || [],
-      estado.sentido || 1
-    );
+    const rivales = jugadoresOrdenados.slice(1);
     const esMiTurno = estado.turno === this.jugadorId;
     const juegoActivo = estado.estado === 'jugando';
     const turnoActualId = estado.turno;
@@ -979,22 +1152,12 @@ class Partida {
         : `${jugador.nombreUsuario} (en turno)`;
     };
 
-    // Ubica a los rivales para que el orden visual siga el sentido de juego.
-    // Horario: abajo -> izquierda -> arriba -> derecha.
-    // Antihorario: abajo -> derecha -> arriba -> izquierda.
-    let rivalIzquierda;
-    let rivalArriba;
-    let rivalDerecha;
-
-    if ((estado.sentido || 1) === -1) {
-      rivalDerecha = rivalesEnOrdenDeTurno[0];
-      rivalArriba = rivalesEnOrdenDeTurno[1];
-      rivalIzquierda = rivalesEnOrdenDeTurno[2];
-    } else {
-      rivalIzquierda = rivalesEnOrdenDeTurno[0];
-      rivalArriba = rivalesEnOrdenDeTurno[1];
-      rivalDerecha = rivalesEnOrdenDeTurno[2];
-    }
+    // Las posiciones de los rivales se mantienen fijas según el orden de asiento,
+    // independientemente del sentido de juego. El indicador de sentido se encarga
+    // de comunicar la dirección actual (como en el UNO con jugadores sentados).
+    const rivalIzquierda = rivales[0];
+    const rivalArriba = rivales[1];
+    const rivalDerecha = rivales[2];
 
     this.vistaLobby.hidden = true;
     this.vistaMesa.hidden = false;
@@ -1068,6 +1231,7 @@ class Partida {
       mazo.style.cursor = 'pointer';
       mazo.addEventListener('click', () => {
         if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+        this.#asegurarAudioCtx();
         this.webSocket.send(JSON.stringify({ accion: 'robar-carta' }));
       });
     }
@@ -1133,14 +1297,22 @@ class Partida {
     areaAbajo.className = 'area-jugador-abajo';
 
     if (jugadorActual) {
+      const headerActual = document.createElement('div');
+      headerActual.className = 'jugador-actual-header';
+
       const nombreActual = document.createElement('div');
       nombreActual.className = claseNombreTurno(jugadorActual, 'info-jugador');
       nombreActual.textContent = textoTurnoJugador(jugadorActual);
-      areaAbajo.appendChild(nombreActual);
+      headerActual.appendChild(nombreActual);
+
+      if (juegoActivo && this.btnCantarUno) headerActual.appendChild(this.btnCantarUno);
+
+      areaAbajo.appendChild(headerActual);
       areaAbajo.appendChild(
         this.#crearManoHorizontal(manoActual, false, async (carta) => {
           if (!juegoActivo || !esMiTurno) return;
           if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+          this.#asegurarAudioCtx();
           if (!this.#esJugadaValidaEnCliente(carta)) {
             this.#mostrarMensaje('Jugada inválida para la carta en mesa', 'error');
             return;
@@ -1166,6 +1338,11 @@ class Partida {
     this.vistaMesa.appendChild(areaRivalesMobile);
     this.vistaMesa.appendChild(zonaCentral);
     this.vistaMesa.appendChild(areaAbajo);
+
+    if (juegoActivo && this.turnoTimerSpan) {
+      const elTurno = this.vistaMesa.querySelector('.jugador-en-turno-nombre');
+      if (elTurno) elTurno.appendChild(this.turnoTimerSpan);
+    }
   }
 
   /**
@@ -1352,18 +1529,40 @@ class Partida {
           const nombre = this.#nombreJugador(robo.jugadorId);
           const cantidad = Number(robo.cantidad) || 0;
           const palabraCarta = cantidad === 1 ? 'carta' : 'cartas';
-          this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}.`);
+          const sufijo = robo.auto ? ' (se le acabó el tiempo)' : '';
+          this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}${sufijo}.`);
+        }
+
+        if (datos.turno != null) {
+          this.#iniciarTurnoTimer(datos.tiempoTurnoMs || 10000);
+        } else {
+          this.#detenerTurnoTimer();
         }
 
         break;
       }
       case 'ronda-terminada': {
+        this.#detenerTurnoTimer();
+        this.#tocarSecuencia([
+          { frecuencia: 523.25, duracion: 0.18, tipo: 'triangle', volumen: 0.22 },
+          { frecuencia: 659.25, duracion: 0.18, tipo: 'triangle', volumen: 0.22, inicio: 0.16 },
+          { frecuencia: 783.99, duracion: 0.32, tipo: 'triangle', volumen: 0.22, inicio: 0.32 },
+        ]);
+        this.#vibrar([100, 50, 100]);
         this.#mostrarMensaje('Ronda terminada.');
         this.#mostrarTablaPuntajesRonda(datos.puntajesRonda || {}, datos.ganadorRonda);
         this.#mostrarModalFinRonda(datos.ganadorRonda, datos.puntajesRonda);
         break;
       }
       case 'partida-terminada': {
+        this.#detenerTurnoTimer();
+        this.#tocarSecuencia([
+          { frecuencia: 523.25, duracion: 0.18, tipo: 'triangle', volumen: 0.25 },
+          { frecuencia: 659.25, duracion: 0.18, tipo: 'triangle', volumen: 0.25, inicio: 0.18 },
+          { frecuencia: 783.99, duracion: 0.18, tipo: 'triangle', volumen: 0.25, inicio: 0.36 },
+          { frecuencia: 1046.5, duracion: 0.5, tipo: 'triangle', volumen: 0.28, inicio: 0.54 },
+        ]);
+        this.#vibrar([120, 60, 120, 60, 250]);
         const ganador = (datos.ranking || [])[0];
         this.#mostrarMensaje(`¡${ganador?.nombre || 'Un jugador'} ganó la partida!`);
         const puntajesFinales = {};
@@ -1399,6 +1598,41 @@ class Partida {
       }
       case 'mensaje-chat': {
         this.#mostrarMensajeChat(datos);
+        break;
+      }
+      case 'uno-pendiente': {
+        const nombre = this.#nombreJugador(datos.jugadorEnUno);
+        this.#mostrarMensaje(`${nombre} tiene una sola carta. ¡Cantá UNO!`);
+        this.#iniciarAnimacionUno(datos.timeoutMs || 2000);
+        break;
+      }
+      case 'uno-cantado': {
+        const nombreEnUno = this.#nombreJugador(datos.jugadorEnUno);
+        if (datos.auto) {
+          this.#mostrarMensaje(`${nombreEnUno} cantó UNO.`);
+        } else if (String(datos.cantadoPor) === String(datos.jugadorEnUno)) {
+          this.#mostrarMensaje(`${nombreEnUno} cantó UNO a tiempo.`);
+        } else {
+          const cantador = this.#nombreJugador(datos.cantadoPor);
+          this.#mostrarMensaje(`${cantador} cantó UNO por ${nombreEnUno}.`);
+        }
+        this.#detenerAnimacionUno();
+        break;
+      }
+      case 'uno-penalizado': {
+        const nombreEnUno = this.#nombreJugador(datos.jugadorEnUno);
+        const cantidad = Number(datos.cantidad) || 2;
+        const cartas = cantidad === 1 ? 'carta' : 'cartas';
+        const por = datos.atrapadoPor === 'bot' ? 'un bot' : this.#nombreJugador(datos.atrapadoPor);
+        this.#mostrarMensaje(
+          `${nombreEnUno} no cantó UNO. ${por} lo atrapó: +${cantidad} ${cartas}.`,
+          'error'
+        );
+        this.#detenerAnimacionUno();
+        break;
+      }
+      case 'uno-vencido': {
+        this.#detenerAnimacionUno();
         break;
       }
     }

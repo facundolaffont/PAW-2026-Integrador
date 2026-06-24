@@ -8,6 +8,7 @@ class JugadorEnSala {
     this.nombreUsuario = nombreUsuario;
     this.mano = [];
     this.esBot = esBot;
+    this.canto = false;
   }
 
   recibirCartas(cartas) {
@@ -25,6 +26,7 @@ class JugadorEnSala {
   reiniciarMano() {
     logContext(logger, this);
     this.mano = [];
+    this.canto = false;
   }
 
   get cantidadCartas() {

@@ -1132,6 +1132,12 @@ body {
     max-width: 280px;
   }
 
+  .btn-cantar-uno {
+    font-size: 13px;
+    padding: 5px 14px;
+    letter-spacing: 1.5px;
+  }
+
   .zona-central {
     flex-direction: column;
     gap: 8px;
@@ -1488,7 +1494,7 @@ body {
   .lobby-principal.partida-activa .mesa {
     display: grid;
     width: 100%;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'rivales tablero'
       'abajo tablero';
@@ -1503,7 +1509,7 @@ body {
   }
 
   .lobby-principal.partida-activa.bitacora-oculta .mesa {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .lobby-principal.partida-activa .area-jugador-arriba,
@@ -1519,11 +1525,13 @@ body {
     align-items: stretch;
     margin: 0;
     gap: 4px;
+    min-width: 0;
   }
 
   .lobby-principal.partida-activa .rival-mobile-row {
     width: 100%;
     max-width: none;
+    min-width: 0;
   }
 
   .lobby-principal.partida-activa .rival-mobile-row .info-jugador,
@@ -1534,6 +1542,7 @@ body {
 
   .lobby-principal.partida-activa .mano-rival-mobile {
     max-width: 100%;
+    min-width: 0;
   }
 
   .lobby-principal.partida-activa .area-jugador-abajo {
@@ -1542,6 +1551,7 @@ body {
     gap: 4px;
     width: 100%;
     padding-bottom: 0;
+    min-width: 0;
   }
 
   .lobby-principal.partida-activa .area-jugador-abajo .info-jugador {
@@ -1556,6 +1566,7 @@ body {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    min-width: 0;
   }
 
   .lobby-principal.partida-activa .mano-horizontal .carta,
@@ -1597,9 +1608,120 @@ body {
   }
 }
 
+/* ─── TIMER DE TURNO ─── */
+.turno-timer {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+  min-width: 28px;
+  text-align: center;
+}
+
+.turno-timer:empty {
+  display: none;
+}
+
+.turno-timer--urgente {
+  background-color: #d32f2f;
+  animation: pulso-timer 600ms ease-in-out infinite alternate;
+}
+
+@keyframes pulso-timer {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* ─── BOTÓN CANTAR UNO ─── */
+.jugador-actual-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.btn-cantar-uno {
+  position: relative;
+  border: 2px solid #ffffff;
+  background-color: #d32f2f;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  transition: opacity 160ms ease, transform 120ms ease;
+  overflow: hidden;
+  line-height: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.btn-cantar-uno:hover {
+  opacity: 1;
+}
+
+.btn-cantar-uno:focus-visible {
+  outline: 2px solid #ffe14b;
+  outline-offset: 2px;
+}
+
+.btn-cantar-uno:active {
+  transform: scale(0.95);
+}
+
+.btn-cantar-uno.activo {
+  opacity: 1;
+  animation: pulso-uno 700ms ease-in-out infinite alternate;
+}
+
+.btn-cantar-uno-progreso {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: var(--uno-progreso, 0%);
+  background-color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.btn-cantar-uno.activo .btn-cantar-uno-progreso {
+  opacity: 1;
+}
+
+@keyframes pulso-uno {
+  from {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(255, 235, 59, 0.6);
+  }
+  to {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 8px rgba(255, 235, 59, 0);
+  }
+}
+
 @media (hover: none) and (pointer: coarse) {
   .btn-iniciar,
   .btn-toggle-bitacora,
+  .btn-cantar-uno,
   .navbar-link {
     min-height: 44px;
     display: flex;
@@ -1608,6 +1730,10 @@ body {
 
   .btn-iniciar {
     padding: 14px 28px;
+  }
+
+  .btn-cantar-uno {
+    padding: 8px 18px;
   }
 
   .mano-horizontal {
