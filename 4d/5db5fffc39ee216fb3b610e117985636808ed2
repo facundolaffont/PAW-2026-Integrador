@@ -1,0 +1,28 @@
+docs/presentacion.html
+  s_54070b583ea988::t_330f0fc2ba062a 262
+  s_54070b583ea988::t_a10a049b4a1427 242
+  s_54070b583ea988::t_ed77ca75fe7244 824
+  s_54070b583ea988::t_1d5517ddfa318e 617-630
+  s_54070b583ea988::t_17e8a137939fc1 436
+  s_54070b583ea988::t_99f18a1b501abd 443,447,449-467,469-481,483-509,511-518,520-522,526
+  s_54070b583ea988::t_9b221157c4c03d 286
+  s_54070b583ea988::t_33f16c82bbb051 820
+  s_54070b583ea988::t_ffaac99fcf4612 1-241,243-261,263-285,287-435,437-442,444-446,448,468,482,510,519,523-525,527-616,631-632,634-636,638,656,673,675-819,821-823,825-890
+  s_54070b583ea988::t_b035cb5a3506cc 633,637,639-655,657-672,674
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "4d5db5fffc39ee216fb3b610e117985636808ed2",
+  "prompts": {},
+  "sessions": {
+    "s_54070b583ea988": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0883b349-3ab1-4676-aa7b-f0b61d36b0e5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
