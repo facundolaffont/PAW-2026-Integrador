@@ -1,0 +1,24 @@
+src/presentacion/public/css/partida.css
+  s_30b9b75ca967cb::t_0455abb26b8f7b 551
+  s_30b9b75ca967cb::t_c262121c22981f 385,399-400
+  s_30b9b75ca967cb::t_46d166c8552b99 826-827
+  s_30b9b75ca967cb::t_f8c9436eeed7ce 954
+src/presentacion/public/js/partida.js
+  s_30b9b75ca967cb::t_fd056da64f0681 1121,1123-1130,1132-1137,1139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "c192d05198a7fc974a1999e8a26d6e77cdc2f2ca",
+  "prompts": {},
+  "sessions": {
+    "s_30b9b75ca967cb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e2d67e4-1222-4cbd-9050-e87df3765cc4",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
