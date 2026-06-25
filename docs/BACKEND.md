@@ -9,48 +9,7 @@
 - **mysql2** (persistencia de jugadores e historial de partidas)
 - Partidas activas en memoria; jugadores e historial en MySQL
 
-## Estructura
-
-Alineada con el diagrama de niveles del informe de arquitectura:
-
-```
-PAW-2026-Integrador/
-├── docker-compose.yml
-├── package.json
-├── nginx/
-├── docs/
-└── src/
-    ├── app.js                         # Composition root (Express + WebSocket)
-    ├── interfaces/
-    │   ├── http/
-    │   │   ├── handlers/              # Rutas REST y páginas (manejadorFront = generador de vistas)
-    │   │   ├── middleware/            # JWT (API y web)
-    │   │   └── seo/                   # Metadatos SEO
-    │   └── ws/                        # WebSocket: conexiones y mensajes
-    ├── controladores/
-    │   ├── AuthController.js          # Registro e ingreso
-    │   ├── PartidaController.js       # Orquestación de partidas (juego, bots, timers)
-    │   └── PuntajesController.js      # Ranking global
-    ├── dominio/                       # Reglas de juego y entidades
-    │   ├── Carta.js, Mazo.js
-    │   ├── JugadorEnSala.js, SalaDeJuego.js
-    │   └── Usuario.js
-    ├── presentacion/
-    │   ├── views/                     # Plantillas EJS (HTML server-side)
-    │   └── public/                    # CSS, JS, imágenes (archivos estáticos)
-    ├── errores/
-    └── infraestructura/               # Persistencia, integraciones y utilidades
-        ├── persistencia/
-        │   ├── Persistencia.js        # Facade: partidas en memoria + repos
-        │   ├── mysql/                 # MySQL (pool, repositorio, init.sql)
-        │   └── memoria/               # Fallback sin DB_HOST
-        ├── integraciones/
-        │   └── ia/
-        │       └── BotLLM.js          # Bot con Gemini
-        └── shared/
-            ├── logger.js
-            └── utils.js
-```
+Ver [ESTRUCTURA.md](./ESTRUCTURA.md) para el árbol de directorios del proyecto.
 
 ---
 
@@ -193,13 +152,13 @@ Al crear una partida con `cantidadBots > 0`, se agregan jugadores bot a la sala.
 
 Requiere un archivo `.env` en la raíz del repositorio con la API key:
 
-```
+```sh
 GEMINI_API_KEY=tu_api_key
 ```
 
 Las variables de base de datos y puerto están definidas en `docker-compose.yml`. Si corrés sin Docker, agregá al `.env`:
 
-```
+```sh
 PORT=3000
 DB_HOST=localhost
 DB_PORT=3306
@@ -226,14 +185,3 @@ Obtené tu API key gratis en [aistudio.google.com](https://aistudio.google.com).
 | Bot 1 | Bot-A  |
 | Bot 2 | Bot-B  |
 | Bot 3 | Bot-C  |
-
----
-
-## Pendientes / Mejoras posibles
-
-- [ ] **Contraseña en login**: ahora cualquiera puede ingresar con cualquier nombre existente
-- [x] **Persistencia**: jugadores e historial de partidas en MySQL; partidas activas en memoria
-- [ ] **Espectadores**: permitir conectarse a una sala sin jugar
-- [ ] **Chat en partida**: evento `mensaje` cliente→servidor, broadcast a la sala
-- [ ] **Reconexión**: actualmente si un jugador se desconecta la partida se cancela
-- [x] **Bots con IA**: implementado con Gemini 1.5 Flash (1 a 3 bots por partida)

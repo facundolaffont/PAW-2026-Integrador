@@ -40,17 +40,17 @@ El script crea un certificado dummy, inicia nginx, obtiene el cert real de Let's
 
 Las credenciales sensibles se almacenaron como **secrets en el repositorio de GitHub**:
 
-| Secret          | Descripción                             |
-|-----------------|-----------------------------------------|
-| `DB_USER`       | Usuario de MySQL                        |
-| `DB_PASSWORD`   | Contraseña de MySQL                     |
-| `GEMINI_API_KEY`| Clave de API de Google Gemini           |
-| `JWT_SECRET`    | Secreto para firmar tokens JWT          |
-| `VM_IP`         | IP pública de la VM en GCP              |
-| `VM_USER`       | Usuario SSH de la VM                    |
-| `SSH_PRIVATE_KEY`| Clave privada SSH para conectarse a la VM |
-| `DOMAIN`        | Dominio Duck DNS (ej: `mi-app.duckdns.org`) |
-| `CERTBOT_EMAIL` | Email para notificaciones de Let's Encrypt |
+| Secret            | Descripción                                 |
+| ----------------- | ------------------------------------------- |
+| `DB_USER`         | Usuario de MySQL                            |
+| `DB_PASSWORD`     | Contraseña de MySQL                         |
+| `GEMINI_API_KEY`  | Clave de API de Google Gemini               |
+| `JWT_SECRET`      | Secreto para firmar tokens JWT              |
+| `VM_IP`           | IP pública de la VM en GCP                  |
+| `VM_USER`         | Usuario SSH de la VM                        |
+| `SSH_PRIVATE_KEY` | Clave privada SSH para conectarse a la VM   |
+| `DOMAIN`          | Dominio Duck DNS (ej: `mi-app.duckdns.org`) |
+| `CERTBOT_EMAIL`   | Email para notificaciones de Let's Encrypt  |
 
 ## Pipeline CI/CD
 
