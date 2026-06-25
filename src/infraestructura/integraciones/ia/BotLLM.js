@@ -22,10 +22,16 @@ ESTRATEGIA RECOMENDADA:
 - Elegí el color del que tengas más cartas al jugar un comodín.
 `.trim();
 
-// Bot que usa Gemini 1.5 Flash para decidir jugadas. Recibe el estado del turno,
-// construye un prompt con las reglas y el contexto, y parsea la respuesta JSON del modelo.
-// Si la API falla o devuelve una jugada inválida, cae al modo _fallback.
+/**
+ * Bot que decide jugadas usando Gemini 1.5 Flash. Construye un prompt con las reglas del juego
+ * y el estado del turno, parsea la respuesta JSON del modelo y valida la carta elegida.
+ * Si la API falla o devuelve una jugada inválida, aplica una estrategia heurística de fallback.
+ */
 class BotLLM {
+  /**
+   * Inicializa el cliente de Google Generative AI con `GEMINI_API_KEY` y el modelo
+   * `gemini-1.5-flash` configurado para responder en JSON.
+   */
   constructor() {
     logger.logContext(this);
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -36,16 +42,28 @@ class BotLLM {
     });
   }
 
+  /**
+   * Decide la jugada del bot para el turno actual.
+   *
+   * Filtra las cartas válidas, consulta al modelo y valida la respuesta. Ante error de API,
+   * JSON malformado o carta inválida, delega en `#fallback`.
+   *
+   * @param {import('#dominio/Carta')[]} mano - Cartas en mano del bot.
+   * @param {import('#dominio/Carta')} cartaEnMesa - Carta visible en el descarte.
+   * @param {number} penalidad - Cantidad de cartas acumuladas en penalidad activa.
+   * @param {string|null} tipoPenalidad - Tipo de penalidad activa (`roba-dos`, `roba-cuatro`) o null.
+   * @param {{ nombre: string, cantidadCartas: number }[]} rivales - Estado de los rivales.
+   * @returns {Promise<{ robar: true } | { cartaId: string, colorElegido: string|null }>}
+   */
   async decidirJugada(mano, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
     logger.logContext(this);
     const cartasValidas = mano.filter((c) =>
       Carta.esJugadaValida(c, cartaEnMesa, penalidad, tipoPenalidad)
     );
 
-    // Sin jugadas posibles, el bot debe robar obligatoriamente
     if (cartasValidas.length === 0) return { robar: true };
 
-    const prompt = this._armarPrompt(
+    const prompt = this.#armarPrompt(
       mano,
       cartasValidas,
       cartaEnMesa,
@@ -68,18 +86,25 @@ class BotLLM {
 
       if (json.robar) return { robar: true };
 
-      // El modelo devolvió un JSON bien formado pero con una carta inválida
-      return this._fallback(cartasValidas);
+      return this.#fallback(cartasValidas);
     } catch {
-      // Error de red, timeout, o JSON malformado
-      return this._fallback(cartasValidas);
+      return this.#fallback(cartasValidas);
     }
   }
 
-  // Convierte una carta a texto legible para el prompt.
-  // Cartas con color: "<color>-<tipo|numero>" — Comodines (sin color): "<tipo>"
-  // Si la carta en mesa es un comodín ya jugado, usa el colorElegido en lugar del color original.
-  _armarPrompt(mano, cartasValidas, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
+  /**
+   * Construye el prompt para el modelo con reglas, estado de mesa, mano y cartas jugables.
+   *
+   * @param {import('#dominio/Carta')[]} mano - Cartas en mano del bot.
+   * @param {import('#dominio/Carta')[]} cartasValidas - Cartas que el bot puede jugar ahora.
+   * @param {import('#dominio/Carta')} cartaEnMesa - Carta visible en el descarte.
+   * @param {number} penalidad - Cantidad de cartas acumuladas en penalidad activa.
+   * @param {string|null} tipoPenalidad - Tipo de penalidad activa o null.
+   * @param {{ nombre: string, cantidadCartas: number }[]} rivales - Estado de los rivales.
+   * @returns {string} Prompt listo para enviar al modelo.
+   * @private
+   */
+  #armarPrompt(mano, cartasValidas, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
     logger.logContext(this);
     const describir = (c) =>
       c.color
@@ -114,20 +139,21 @@ class BotLLM {
     `.trim();
   }
 
-  // Estrategia de emergencia cuando el modelo no responde o devuelve una jugada inválida.
-  // Reglas: prioriza cartas de acción (no numéricas) sobre números.
-  // Si la elegida es comodín (sin color), elige un color al azar.
-  _fallback(cartasValidas) {
+  /**
+   * Estrategia de emergencia cuando el modelo no responde o devuelve una jugada inválida.
+   * Prioriza cartas de acción sobre números; si la elegida es comodín, elige un color al azar.
+   *
+   * @param {import('#dominio/Carta')[]} cartasValidas - Cartas que el bot puede jugar ahora.
+   * @returns {{ cartaId: string, colorElegido: string|null }}
+   * @private
+   */
+  #fallback(cartasValidas) {
     logger.logContext(this);
     const COLORES = ['rojo', 'azul', 'verde', 'amarillo'];
     const aleatorio = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // Busca una carta de accion (salta, reversa, roba-dos, comodines) y si no encuentra ninguna
-    // elige una carta numerica random.
     const elegida = cartasValidas.find((c) => c.tipo !== 'numero') ?? aleatorio(cartasValidas);
 
-    // Si la carta elegida es un comodín sin color, elige un color al azar.
-    // Si ya tiene color (no es comodín), no elige color.
     const colorElegido = elegida.color === null ? aleatorio(COLORES) : null;
 
     return { cartaId: elegida.id, colorElegido };

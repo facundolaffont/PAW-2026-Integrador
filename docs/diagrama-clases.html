@@ -730,8 +730,8 @@ classDiagram
     class BotLLM {
         -GenerativeModel model
         +decidirJugada(mano, cartaEnMesa, penalidad, tipo, rivales) Object
-        -_armarPrompt(...) String
-        -_fallback(cartasValidas, mano) Object
+        -#armarPrompt(...) String
+        -#fallback(cartasValidas) Object
     }
 
     class Carta {
