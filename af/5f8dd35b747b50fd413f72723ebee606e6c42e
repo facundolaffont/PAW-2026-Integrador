@@ -1,0 +1,87 @@
+src/presentacion/public/css/inicio.css
+  s_48778735bcdbe7::t_6fb08db435651e 1-2
+src/presentacion/public/css/crear-sala.css
+  s_48778735bcdbe7::t_a0081f5c5c65ca 1-2
+src/presentacion/public/css/reglas.css
+  s_48778735bcdbe7::t_c158c2f573fe6c 1
+src/presentacion/public/js/partida.js
+  s_800d1fd365e603::t_fbd1e1050c0240 417-421
+  s_800d1fd365e603::t_c2d8cfb68531e2 1455-1461
+  s_800d1fd365e603::t_857150739632bb 269-275
+  s_800d1fd365e603::t_7cb3f3454d5ce2 220-225
+  s_800d1fd365e603::t_3d27af2df1e4ca 431-436
+  s_800d1fd365e603::t_f0b8ce1ea2fd52 1169-1174
+  s_800d1fd365e603::t_381083d6e85e3b 1207-1212
+  s_800d1fd365e603::t_eaf56ff340b355 1712-1718
+  s_800d1fd365e603::t_e7093162760846 1219-1223
+  s_800d1fd365e603::t_9c57e1f1ec37f1 1078-1082
+  s_800d1fd365e603::t_213e96d7f35f66 1375-1386
+  s_800d1fd365e603::t_32a29c31b17481 1279-1284
+  s_800d1fd365e603::t_65acd97b582ca9 1768-1775
+  s_800d1fd365e603::t_d09b437ae4f2e8 169-174
+  s_800d1fd365e603::t_f417c4380063a7 348-353
+  s_800d1fd365e603::t_4269665de10393 1740-1747
+  s_800d1fd365e603::t_1ebd6ea3610c33 1097-1101
+  s_800d1fd365e603::t_fe974ce6067a76 208-212
+  s_800d1fd365e603::t_1fe0ecf9c5d440 617-622
+  s_800d1fd365e603::t_3375defce9cbb1 385-390
+  s_800d1fd365e603::t_f2eeb13f9dda38 450-456
+  s_800d1fd365e603::t_3c1b63af3e4d97 1157-1162
+  s_800d1fd365e603::t_3573f253a6705f 1184-1188
+  s_800d1fd365e603::t_daaa7fd8827bc7 1246-1252
+  s_800d1fd365e603::t_f04276a72498ed 1297-1302
+  s_800d1fd365e603::t_30bd6de0ad6f23 1311-1318
+  s_800d1fd365e603::t_c29c3831875574 179-184
+  s_800d1fd365e603::t_dfff7a93355c18 1330-1336
+  s_800d1fd365e603::t_275fab98d91102 1363-1368
+  s_800d1fd365e603::t_86a3b10447dd6c 403-407
+  s_800d1fd365e603::t_848648b1551131 1196-1200
+  s_800d1fd365e603::t_457391e062165b 1228-1232
+  s_800d1fd365e603::t_626d1e18d65990 362-367
+  s_800d1fd365e603::t_eed08269b8529d 1067-1071
+  s_800d1fd365e603::t_8a29bcadca927e 1087-1091
+  s_800d1fd365e603::t_e9f7f9d34350c3 319-324
+  s_800d1fd365e603::t_e3791f984411db 296-301
+  s_800d1fd365e603::t_2dcc409009e5db 1058-1062
+  s_800d1fd365e603::t_ddf32d0498eef2 1237-1241
+  s_800d1fd365e603::t_fefc589b21721d 1470-1478
+  s_800d1fd365e603::t_ca0b4c48599d97 1107-1113
+  s_800d1fd365e603::t_5feeb9dd08840d 133-143
+  s_800d1fd365e603::t_a6f231ad6d21ca 1141-1146
+  s_800d1fd365e603::t_b9f9ba4469035a 111-115
+  s_800d1fd365e603::t_14dcca3f97d96e 1260-1264
+src/presentacion/public/css/puntajes.css
+  s_48778735bcdbe7::t_855a5362a34488 1-2
+src/presentacion/public/css/layout.css
+  s_48778735bcdbe7::t_e47b89f26fc433 1
+src/presentacion/public/css/salas.css
+  s_48778735bcdbe7::t_7987564132af49 1-2
+src/presentacion/public/css/partida.css
+  s_48778735bcdbe7::t_ca2e413a55ecfd 1-2
+src/presentacion/public/css/auth.css
+  s_48778735bcdbe7::t_92f5ab59bffbce 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "af5f8dd35b747b50fd413f72723ebee606e6c42e",
+  "prompts": {},
+  "sessions": {
+    "s_48778735bcdbe7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5505c3e9-6a07-4f2c-80cb-62cab2c6abae",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    },
+    "s_800d1fd365e603": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66a9e8fa-97f8-4ecb-8138-a01e379e1e7e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
