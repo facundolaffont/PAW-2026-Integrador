@@ -81,6 +81,7 @@ class Logger {
 
   /**
    * Loguea en modo debug el método caller y opcionalmente los parámetros.
+   *
    * @param {object} context - El objeto this de la clase (o la clase en métodos estáticos).
    * @param {object} [params] - Metadatos opcionales del mensaje.
    */
@@ -91,6 +92,7 @@ class Logger {
 
   /**
    * Registra un mensaje con nivel dinámico y contexto de ejecución del caller.
+   *
    * @param {string} level - Nivel de log ('debug', 'info', 'warn', 'error').
    * @param {string} message - Mensaje a registrar.
    * @param {object} [meta={}] - Metadatos adicionales.
@@ -106,6 +108,7 @@ class Logger {
 
   /**
    * Registra una entrada de log con contexto de ejecución pre-computado.
+   *
    * @param {string} level - Nivel de log ('info', 'warn', 'error', 'debug').
    * @param {{ file: string, method: string }} executionContext - Contexto de ejecución.
    * @param {string|null} [message=null] - Mensaje opcional.
@@ -122,6 +125,7 @@ class Logger {
 
   /**
    * Extrae del stack trace el archivo y método del frame indicado.
+   *
    * @param {number} frameIndex - Índice de línea en `Error().stack` del caller a capturar.
    *   Usar `3` cuando el caller invoca directamente al método público de Logger
    *   (`logContext`, `registerLog`); usar `4` cuando pasa por `info`/`warn`/`error`/`debug`.
