@@ -92,7 +92,9 @@ class ManejadorAuth {
   me(req, res) {
     logger.logContext(this);
     try {
+      // Realiza las validaciones correspondientes de la cookie JWT (firma, expiración, etc.).
       const payload = jwt.verify(req.cookies?.token, process.env.JWT_SECRET);
+
       res.json({ jugadorId: payload.jugadorId, nombreUsuario: payload.nombreUsuario });
     } catch {
       res.status(401).json({ error: 'No autorizado' });
