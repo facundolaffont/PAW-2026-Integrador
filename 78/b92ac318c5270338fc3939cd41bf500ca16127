@@ -1,0 +1,26 @@
+docs/presentacion.html
+  s_6842a58a7e71c6::t_d7d0a5ebf0e3cd 240
+  s_6842a58a7e71c6::t_39d0ba92f50129 763-802,834
+  s_6842a58a7e71c6::t_e56a76ce6039c8 814,830-833
+  s_6842a58a7e71c6::t_d55bee23782a94 601
+  s_6842a58a7e71c6::t_466579159b659d 47
+  s_6842a58a7e71c6::t_7e4028dc50c1d4 20
+  s_6842a58a7e71c6::t_0641cdf236b2fe 165
+  s_6842a58a7e71c6::t_08b04aa6a8afc3 260-261,268-272,274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "78b92ac318c5270338fc3939cd41bf500ca16127",
+  "prompts": {},
+  "sessions": {
+    "s_6842a58a7e71c6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fc989b3-f456-46bb-9ebf-695d95a5a8ac",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
