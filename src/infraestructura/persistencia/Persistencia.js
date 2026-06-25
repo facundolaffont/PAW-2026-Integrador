@@ -16,7 +16,7 @@ class Persistencia {
     this.partidas = new Map();
   }
 
-  // ─── Jugadores (delegado al repositorio) ─────────────────────────────────
+  /* Acciones sobre repositorio (puede ser MySQL o memoria). */
 
   registrarJugador(jugadorId, nombreUsuario, passwordHash) {
     logger.logContext(this);
@@ -48,23 +48,36 @@ class Persistencia {
     return this.repositorio.obtenerJugadorPorNombre(nombreUsuario);
   }
 
+  /**
+   * Obtiene los puntajes de todos los jugadores.
+   *
+   * @returns {Array<{ jugadorId: number, nombreUsuario: string, puntaje: number }>} - Lista de puntajes.
+   */
   obtenerPuntajes() {
     logger.logContext(this);
     return this.repositorio.obtenerPuntajes();
   }
 
+  /**
+   * Guarda el resultado de una partida en el repositorio.
+   *
+   * @param {Number} partidaId - Identificador numérico de la partida.
+   * @param {Array<{ jugadorId: number, puntaje: number }>} ranking - Ranking de jugadores y sus puntajes.
+   * @returns {Promise<void>}
+   */
   guardarResultadoPartida(partidaId, ranking) {
     logger.logContext(this);
     return this.repositorio.guardarResultadoPartida(partidaId, ranking);
   }
 
-  // ─── Partidas activas (en memoria) ───────────────────────────────────────
+  /* Acciones directas en memoria. */
 
   /**
    * Guarda el estado de una partida activa en memoria.
    *
    * @param {Number} partidaId - Identificador numérico de la partida.
    * @param {SalaDeJuego} sala - Instancia de la sala de juego.
+   * @returns {void}
    */
   guardarPartida(partidaId, sala) {
     logger.logContext(this);
@@ -83,11 +96,22 @@ class Persistencia {
     return this.partidas.get(partidaId) || null;
   }
 
+  /**
+   * Elimina una partida activa de la memoria.
+   *
+   * @param {Number} partidaId - Identificador numérico de la partida.
+   * @returns {void}
+   */
   eliminarPartida(partidaId) {
     logger.logContext(this);
     this.partidas.delete(partidaId);
   }
 
+  /**
+   * Lista las partidas disponibles que están en estado "esperando".
+   *
+   * @returns {Array<object>} - Lista de resúmenes públicos de las partidas disponibles.
+   */
   listarPartidasDisponibles() {
     logger.logContext(this);
     return [...this.partidas.values()]
@@ -95,6 +119,12 @@ class Persistencia {
       .map((s) => s.resumenPublico());
   }
 
+  /**
+   * Verifica si un jugador está participando en alguna partida activa.
+   *
+   * @param {Number} jugadorId - Identificador numérico del jugador.
+   * @returns {boolean} - True si el jugador está en una partida, false en caso contrario.
+   */
   jugadorEstaEnPartida(jugadorId) {
     logger.logContext(this);
     for (const sala of this.partidas.values()) {
@@ -104,7 +134,6 @@ class Persistencia {
     }
     return false;
   }
-
 }
 
 module.exports = new Persistencia();

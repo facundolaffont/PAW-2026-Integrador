@@ -108,6 +108,11 @@ class Partida {
     this.RETARDO_ENTRE_CARTAS_MS = 90;
   }
 
+  /**
+   * Garantiza que exista un AudioContext activo, reanudándolo si estaba suspendido.
+   *
+   * @returns {?AudioContext} El contexto de audio activo, o null si el navegador no lo soporta.
+   */
   #asegurarAudioCtx() {
     if (this.audioCtx) {
       if (this.audioCtx.state === 'suspended') {
@@ -125,6 +130,17 @@ class Partida {
     return this.audioCtx;
   }
 
+  /**
+   * Reproduce un tono simple mediante la Web Audio API.
+   *
+   * @param {Object} [opciones={}]
+   * @param {number} opciones.frecuencia - Frecuencia del oscilador en Hz.
+   * @param {number} [opciones.duracion=0.15] - Duración del tono en segundos.
+   * @param {OscillatorType} [opciones.tipo='sine'] - Forma de onda del oscilador.
+   * @param {number} [opciones.volumen=0.2] - Volumen máximo del tono (0–1).
+   * @param {number} [opciones.inicio=0] - Retardo en segundos antes de reproducir.
+   * @returns {void}
+   */
   #tocarTono({ frecuencia, duracion = 0.15, tipo = 'sine', volumen = 0.2, inicio = 0 } = {}) {
     const ctx = this.#asegurarAudioCtx();
     if (!ctx) return;
@@ -150,10 +166,22 @@ class Partida {
     } catch {}
   }
 
+  /**
+   * Reproduce una secuencia de tonos en orden.
+   *
+   * @param {Object[]} [notas=[]] - Lista de opciones de tono compatibles con {@link #tocarTono}.
+   * @returns {void}
+   */
   #tocarSecuencia(notas = []) {
     notas.forEach((nota) => this.#tocarTono(nota));
   }
 
+  /**
+   * Activa la vibración del dispositivo si la API está disponible.
+   *
+   * @param {number|number[]} patron - Duración en ms o patrón alternado de vibración/pausa.
+   * @returns {void}
+   */
   #vibrar(patron) {
     if (!('vibrate' in navigator)) return;
     try {
@@ -199,6 +227,11 @@ class Partida {
     this.observadorSolapamiento = observador;
   }
 
+  /**
+   * Crea el elemento visual del temporizador de turno y lo almacena en {@link turnoTimerSpan}.
+   *
+   * @returns {void}
+   */
   #configurarTurnoTimer() {
     const span = document.createElement('span');
     span.className = 'turno-timer';
@@ -206,6 +239,12 @@ class Partida {
     this.turnoTimerSpan = span;
   }
 
+  /**
+   * Inicia el temporizador visual de turno y emite sonido/vibración al acercarse al vencimiento.
+   *
+   * @param {number} durationMs - Duración total del turno en milisegundos.
+   * @returns {void}
+   */
   #iniciarTurnoTimer(durationMs) {
     if (!this.turnoTimerSpan) return;
     this.#detenerTurnoTimer(false);
@@ -249,6 +288,13 @@ class Partida {
     this.turnoTimerIntervalo = setInterval(tick, 200);
   }
 
+  /**
+   * Aplica un timer de turno que estaba pendiente cuando la mesa no estaba lista aún.
+   * Verifica que el turno esperado coincida con el estado actual antes de iniciarlo.
+   *
+   * @param {string|number|null} [turnoEsperado=null] - ID del jugador cuyo turno se espera confirmar.
+   * @returns {void}
+   */
   #aplicarTimerTurnoPendiente(turnoEsperado = null) {
     if (this.turnoTimerPendienteMs == null) return;
     if (!this.estadoMesaActual || this.estadoMesaActual.estado !== 'jugando') return;
@@ -269,6 +315,12 @@ class Partida {
     this.#iniciarTurnoTimer(ms);
   }
 
+  /**
+   * Detiene el temporizador de turno y opcionalmente lo desconecta del DOM.
+   *
+   * @param {boolean} [quitar=true] - Si es true, remueve el elemento del DOM y limpia el timer pendiente.
+   * @returns {void}
+   */
   #detenerTurnoTimer(quitar = true) {
     if (this.turnoTimerIntervalo) {
       clearInterval(this.turnoTimerIntervalo);
@@ -286,6 +338,12 @@ class Partida {
     }
   }
 
+  /**
+   * Crea el botón flotante "UNO" con su barra de progreso y registra el evento de clic
+   * para enviar la acción de cantar UNO al servidor.
+   *
+   * @returns {void}
+   */
   #configurarBotonUno() {
     const boton = document.createElement('button');
     boton.type = 'button';
@@ -309,6 +367,12 @@ class Partida {
     this.btnCantarUno = boton;
   }
 
+  /**
+   * Muestra u oculta el botón de cantar UNO. Al ocultarlo también detiene la animación de progreso.
+   *
+   * @param {boolean} visible - true para mostrar, false para quitar del DOM.
+   * @returns {void}
+   */
   #mostrarBotonUno(visible) {
     if (!this.btnCantarUno) return;
     if (!visible) {
@@ -317,6 +381,12 @@ class Partida {
     }
   }
 
+  /**
+   * Activa la animación de progreso del botón UNO durante el tiempo disponible para cantarlo.
+   *
+   * @param {number} timeoutMs - Tiempo total en ms durante el cual se puede cantar UNO.
+   * @returns {void}
+   */
   #iniciarAnimacionUno(timeoutMs) {
     if (!this.btnCantarUno) return;
     this.btnCantarUno.classList.add('activo');
@@ -334,6 +404,12 @@ class Partida {
     this.unoProgresoIntervalo = setInterval(actualizar, 60);
   }
 
+  /**
+   * Detiene la animación de progreso del botón UNO y opcionalmente lo desactiva visualmente.
+   *
+   * @param {boolean} [quitarClase=true] - Si es true, elimina la clase activa y resetea el progreso.
+   * @returns {void}
+   */
   #detenerAnimacionUno(quitarClase = true) {
     if (this.unoProgresoIntervalo) {
       clearInterval(this.unoProgresoIntervalo);
@@ -346,6 +422,11 @@ class Partida {
     }
   }
 
+  /**
+   * Registra el listener del formulario de chat para enviar mensajes al hacer submit.
+   *
+   * @returns {void}
+   */
   #configurarChat() {
     if (!this.formChat || !this.inputChat) return;
     this.formChat.addEventListener('submit', (e) => {
@@ -355,6 +436,11 @@ class Partida {
     });
   }
 
+  /**
+   * Enlaza los botones de tab del panel lateral para alternar entre actividad y chat.
+   *
+   * @returns {void}
+   */
   #configurarTabs() {
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach((btn) => {
@@ -364,6 +450,12 @@ class Partida {
     });
   }
 
+  /**
+   * Cambia el tab activo del panel lateral actualizando clases CSS y el estado del panel.
+   *
+   * @param {string} tab - Identificador del tab destino ('actividad' | 'chat').
+   * @returns {void}
+   */
   #cambiarTab(tab) {
     if (tab === this.tabActivo) return;
     this.tabActivo = tab;
@@ -377,6 +469,13 @@ class Partida {
     }
   }
 
+  /**
+   * Renderiza el mensaje localmente de forma optimista y lo envía al servidor vía WebSocket.
+   * Omite mensajes vacíos y deduplica los que ya hayan sido enviados.
+   *
+   * @param {string} texto - Texto del mensaje a enviar.
+   * @returns {void}
+   */
   enviarChat(texto) {
     if (!texto || !texto.trim()) return;
     if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
@@ -536,6 +635,12 @@ class Partida {
     this.listaMensajes.scrollTop = 0;
   }
 
+  /**
+   * Actualiza el indicador textual de estado de la partida en el encabezado.
+   *
+   * @param {?Object} estadoPartida - Estado actual de la partida recibido del servidor.
+   * @returns {void}
+   */
   #actualizarEstadoPartida(estadoPartida) {
     if (!estadoPartida) {
       this.estado.textContent = 'Conectando...';
@@ -970,30 +1075,62 @@ class Partida {
     return img;
   }
 
+  /**
+   * Indica si las animaciones están habilitadas según la preferencia de movimiento reducido del sistema.
+   *
+   * @returns {boolean} false si el usuario prefiere movimiento reducido.
+   */
   #animacionesHabilitadas() {
     return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
+  /**
+   * Devuelve la duración de la animación de carta según si las animaciones están habilitadas.
+   *
+   * @returns {number} Duración en milisegundos.
+   */
   #duracionAnimacionCarta() {
     return this.#animacionesHabilitadas()
       ? this.DURACION_ANIMACION_CARTA_MS
       : this.DURACION_ANIMACION_CARTA_MS_REDUCIDA;
   }
 
+  /**
+   * Indica si hay animaciones de carta activas o pendientes de ejecución en la cola.
+   *
+   * @returns {boolean}
+   */
   #hayAnimacionesEnCurso() {
     return this.animacionesActivas > 0 || this.animacionesPendientes > 0;
   }
 
+  /**
+   * Envía al servidor la señal de que todas las animaciones del cliente terminaron.
+   *
+   * @returns {void}
+   */
   #notificarAnimacionesListas() {
     if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
     this.webSocket.send(JSON.stringify({ accion: 'animaciones-listas' }));
   }
 
+  /**
+   * Notifica al servidor que las animaciones terminaron, solo si la cola está vacía.
+   *
+   * @returns {void}
+   */
   #notificarSiAnimacionesLibres() {
     if (this.#hayAnimacionesEnCurso()) return;
     this.#notificarAnimacionesListas();
   }
 
+  /**
+   * Agrega una animación a la cola secuencial y actualiza los contadores de estado.
+   * Si las animaciones están deshabilitadas, ejecuta inmediatamente y notifica al servidor.
+   *
+   * @param {Function} ejecutar - Función async que ejecuta la animación.
+   * @returns {Promise<void>}
+   */
   #encolarAnimacion(ejecutar) {
     if (!this.#animacionesHabilitadas()) {
       return Promise.resolve()
@@ -1021,6 +1158,12 @@ class Partida {
     return tarea;
   }
 
+  /**
+   * Encola una animación solo si la cola está vacía; la descarta si ya hay animaciones en curso.
+   *
+   * @param {Function} ejecutar - Función async que ejecuta la animación.
+   * @returns {Promise<void>}
+   */
   #encolarAnimacionSiLibre(ejecutar) {
     if (!this.#animacionesHabilitadas()) {
       return Promise.resolve();
@@ -1031,12 +1174,22 @@ class Partida {
     return this.#encolarAnimacion(ejecutar);
   }
 
+  /**
+   * Encola una acción para que se ejecute después de que terminen todas las animaciones en curso.
+   *
+   * @param {Function} ejecutar - Función (sync o async) a ejecutar al final de la cola.
+   * @returns {void}
+   */
   #encolarAccionPostAnimacion(ejecutar) {
-    this.colaAnimaciones = this.colaAnimaciones
-      .then(() => ejecutar())
-      .catch(() => {});
+    this.colaAnimaciones = this.colaAnimaciones.then(() => ejecutar()).catch(() => {});
   }
 
+  /**
+   * Solicita renderizar el estado de la mesa, difiriéndolo si hay animaciones en curso.
+   *
+   * @param {Object} estado - Estado de la partida a renderizar.
+   * @returns {void}
+   */
   #solicitarRenderMesa(estado) {
     if (this.#hayAnimacionesEnCurso() && this.#animacionesHabilitadas()) {
       this.estadoPendienteRender = estado;
@@ -1046,6 +1199,11 @@ class Partida {
     this.#renderMesa(estado);
   }
 
+  /**
+   * Aplica el estado de mesa diferido si la cola de animaciones quedó vacía.
+   *
+   * @returns {void}
+   */
   #aplicarEstadoPendiente() {
     if (this.#hayAnimacionesEnCurso() || !this.estadoPendienteRender) return;
     const estado = this.estadoPendienteRender;
@@ -1053,30 +1211,63 @@ class Partida {
     this.#renderMesa(estado);
   }
 
+  /**
+   * Crea el elemento visual del mazo (carta con reverso) para el tablero central.
+   *
+   * @returns {HTMLImageElement} Imagen con la clase 'mazo-carta'.
+   */
   #crearMazoVisual() {
     const carta = this.#crearCarta(null, true);
     carta.classList.add('mazo-carta');
     return carta;
   }
 
+  /**
+   * Reemplaza la carta superior del mazo visual con una nueva, tras haber sido volada.
+   *
+   * @param {?HTMLElement} mazo - Contenedor del mazo en el DOM.
+   * @returns {void}
+   */
   #reponerCartaMazo(mazo) {
     if (!mazo) return;
     mazo.querySelector('.mazo-carta')?.remove();
     mazo.appendChild(this.#crearMazoVisual());
   }
 
+  /**
+   * Devuelve el elemento visual de la carta que está en el tope del mazo.
+   *
+   * @returns {?HTMLElement}
+   */
   #obtenerCartaTopeMazo() {
     return this.vistaMesa?.querySelector('.mazo .mazo-carta');
   }
 
+  /**
+   * Devuelve el contenedor del mazo dentro de la vista de mesa.
+   *
+   * @returns {?HTMLElement}
+   */
   #obtenerMazoEl() {
     return this.vistaMesa?.querySelector('.mazo');
   }
 
+  /**
+   * Devuelve el contenedor del descarte dentro de la vista de mesa.
+   *
+   * @returns {?HTMLElement}
+   */
   #obtenerDescarteEl() {
     return this.vistaMesa?.querySelector('.carta-descarte');
   }
 
+  /**
+   * Asigna el atributo `data-jugador-id` a un elemento de mano para permitir búsquedas en el DOM.
+   *
+   * @param {?HTMLElement} mano - Contenedor de mano a etiquetar.
+   * @param {string|number|null} jugadorId - ID del jugador propietario de la mano.
+   * @returns {?HTMLElement} El mismo elemento recibido.
+   */
   #etiquetarMano(mano, jugadorId) {
     if (mano && jugadorId != null) {
       mano.dataset.jugadorId = String(jugadorId);
@@ -1152,6 +1343,11 @@ class Partida {
     mano.style.setProperty('--sep-carta', `${solapamiento}px`);
   }
 
+  /**
+   * Busca el primer slot de timer de turno visible en la mesa (el del jugador en turno que sea visible).
+   *
+   * @returns {?HTMLElement} El elemento `.turno-timer-slot` visible, o null si no hay ninguno.
+   */
   #obtenerSlotTimerTurnoVisible() {
     const nombresEnTurno = this.vistaMesa?.querySelectorAll('.jugador-en-turno-nombre');
     if (!nombresEnTurno?.length) return null;
@@ -1166,6 +1362,12 @@ class Partida {
     return null;
   }
 
+  /**
+   * Devuelve el elemento DOM de la mano de un jugador que sea visible en pantalla.
+   *
+   * @param {string|number|null} jugadorId - ID del jugador cuya mano se busca.
+   * @returns {?HTMLElement} Primer contenedor de mano visible, o el primero encontrado como fallback.
+   */
   #obtenerZonaMano(jugadorId) {
     if (!this.vistaMesa || this.vistaMesa.hidden || jugadorId == null) return null;
 
@@ -1178,6 +1380,12 @@ class Partida {
     return manos[0] || null;
   }
 
+  /**
+   * Devuelve el último elemento de carta en la mano de un jugador, o el contenedor si está vacía.
+   *
+   * @param {string|number} jugadorId - ID del jugador.
+   * @returns {?HTMLElement}
+   */
   #obtenerUltimaCartaEnMano(jugadorId) {
     const mano = this.#obtenerZonaMano(jugadorId);
     if (!mano) return null;
@@ -1186,6 +1394,14 @@ class Partida {
     return cartas.length > 0 ? cartas[cartas.length - 1] : mano;
   }
 
+  /**
+   * Localiza el elemento DOM de la carta que el jugador va a mover al descarte.
+   * Para el jugador propio intenta encontrar la carta exacta; para rivales usa la última de la mano.
+   *
+   * @param {string|number} jugadorId - ID del jugador que descarta.
+   * @param {?Object} carta - Carta jugada (con id).
+   * @returns {?HTMLElement}
+   */
   #obtenerCartaOrigenDescarte(jugadorId, carta) {
     if (String(jugadorId) === String(this.jugadorId) && carta?.id) {
       const cartaPropia = this.vistaMesa?.querySelector(
@@ -1197,6 +1413,13 @@ class Partida {
     return this.#obtenerUltimaCartaEnMano(jugadorId);
   }
 
+  /**
+   * Calcula el rectángulo de destino para la animación de carta hacia una mano.
+   * Desplaza el destino levemente para que la carta nueva se apile visualmente a continuación.
+   *
+   * @param {HTMLElement} manoEl - Contenedor de la mano destino.
+   * @returns {DOMRect|Object} Coordenadas y dimensiones del área de destino.
+   */
   #obtenerRectDestinoMano(manoEl) {
     const cartas = manoEl.querySelectorAll('.carta-svg');
     if (cartas.length === 0) {
@@ -1223,12 +1446,30 @@ class Partida {
     };
   }
 
+  /**
+   * Devuelve el bounding rect de un elemento de carta o del primer `.carta-svg` que contenga.
+   *
+   * @param {?HTMLElement} el - Elemento desde el cual obtener el rect.
+   * @returns {?DOMRect}
+   */
   #obtenerRectCarta(el) {
     if (!el) return null;
     const carta = el.classList?.contains('carta-svg') ? el : el.querySelector('.carta-svg');
     return (carta || el).getBoundingClientRect();
   }
 
+  /**
+   * Anima una carta volando desde un elemento origen hasta un elemento destino.
+   * Crea un clon absoluto en el body, aplica la transición CSS y lo elimina al terminar.
+   *
+   * @param {HTMLElement} origenEl - Elemento desde donde parte la carta.
+   * @param {HTMLElement} destinoEl - Elemento hacia donde vuela la carta.
+   * @param {?Object} carta - Datos de la carta para renderizar la cara correcta.
+   * @param {Object} [opciones={}]
+   * @param {boolean} [opciones.reverso=false] - Si se muestra el reverso durante el vuelo.
+   * @param {boolean} [opciones.desdeMazo=false] - Si la carta sale del mazo (se repone tras volar).
+   * @returns {Promise<void>} Se resuelve cuando la animación termina.
+   */
   #animarCartaVolando(origenEl, destinoEl, carta, { reverso = false, desdeMazo = false } = {}) {
     if (!origenEl || !destinoEl || !this.#animacionesHabilitadas()) {
       return Promise.resolve();
@@ -1297,6 +1538,13 @@ class Partida {
     });
   }
 
+  /**
+   * Anima la carta jugada desde la mano del jugador hacia el descarte central.
+   *
+   * @param {string|number} jugadorId - ID del jugador que jugó la carta.
+   * @param {?Object} carta - Carta jugada.
+   * @returns {Promise<void>}
+   */
   async #animarCartaADescarte(jugadorId, carta) {
     const descarte = this.#obtenerDescarteEl();
     const origen = this.#obtenerCartaOrigenDescarte(jugadorId, carta);
@@ -1305,6 +1553,15 @@ class Partida {
     await this.#animarCartaVolando(origen, descarte, carta, { reverso: false });
   }
 
+  /**
+   * Anima una o más cartas volando desde el mazo hacia la mano de un jugador, una por una.
+   * Para el jugador propio muestra la cara de la carta; para rivales muestra el reverso.
+   *
+   * @param {string|number} jugadorId - ID del jugador que roba.
+   * @param {Object[]} [cartas=[]] - Cartas robadas con detalle (propias).
+   * @param {number} [cantidadSinDetalle=0] - Cantidad a animar cuando no hay detalle (rivales).
+   * @returns {Promise<void>}
+   */
   async #animarCartasDesdeMazo(jugadorId, cartas = [], cantidadSinDetalle = 0) {
     const mano = this.#obtenerZonaMano(jugadorId);
     if (!mano) return;
@@ -1352,7 +1609,11 @@ class Partida {
     cartas.forEach((carta) => {
       const clickHandler = !reverso && carta?.id ? () => onCartaClick?.(carta) : null;
       const cartaEl = this.#crearCarta(carta, reverso, clickHandler);
-      if (carta?.id && cartasNuevas?.has(carta.id) && !this.cartasAnimadasRecientemente.has(carta.id)) {
+      if (
+        carta?.id &&
+        cartasNuevas?.has(carta.id) &&
+        !this.cartasAnimadasRecientemente.has(carta.id)
+      ) {
         cartaEl.classList.add('carta-nueva');
       }
       mano.appendChild(cartaEl);
@@ -1538,6 +1799,13 @@ class Partida {
     return carta.color === colorMesa || mismoTipoNoNumerico || mismoNumero;
   }
 
+  /**
+   * Gestiona el intento del jugador de jugar una carta: valida el turno, valida la jugada
+   * localmente, pide el color si es comodín y envía la acción al servidor.
+   *
+   * @param {Object} carta - Carta que el jugador quiere jugar.
+   * @returns {Promise<void>}
+   */
   async #manejarJugarCartaPropia(carta) {
     const estado = this.estadoMesaActual;
     if (!estado || estado.estado !== 'jugando') return;
@@ -1559,6 +1827,14 @@ class Partida {
     this.webSocket.send(JSON.stringify(payload));
   }
 
+  /**
+   * Actualiza el estado de mesa en memoria para reflejar que un jugador robó una carta,
+   * sin necesidad de esperar un re-render completo del servidor.
+   *
+   * @param {string|number} jugadorId - ID del jugador que robó.
+   * @param {?Object} [carta=null] - Carta robada con detalle (solo disponible para el jugador propio).
+   * @returns {void}
+   */
   #incorporarCartaRobadaEnEstado(jugadorId, carta = null) {
     if (!this.estadoMesaActual?.jugadores) return;
 
@@ -1579,6 +1855,14 @@ class Partida {
     jugador.cantidadCartas = (jugador.cantidadCartas || 0) + 1;
   }
 
+  /**
+   * Inserta visualmente en el DOM la carta robada en la mano del jugador correspondiente.
+   * Para el jugador propio agrega la cara visible; para rivales agrega el reverso.
+   *
+   * @param {string|number} jugadorId - ID del jugador que recibe la carta.
+   * @param {?Object} [carta=null] - Carta con detalle (solo para el jugador propio).
+   * @returns {void}
+   */
   #agregarCartaVisibleAMano(jugadorId, carta = null) {
     const mano = this.#obtenerZonaMano(jugadorId);
     if (!mano) return;
@@ -1710,10 +1994,7 @@ class Partida {
       filaRival.appendChild(crearEtiquetaNombreJugador(rival, 'info-jugador'));
 
       const manoRival = this.#etiquetarMano(
-        this.#crearManoHorizontal(
-          this.#crearCartasPlaceholder(rival.cantidadCartas),
-          true
-        ),
+        this.#crearManoHorizontal(this.#crearCartasPlaceholder(rival.cantidadCartas), true),
         rival.jugadorId
       );
       manoRival.classList.add('mano-rival-mobile');

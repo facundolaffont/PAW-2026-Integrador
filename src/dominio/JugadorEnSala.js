@@ -16,7 +16,7 @@ class JugadorEnSala {
 
   quitarCarta(cartaId) {
     logger.logContext(this);
-    const idx = this.mano.findIndex((c) => c.id === cartaId);
+    const idx = this.mano.findIndex((c) => c.getId() === cartaId);
     if (idx === -1) return null;
     return this.mano.splice(idx, 1)[0];
   }

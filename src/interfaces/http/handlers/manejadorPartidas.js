@@ -1,5 +1,6 @@
 const express = require('express');
 const logger = require('#infraestructura/shared/logger');
+
 /**
  * Manejador HTTP de la API REST de partidas. Expone endpoints para listar,
  * crear y obtener partidas por ID. Extrae datos del request (jugador autenticado,
@@ -23,6 +24,13 @@ class ManejadorPartidas {
     this.#registrarRutas();
   }
 
+  /**
+   * Lista todas las partidas activas.
+   *
+   * @param {import('express').Request} req - Objeto de solicitud de Express.
+   * @param {import('express').Response} res - Objeto de respuesta de Express.
+   * @returns {void}
+   */
   listar(req, res) {
     logger.logContext(this);
 
@@ -38,7 +46,7 @@ class ManejadorPartidas {
    * @param {object} this - El contexto del manejador de partidas.
    * @param {object} req - El objeto de solicitud HTTP, que contiene el cuerpo con los datos de la partida a crear.
    * @param {object} res - El objeto de respuesta HTTP, utilizado para enviar la respuesta al cliente.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
   async crear(req, res) {
     try {
@@ -65,6 +73,13 @@ class ManejadorPartidas {
     }
   }
 
+  /**
+   * Obtiene el estado de una partida por su ID.
+   *
+   * @param {import('express').Request} req - Objeto de solicitud de Express.
+   * @param {import('express').Response} res - Objeto de respuesta de Express.
+   * @returns {void}
+   */
   obtener(req, res) {
     logger.logContext(this);
     const result = this.controller.obtenerPartida(req.params.id, req.jugadorId);

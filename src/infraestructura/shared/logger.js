@@ -1,5 +1,12 @@
 const { createLogger, format, transports } = require('winston');
 
+/**
+ * Singleton de logging de la aplicación. Envuelve Winston para registrar mensajes con formato
+ * estructurado (timestamp, contexto de ejecución, mensaje y metadatos) en `logs/app.log` y
+ * `logs/error.log`. Captura automáticamente el archivo y método del caller mediante el stack trace.
+ *
+ * API pública: `info`, `warn`, `error`, `debug`, `logContext` y `registerLog`.
+ */
 class Logger {
   static #instance;
   #logger;
