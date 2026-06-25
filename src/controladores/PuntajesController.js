@@ -1,14 +1,12 @@
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class PuntajesController {
   constructor(persistencia) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.persistencia = persistencia;
   }
 
   async listarPuntajes() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.persistencia.obtenerPuntajes();
   }
 }

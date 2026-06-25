@@ -1,10 +1,21 @@
 const express = require('express');
 const logger = require('#infraestructura/shared/logger');
-const { registerLog, logContext } = require('#infraestructura/shared/utils');
-
+/**
+ * Manejador HTTP de la API REST de partidas. Expone endpoints para listar,
+ * crear y obtener partidas por ID. Extrae datos del request (jugador autenticado,
+ * parámetros y cuerpo), delega en PartidaController y traduce el resultado
+ * en respuestas JSON con el código HTTP correspondiente.
+ *
+ * Endpoints (montado en `/api/partidas`, requiere autenticación):
+ * - `GET /api/partidas` — lista las partidas activas.
+ * - `POST /api/partidas` — crea una nueva partida.
+ * - `GET /api/partidas/:id` — obtiene el estado de una partida.
+ *
+ * @param {import('#controladores/PartidaController')} controller - Controlador de lógica de partidas.
+ */
 class ManejadorPartidas {
   constructor(controller) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.controller = controller;
 
     this.router = express.Router();
@@ -13,7 +24,7 @@ class ManejadorPartidas {
   }
 
   listar(req, res) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     res.json(this.controller.listarPartidas());
   }
@@ -31,12 +42,12 @@ class ManejadorPartidas {
    */
   async crear(req, res) {
     try {
-      logContext(logger, this);
+      logger.logContext(this);
 
       const jugadorId = req.jugadorId;
       const { maxJugadores, cantidadBots } = req.body;
 
-      registerLog(logger, 'debug', 'Creando partida.', {
+      logger.registerLog('debug', 'Creando partida.', {
         jugadorId,
         maxJugadores,
         cantidadBots,
@@ -49,13 +60,13 @@ class ManejadorPartidas {
 
       res.status(201).json(result.data);
     } catch (error) {
-      registerLog(logger, 'error', 'Error al crear la partida.', { error: error.message });
+      logger.registerLog('error', 'Error al crear la partida.', { error: error.message });
       res.status(500).json({ error: 'Error al crear la partida.' });
     }
   }
 
   obtener(req, res) {
-    logContext(logger, this);
+    logger.logContext(this);
     const result = this.controller.obtenerPartida(req.params.id, req.jugadorId);
 
     if (!result.ok) {
@@ -66,7 +77,7 @@ class ManejadorPartidas {
   }
 
   #registrarRutas() {
-    logContext(logger, this);
+    logger.logContext(this);
     this.router.get('/', (req, res) => this.listar(req, res));
     this.router.post('/', (req, res) => this.crear(req, res));
     this.router.get('/:id', (req, res) => this.obtener(req, res));

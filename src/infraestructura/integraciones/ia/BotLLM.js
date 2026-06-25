@@ -1,8 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Carta = require('#dominio/Carta');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 const REGLAS_UNO = `
 REGLAS DEL UNO ARGENTINO:
 
@@ -29,7 +27,7 @@ ESTRATEGIA RECOMENDADA:
 // Si la API falla o devuelve una jugada inválida, cae al modo _fallback.
 class BotLLM {
   constructor() {
-    logContext(logger, this);
+    logger.logContext(this);
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     this.model = genAI.getGenerativeModel({
@@ -39,7 +37,7 @@ class BotLLM {
   }
 
   async decidirJugada(mano, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
-    logContext(logger, this);
+    logger.logContext(this);
     const cartasValidas = mano.filter((c) =>
       Carta.esJugadaValida(c, cartaEnMesa, penalidad, tipoPenalidad)
     );
@@ -82,7 +80,7 @@ class BotLLM {
   // Cartas con color: "<color>-<tipo|numero>" — Comodines (sin color): "<tipo>"
   // Si la carta en mesa es un comodín ya jugado, usa el colorElegido en lugar del color original.
   _armarPrompt(mano, cartasValidas, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
-    logContext(logger, this);
+    logger.logContext(this);
     const describir = (c) =>
       c.color
         ? `${c.color}-${c.tipo === 'numero' ? c.numero : c.tipo} (id: ${c.id})`
@@ -120,7 +118,7 @@ class BotLLM {
   // Reglas: prioriza cartas de acción (no numéricas) sobre números.
   // Si la elegida es comodín (sin color), elige un color al azar.
   _fallback(cartasValidas) {
-    logContext(logger, this);
+    logger.logContext(this);
     const COLORES = ['rojo', 'azul', 'verde', 'amarillo'];
     const aleatorio = (arr) => arr[Math.floor(Math.random() * arr.length)];
 

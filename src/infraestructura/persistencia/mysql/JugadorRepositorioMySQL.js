@@ -1,11 +1,9 @@
 const pool = require('#infraestructura/persistencia/mysql/conexion');
 const Usuario = require('#dominio/Usuario');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class JugadorRepositorioMySQL {
   async registrarJugador(jugadorId, nombreUsuario, passwordHash) {
-    logContext(logger, this);
+    logger.logContext(this);
     await pool.execute(
       'INSERT INTO jugadores (id, nombre_usuario, password_hash) VALUES (?, ?, ?)',
       [jugadorId, nombreUsuario, passwordHash]
@@ -21,7 +19,7 @@ class JugadorRepositorioMySQL {
    * @returns {Usuario|null} - Instancia del jugador o null si no existe.
    */
   async obtenerJugador(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     const [rows] = await pool.execute(
       'SELECT id, nombre_usuario, password_hash FROM jugadores WHERE id = ?',
       [jugadorId]
@@ -39,7 +37,7 @@ class JugadorRepositorioMySQL {
    * @returns {Usuario|null} - Instancia del jugador o null si no existe.
    */
   async obtenerJugadorPorNombre(nombreUsuario) {
-    logContext(logger, this);
+    logger.logContext(this);
     const [rows] = await pool.execute(
       'SELECT id, nombre_usuario, password_hash FROM jugadores WHERE nombre_usuario = ?',
       [nombreUsuario]
@@ -51,7 +49,7 @@ class JugadorRepositorioMySQL {
   }
 
   async obtenerPuntajes() {
-    logContext(logger, this);
+    logger.logContext(this);
     const [rows] = await pool.execute(`
       SELECT j.id AS jugadorId, j.nombre_usuario AS nombreUsuario,
              COALESCE(SUM(pj.delta_global), 0) AS puntajeGlobal
@@ -65,7 +63,7 @@ class JugadorRepositorioMySQL {
   }
 
   async guardarResultadoPartida(partidaId, ranking) {
-    logContext(logger, this);
+    logger.logContext(this);
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();

@@ -1,6 +1,4 @@
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 /** @typedef {import('../../dominio/Usuario')} Usuario */
 
 class Persistencia {
@@ -11,7 +9,7 @@ class Persistencia {
   repositorio;
 
   constructor() {
-    logContext(logger, this);
+    logger.logContext(this);
     this.repositorio = process.env.DB_HOST
       ? require('#infraestructura/persistencia/mysql/JugadorRepositorioMySQL')
       : require('#infraestructura/persistencia/memoria/JugadorRepositorioMemoria');
@@ -21,7 +19,7 @@ class Persistencia {
   // ─── Jugadores (delegado al repositorio) ─────────────────────────────────
 
   registrarJugador(jugadorId, nombreUsuario, passwordHash) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.repositorio.registrarJugador(jugadorId, nombreUsuario, passwordHash);
   }
 
@@ -35,7 +33,7 @@ class Persistencia {
    * @returns {Usuario|null} Instancia del jugador o null si no existe.
    */
   obtenerJugador(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.repositorio.obtenerJugador(jugadorId);
   }
 
@@ -46,17 +44,17 @@ class Persistencia {
    * @returns {Usuario|null} - Instancia del jugador o null si no existe.
    */
   obtenerJugadorPorNombre(nombreUsuario) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.repositorio.obtenerJugadorPorNombre(nombreUsuario);
   }
 
   obtenerPuntajes() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.repositorio.obtenerPuntajes();
   }
 
   guardarResultadoPartida(partidaId, ranking) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.repositorio.guardarResultadoPartida(partidaId, ranking);
   }
 
@@ -69,7 +67,7 @@ class Persistencia {
    * @param {SalaDeJuego} sala - Instancia de la sala de juego.
    */
   guardarPartida(partidaId, sala) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.partidas.set(partidaId, sala);
   }
@@ -81,24 +79,24 @@ class Persistencia {
    * @returns {SalaDeJuego|null} - Instancia de la sala de juego o null si no existe.
    */
   obtenerPartida(partidaId) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.partidas.get(partidaId) || null;
   }
 
   eliminarPartida(partidaId) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.partidas.delete(partidaId);
   }
 
   listarPartidasDisponibles() {
-    logContext(logger, this);
+    logger.logContext(this);
     return [...this.partidas.values()]
       .filter((s) => s.estado === 'esperando')
       .map((s) => s.resumenPublico());
   }
 
   jugadorEstaEnPartida(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     for (const sala of this.partidas.values()) {
       if (sala.jugadores.some((j) => !j.esBot && j.jugadorId === jugadorId)) {
         return true;

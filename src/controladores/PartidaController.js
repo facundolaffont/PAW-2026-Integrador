@@ -2,7 +2,6 @@ const { v4: uuidv4 } = require('uuid');
 const SalaDeJuego = require('#dominio/SalaDeJuego');
 const BotLLM = require('#infraestructura/integraciones/ia/BotLLM');
 const ManejadorConexiones = require('#interfaces/ws/manejadorConexiones');
-const { registerLog, logContext } = require('#infraestructura/shared/utils');
 const logger = require('#infraestructura/shared/logger');
 
 const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
@@ -17,7 +16,7 @@ const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
  */
 class PartidaController {
   constructor(manejadorConexiones, persistencia, botLLM) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.manejadorConexiones = manejadorConexiones;
     this.persistencia = persistencia;
     this.botLLM = botLLM;
@@ -155,12 +154,12 @@ class PartidaController {
   }
 
   listarPartidas() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.persistencia.listarPartidasDisponibles();
   }
 
   obtenerPartida(id, jugadorId = null) {
-    logContext(logger, this);
+    logger.logContext(this);
     const sala = this.persistencia.obtenerPartida(id);
     if (!sala) return { ok: false, status: 404, error: 'Partida no encontrada' };
 
@@ -173,7 +172,7 @@ class PartidaController {
   }
 
   iniciarPartida(partidaId, jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.iniciar(jugadorId);
 
@@ -197,7 +196,7 @@ class PartidaController {
   }
 
   robarCarta(partidaId, jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.robarCarta(jugadorId);
 
@@ -223,7 +222,7 @@ class PartidaController {
   }
 
   enviarMensajeChat(partidaId, jugadorId, texto) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala) return;
 
@@ -237,7 +236,7 @@ class PartidaController {
   }
 
   #broadcast(sala, evento, datos) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.manejadorConexiones.emitirATodos(
       sala.jugadores.map((j) => j.jugadorId),
@@ -247,7 +246,7 @@ class PartidaController {
   }
 
   #emitirEstadoPartida(sala) {
-    logContext(logger, this);
+    logger.logContext(this);
     for (const j of sala.jugadores) {
       this.manejadorConexiones.emitirA(j.jugadorId, 'estado-partida', {
         estado: sala.estadoParaJugador(j.jugadorId),
@@ -256,7 +255,7 @@ class PartidaController {
   }
 
   async crearPartida(jugadorId, maxJugadores, cantidadBots = 0) {
-    logContext(logger, this, { jugadorId, maxJugadores, cantidadBots });
+    logger.logContext(this, { jugadorId, maxJugadores, cantidadBots });
 
     if (!jugadorId) throw new NotFoundException('jugadorId requerido');
 
@@ -326,7 +325,7 @@ class PartidaController {
    * - 'Ya estás en una partida activa.': El jugador ya está participando en otra partida que no ha terminado.
    */
   async unirJugador(partidaId, jugadorId) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
 
     // Obtiene, si existe, una instancia de esta sala de clase SalaDeJuego.
     const sala = this.persistencia.obtenerPartida(partidaId);
@@ -401,7 +400,7 @@ class PartidaController {
   }
 
   async jugarCarta(partidaId, jugadorId, cartaId, colorElegido) {
-    logContext(logger, this, { partidaId, jugadorId, cartaId, colorElegido });
+    logger.logContext(this, { partidaId, jugadorId, cartaId, colorElegido });
 
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.jugarCarta(jugadorId, cartaId, colorElegido);
@@ -479,7 +478,7 @@ class PartidaController {
   }
 
   cantarUno(partidaId, jugadorId) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala) return;
 
@@ -543,7 +542,7 @@ class PartidaController {
   }
 
   continuarRonda(partidaId, jugadorId) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
 
     const sala = this.persistencia.obtenerPartida(partidaId);
     const res = sala.continuarRonda(jugadorId);
@@ -570,7 +569,7 @@ class PartidaController {
   }
 
   async desconectar(partidaId, jugadorId) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
 
     const sala = this.persistencia.obtenerPartida(partidaId);
 
@@ -614,7 +613,7 @@ class PartidaController {
     const timeoutId = setTimeout(() => {
       this.desconexionesPendientes.delete(clave);
       this.#concretarAbandono(partidaId, jugadorId).catch((err) => {
-        registerLog(logger, 'error', 'Error al concretar abandono.', { error: err.message });
+        logger.registerLog('error', 'Error al concretar abandono.', { error: err.message });
       });
     }, this.GRACE_PERIOD_MS);
 
@@ -634,7 +633,7 @@ class PartidaController {
    * @returns {Promise<void>}
    */
   async abandonarPartida(partidaId, jugadorId) {
-    logContext(logger, this, { partidaId, jugadorId });
+    logger.logContext(this, { partidaId, jugadorId });
 
     // Obtiene, si existe, una instancia de esta sala de clase SalaDeJuego.
     const sala = this.persistencia.obtenerPartida(partidaId);
@@ -694,7 +693,7 @@ class PartidaController {
   }
 
   async #ejecutarTurnoBot(partidaId) {
-    logContext(logger, this, { partidaId });
+    logger.logContext(this, { partidaId });
 
     const sala = this.persistencia.obtenerPartida(partidaId);
     if (!sala || !sala.turnoEsBot()) return;

@@ -1,10 +1,35 @@
-const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('#infraestructura/shared/utils');
+const { isEmptyObject, handleGenericErrorByEnv } = require('#infraestructura/shared/utils');
 const axios = require('axios');
 const logger = require('#infraestructura/shared/logger');
 const EmptyException = require('#errores/EmptyException');
 const { buildReglasLocals } = require('#interfaces/http/seo/reglas');
 const { requireAuthWeb } = require('#interfaces/http/middleware/middlewareAuth');
 
+/**
+ * Manejador HTTP del frontend web. Registra las rutas que renderizan vistas EJS
+ * (bienvenida, login, registro, juego, salas, partida, puntajes y reglas).
+ * Protege con middleware las páginas que requieren sesión, arma metadatos SEO
+ * y delega en los controladores de partidas y puntajes cuando la vista necesita datos del dominio.
+ *
+ * Endpoints:
+ * - `GET /` — redirige a `/public/bienvenida`.
+ * - `GET /public/bienvenida` — vista de bienvenida.
+ * - `GET /public/` — inicio (requiere sesión).
+ * - `GET /public/ingresar` — formulario de ingreso.
+ * - `GET /public/registrarse` — formulario de registro.
+ * - `GET /public/jugar` — pantalla de juego (requiere sesión).
+ * - `GET /public/nombre-jugador` — ingreso de nombre de jugador.
+ * - `GET /public/crear-sala` — formulario de creación de sala (requiere sesión).
+ * - `POST /public/crear-sala` — envía el formulario y crea la sala vía API.
+ * - `GET /public/partida` — vista de partida (requiere sesión).
+ * - `GET /public/puntajes` — tabla de puntajes.
+ * - `GET /public/salas` — listado de salas (requiere sesión).
+ * - `GET /public/reglas` — reglas del juego.
+ *
+ * @param {import('express').Application} app - Aplicación Express donde se montan las rutas.
+ * @param {import('#controladores/PuntajesController')} puntajesController - Controlador para obtener la tabla de puntajes.
+ * @param {import('#controladores/PartidaController')} partidaController - Controlador para validar acceso a partidas.
+ */
 class ManejadorFront {
   #logLevel = process.env.LOG_LEVEL || 'debug';
   #puntajesController;
@@ -25,7 +50,7 @@ class ManejadorFront {
   }
 
   constructor(app, puntajesController, partidaController) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.app = app;
     this.#puntajesController = puntajesController;
     this.#partidaController = partidaController;
@@ -34,7 +59,7 @@ class ManejadorFront {
   }
 
   #registrarRutas() {
-    logContext(logger, this);
+    logger.logContext(this);
     /**
      * Rutas del frontend.
      * Se podrían separar en un manejador específico si se quisiera, pero dado que el frontend es muy simple y no tiene lógica de negocio, lo dejo aquí para evitar agregar complejidad innecesaria.
@@ -105,7 +130,7 @@ class ManejadorFront {
         // lanza una excepción.
         if (isEmptyObject(req.body)) throw new EmptyException('Cuerpo HTTP sin información.');
 
-        registerLog(logger, 'debug', 'Datos de sala recibidos.', { body: req.body });
+        logger.registerLog('debug', 'Datos de sala recibidos.', { body: req.body });
         const jugadorId = 'UUID';
         const maxJugadores = parseInt(req.body.num_jugadores, 10);
         const cantidadBots = Math.max(0, maxJugadores - 2);
@@ -116,7 +141,7 @@ class ManejadorFront {
         };
         const apiBaseUrl = `${req.protocol}://${req.get('host')}`;
 
-        registerLog(logger, 'debug', 'Payload a enviar al backend.', { payload });
+        logger.registerLog('debug', 'Payload a enviar al backend.', { payload });
         await axios.post(`${apiBaseUrl}/api/partidas`, payload, {
           headers: { 'Content-Type': 'application/json' },
         });

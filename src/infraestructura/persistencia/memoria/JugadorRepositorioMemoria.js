@@ -1,16 +1,14 @@
 const Usuario = require('#dominio/Usuario');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class JugadorRepositorioMemoria {
   constructor() {
-    logContext(logger, this);
+    logger.logContext(this);
     this.jugadores = new Map();
     this.puntajes = new Map();
   }
 
   async registrarJugador(jugadorId, nombreUsuario, passwordHash) {
-    logContext(logger, this);
+    logger.logContext(this);
     const jugador = new Usuario(jugadorId, nombreUsuario, passwordHash);
 
     this.jugadores.set(jugadorId, jugador);
@@ -20,12 +18,12 @@ class JugadorRepositorioMemoria {
   }
 
   async obtenerJugador(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.jugadores.get(jugadorId) || null;
   }
 
   async obtenerJugadorPorNombre(nombreUsuario) {
-    logContext(logger, this);
+    logger.logContext(this);
     for (const jugador of this.jugadores.values()) {
       if (jugador.nombreUsuario === nombreUsuario) return jugador;
     }
@@ -34,7 +32,7 @@ class JugadorRepositorioMemoria {
   }
 
   async obtenerPuntajes() {
-    logContext(logger, this);
+    logger.logContext(this);
     return [...this.jugadores.values()]
       .map((j) => ({
         jugadorId: j.jugadorId,
@@ -45,7 +43,7 @@ class JugadorRepositorioMemoria {
   }
 
   async guardarResultadoPartida(_partidaId, ranking) {
-    logContext(logger, this);
+    logger.logContext(this);
     for (const rank of ranking) {
       if (rank.jugadorId.startsWith('bot-')) continue;
 

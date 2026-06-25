@@ -1,14 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class Carta {
   static COLORES = ['rojo', 'amarillo', 'verde', 'azul'];
   static ESPECIALES = ['roba-dos', 'reversa', 'salta'];
   static TIPOS_ACUMULABLES = new Set(['roba-dos', 'roba-cuatro']);
 
   constructor(color, tipo, numero = null) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.id = uuidv4();
     this.color = color;
     this.tipo = tipo;
@@ -17,19 +15,19 @@ class Carta {
   }
 
   get valor() {
-    logContext(logger, this);
+    logger.logContext(this);
     if (this.tipo === 'numero') return this.numero;
     if (Carta.ESPECIALES.includes(this.tipo)) return 20;
     return 50;
   }
 
   get esComodin() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.color === null;
   }
 
   get esAcumulable() {
-    logContext(logger, this);
+    logger.logContext(this);
     return Carta.TIPOS_ACUMULABLES.has(this.tipo);
   }
 
@@ -47,7 +45,7 @@ class Carta {
   //   o mismo número entre cartas numéricas.
   //   Para comodines en mesa se usa `colorElegido` en lugar de `color` (que es null).
   static esJugadaValida(carta, enMesa, penalidad, tipoPenalidad) {
-    logContext(logger, Carta);
+    logger.logContext(Carta);
     if (carta.esComodin) {
       if (penalidad > 0) return carta.esAcumulable && carta.tipo === tipoPenalidad;
 

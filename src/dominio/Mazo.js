@@ -1,15 +1,13 @@
 const Carta = require('#dominio/Carta');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class Mazo {
   constructor(cartas = []) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.cartas = [...cartas];
   }
 
   static crearCompleto() {
-    logContext(logger, Mazo);
+    logger.logContext(Mazo);
     const cartas = [];
 
     for (const color of Carta.COLORES) {
@@ -37,7 +35,7 @@ class Mazo {
   }
 
   mezclar() {
-    logContext(logger, this);
+    logger.logContext(this);
     for (let i = this.cartas.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [this.cartas[i], this.cartas[j]] = [this.cartas[j], this.cartas[i]];
@@ -45,22 +43,22 @@ class Mazo {
   }
 
   robar(cantidad = 1) {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.cartas.splice(0, cantidad);
   }
 
   agregar(carta) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.cartas.push(carta);
   }
 
   get cantidad() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.cartas.length;
   }
 
   get estaVacio() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.cartas.length === 0;
   }
 }
