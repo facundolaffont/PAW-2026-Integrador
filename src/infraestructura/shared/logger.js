@@ -43,22 +43,6 @@ class Logger {
     Logger.#instance = this;
   }
 
-  /**
-   * Registra una entrada de log con contexto de ejecución pre-computado.
-   * @param {string} level - Nivel de log ('info', 'warn', 'error', 'debug').
-   * @param {{ file: string, method: string }} executionContext - Contexto de ejecución.
-   * @param {string|null} [message=null] - Mensaje opcional.
-   * @param {object|null} [meta=null] - Metadatos opcionales del mensaje.
-   * @private
-   */
-  #logEntry(level, executionContext, message = null, meta = null) {
-    this.#logger[level]('', {
-      _exec: executionContext,
-      _msg: message,
-      _meta: meta,
-    });
-  }
-
   info(message, meta = {}) {
     this.#logEntry(
       'info',
@@ -67,6 +51,7 @@ class Logger {
       Object.keys(meta).length ? meta : null
     );
   }
+
   warn(message, meta = {}) {
     this.#logEntry(
       'warn',
@@ -75,6 +60,7 @@ class Logger {
       Object.keys(meta).length ? meta : null
     );
   }
+
   error(message, meta = {}) {
     this.#logEntry(
       'error',
@@ -83,6 +69,7 @@ class Logger {
       Object.keys(meta).length ? meta : null
     );
   }
+
   debug(message, meta = {}) {
     this.#logEntry(
       'debug',
@@ -115,6 +102,22 @@ class Logger {
       message || null,
       Object.keys(meta).length > 0 ? meta : null
     );
+  }
+
+  /**
+   * Registra una entrada de log con contexto de ejecución pre-computado.
+   * @param {string} level - Nivel de log ('info', 'warn', 'error', 'debug').
+   * @param {{ file: string, method: string }} executionContext - Contexto de ejecución.
+   * @param {string|null} [message=null] - Mensaje opcional.
+   * @param {object|null} [meta=null] - Metadatos opcionales del mensaje.
+   * @private
+   */
+  #logEntry(level, executionContext, message = null, meta = null) {
+    this.#logger[level]('', {
+      _exec: executionContext,
+      _msg: message,
+      _meta: meta,
+    });
   }
 
   /**
