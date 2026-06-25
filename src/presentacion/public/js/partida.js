@@ -1118,12 +1118,25 @@ class Partida {
     if (cantidad <= 1) return;
 
     const primera = cartas[0];
+    const ultima = cartas[cantidad - 1];
     const esLateral = mano.classList.contains('mano-lateral');
-    const tamCarta = esLateral ? primera.offsetHeight : primera.offsetWidth;
-    const disponible = esLateral ? mano.clientHeight : mano.clientWidth;
-    const contenido = esLateral ? mano.scrollHeight : mano.scrollWidth;
 
-    if (!tamCarta || !disponible) return;
+    // El espacio disponible se mide sobre un ancestro estable (no sobre la mano,
+    // cuyo ancho puede crecer con el contenido por ser un contenedor shrink-to-fit).
+    const contenedor = esLateral
+      ? mano.closest('.zona-central') || mano.parentElement
+      : mano.closest('.mesa') || mano.parentElement;
+    if (!contenedor) return;
+
+    const tamCarta = esLateral ? primera.offsetHeight : primera.offsetWidth;
+    const disponible = esLateral ? contenedor.clientHeight : contenedor.clientWidth;
+
+    // Extensión real del abanico, deducida de la posición de la última carta.
+    const contenido = esLateral
+      ? ultima.offsetTop + ultima.offsetHeight - primera.offsetTop
+      : ultima.offsetLeft + ultima.offsetWidth - primera.offsetLeft;
+
+    if (!tamCarta || disponible <= 0) return;
 
     // Si con el solapamiento por defecto ya entran, no tocamos nada.
     if (contenido <= disponible + 1) return;
