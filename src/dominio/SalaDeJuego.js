@@ -3,8 +3,6 @@ const Mazo = require('#dominio/Mazo');
 const JugadorEnSala = require('#dominio/JugadorEnSala');
 const Carta = require('#dominio/Carta');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class SalaDeJuego {
   /** @type {JugadorEnSala[]} */
   jugadores;
@@ -15,7 +13,7 @@ class SalaDeJuego {
   puntajesRonda;
 
   constructor(partidaId, creadorId, maxJugadores) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.partidaId = partidaId;
     this.creadorId = creadorId;
@@ -45,7 +43,7 @@ class SalaDeJuego {
   }
 
   agregarMensajeChat(jugadorId, texto) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (typeof texto !== 'string') return { error: 'Mensaje inválido' };
     const limpio = texto.trim();
     if (!limpio) return { error: 'El mensaje no puede estar vacío' };
@@ -75,7 +73,7 @@ class SalaDeJuego {
   // ─── Sala ────────────────────────────────────────────────────────────────
 
   agregarBot(nombreBot) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (this.jugadores.length >= this.maxJugadores) return null;
 
     const botId = `bot-${uuidv4()}`;
@@ -102,7 +100,7 @@ class SalaDeJuego {
    * si hubo un error (partida ya comenzó, sala llena, jugador ya en la sala).
    */
   agregarJugador(jugadorId, nombreUsuario) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
     if (this.jugadores.length >= this.maxJugadores) return { error: 'Sala llena' };
@@ -141,7 +139,7 @@ class SalaDeJuego {
   }
 
   resumenPublico() {
-    logContext(logger, this);
+    logger.logContext(this);
     return {
       partidaId: this.partidaId,
       creadorId: this.creadorId,
@@ -154,7 +152,7 @@ class SalaDeJuego {
   // ─── Inicio ──────────────────────────────────────────────────────────────
 
   iniciar(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (jugadorId !== this.creadorId) return { error: 'Solo el creador puede iniciar' };
 
     if (this.estado !== 'esperando') return { error: 'La partida ya comenzó' };
@@ -169,7 +167,7 @@ class SalaDeJuego {
   }
 
   _iniciarRonda() {
-    logContext(logger, this);
+    logger.logContext(this);
     this.mazo = Mazo.crearCompleto();
     this.descarte = [];
     this.numeroRonda += 1;
@@ -207,17 +205,17 @@ class SalaDeJuego {
   // ─── Turno ───────────────────────────────────────────────────────────────
 
   jugadorEnTurno() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.jugadores[this.turnoIdx];
   }
 
   turnoEsBot() {
-    logContext(logger, this);
+    logger.logContext(this);
     return !!this.jugadorEnTurno()?.esBot;
   }
 
   estadoParaBot() {
-    logContext(logger, this);
+    logger.logContext(this);
     const bot = this.jugadorEnTurno();
 
     const cartaEnMesa = this._cartaEnMesa();
@@ -236,24 +234,24 @@ class SalaDeJuego {
   }
 
   _cartaEnMesa() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.descarte[this.descarte.length - 1];
   }
 
   _siguienteIndice(indiceBase, direccion = 1) {
-    logContext(logger, this);
+    logger.logContext(this);
     const n = this.jugadores.length;
     return (((indiceBase + direccion) % n) + n) % n;
   }
 
   _avanzarTurno(saltar = false) {
-    logContext(logger, this);
+    logger.logContext(this);
     const pasos = saltar ? 2 : 1;
     this.turnoIdx = this._siguienteIndice(this.turnoIdx, this.sentido * pasos);
   }
 
   _aplicarEfectoPrimeraCarta(carta) {
-    logContext(logger, this);
+    logger.logContext(this);
     switch (carta.tipo) {
       case 'reversa':
         this.sentido *= -1;
@@ -271,7 +269,7 @@ class SalaDeJuego {
   // ─── Jugadas ─────────────────────────────────────────────────────────────
 
   jugarCarta(jugadorId, cartaId, colorElegido) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
@@ -326,7 +324,7 @@ class SalaDeJuego {
   }
 
   _aplicarEfecto(carta) {
-    logContext(logger, this);
+    logger.logContext(this);
     let saltar = false;
 
     switch (carta.tipo) {
@@ -356,7 +354,7 @@ class SalaDeJuego {
   }
 
   robarCarta(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (this.estado !== 'jugando') return { error: 'La partida no está en curso' };
 
     const jugador = this.jugadorEnTurno();
@@ -385,7 +383,7 @@ class SalaDeJuego {
   }
 
   cantarUno(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     if (!this.unoPendiente || this.unoPendiente.resuelto) {
       return { error: 'No hay UNO pendiente' };
@@ -419,7 +417,7 @@ class SalaDeJuego {
   }
 
   resolverUnoPorTimeout() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     if (!this.unoPendiente || this.unoPendiente.resuelto) return { noop: true };
 
@@ -436,7 +434,7 @@ class SalaDeJuego {
   }
 
   _robarDelMazo(jugador, cantidad) {
-    logContext(logger, this);
+    logger.logContext(this);
     const robadas = [];
 
     for (let i = 0; i < cantidad; i++) {
@@ -459,7 +457,7 @@ class SalaDeJuego {
   // ─── Ronda / Partida ─────────────────────────────────────────────────────
 
   _cerrarRonda(ganadorId, cartaFinal = null) {
-    logContext(logger, this);
+    logger.logContext(this);
     let PUNTAJE_PARA_GANAR = 200;
 
     let puntosGanados = 0;
@@ -490,7 +488,7 @@ class SalaDeJuego {
   }
 
   _cerrarPartida(ganadorId, cartaFinal = null) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.estado = 'terminada';
 
     const deltas = [50, 0, -25, -50];
@@ -512,7 +510,7 @@ class SalaDeJuego {
   }
 
   continuarRonda(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     if (!this.entreRondas) return { error: 'No hay una ronda pendiente de continuar' };
 
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
@@ -534,7 +532,7 @@ class SalaDeJuego {
   }
 
   jugadorAbandonó(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.estado = 'terminada';
 
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
@@ -562,7 +560,7 @@ class SalaDeJuego {
    * - 'Jugador no estaba en la sala.'.
    */
   removerJugador(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     // Busca el índice del jugador a remover en el arreglo de jugadores.
     // Si no se encuentra, devuelve un error.
@@ -586,12 +584,12 @@ class SalaDeJuego {
   }
 
   cantidadHumanos() {
-    logContext(logger, this);
+    logger.logContext(this);
     return this.jugadores.filter((j) => !j.esBot).length;
   }
 
   estadoParaJugador(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     const enMesa = this._cartaEnMesa() || null;
     const descarteVisible = this.descarte.slice(-5);
 

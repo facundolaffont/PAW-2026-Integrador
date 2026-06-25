@@ -566,6 +566,8 @@ classDiagram
         +debug()
         +info()
         +error()
+        +logContext(ctx, params)
+        +registerLog(level, msg, meta)
     }
 
     class AppException {
@@ -1013,6 +1015,8 @@ classDiagram
         +debug(exec, msg, meta) void
         +info(exec, msg, meta) void
         +error(exec, msg, meta) void
+        +logContext(ctx, params) void
+        +registerLog(level, msg, meta) void
     }
 
     class AppException {
@@ -1029,8 +1033,6 @@ classDiagram
     }
 
     class utils {
-        +logContext(logger, ctx)
-        +registerLog(logger, level, msg, meta)
         +handleErrorByEnv(...)
     }
 

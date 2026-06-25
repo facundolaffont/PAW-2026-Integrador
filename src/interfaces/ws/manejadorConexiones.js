@@ -1,6 +1,4 @@
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 class ManejadorConexiones {
   /**
    * @type {Map<number, WebSocket>} conexiones - Mapa que asocia cada jugadorId con su conexión WebSocket activa.
@@ -9,7 +7,7 @@ class ManejadorConexiones {
   conexiones;
 
   constructor() {
-    logContext(logger, this);
+    logger.logContext(this);
     this.conexiones = new Map();
   }
 
@@ -20,7 +18,7 @@ class ManejadorConexiones {
    * @param {WebSocket} webSocket - Instancia de conexión WebSocket.
    */
   registrar(jugadorId, webSocket) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.conexiones.set(jugadorId, webSocket);
   }
 
@@ -30,7 +28,7 @@ class ManejadorConexiones {
    * @param {Number} jugadorId - Identificador numérico del jugador.
    */
   desregistrar(jugadorId) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.conexiones.delete(jugadorId);
   }
 
@@ -42,7 +40,7 @@ class ManejadorConexiones {
    * @param {Object} datos - Datos del evento.
    */
   emitirA(jugadorId, evento, datos) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     const webSocket = this.conexiones.get(jugadorId);
 
@@ -59,7 +57,7 @@ class ManejadorConexiones {
    * @param {Object} datos - Datos del evento.
    */
   emitirATodos(jugadoresIds, evento, datos) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     for (const jugadorId of jugadoresIds) {
       this.emitirA(jugadorId, evento, datos);

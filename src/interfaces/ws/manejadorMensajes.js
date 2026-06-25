@@ -1,6 +1,4 @@
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 /**
  * ManejadorMensajes es responsable de manejar las conexiones WebSocket de los
  * jugadores, procesar los mensajes entrantes y delegar las acciones
@@ -21,7 +19,7 @@ class ManejadorMensajes {
    * jugadores.
    */
   constructor(partidaController, manejadorConexiones) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.#partidaController = partidaController;
     this.#manejadorConexiones = manejadorConexiones;
@@ -44,7 +42,7 @@ class ManejadorMensajes {
    * @returns {Promise<void>}
    */
   async manejarConexion(webSocket, jugadorId, partidaId) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     // Guarda en memoria la conexión WebSocket del jugador.
     this.#manejadorConexiones.registrar(jugadorId, webSocket);

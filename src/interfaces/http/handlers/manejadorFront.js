@@ -1,4 +1,4 @@
-const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('#infraestructura/shared/utils');
+const { isEmptyObject, handleGenericErrorByEnv } = require('#infraestructura/shared/utils');
 const axios = require('axios');
 const logger = require('#infraestructura/shared/logger');
 const EmptyException = require('#errores/EmptyException');
@@ -50,7 +50,7 @@ class ManejadorFront {
   }
 
   constructor(app, puntajesController, partidaController) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.app = app;
     this.#puntajesController = puntajesController;
     this.#partidaController = partidaController;
@@ -59,7 +59,7 @@ class ManejadorFront {
   }
 
   #registrarRutas() {
-    logContext(logger, this);
+    logger.logContext(this);
     /**
      * Rutas del frontend.
      * Se podrían separar en un manejador específico si se quisiera, pero dado que el frontend es muy simple y no tiene lógica de negocio, lo dejo aquí para evitar agregar complejidad innecesaria.
@@ -130,7 +130,7 @@ class ManejadorFront {
         // lanza una excepción.
         if (isEmptyObject(req.body)) throw new EmptyException('Cuerpo HTTP sin información.');
 
-        registerLog(logger, 'debug', 'Datos de sala recibidos.', { body: req.body });
+        logger.registerLog('debug', 'Datos de sala recibidos.', { body: req.body });
         const jugadorId = 'UUID';
         const maxJugadores = parseInt(req.body.num_jugadores, 10);
         const cantidadBots = Math.max(0, maxJugadores - 2);
@@ -141,7 +141,7 @@ class ManejadorFront {
         };
         const apiBaseUrl = `${req.protocol}://${req.get('host')}`;
 
-        registerLog(logger, 'debug', 'Payload a enviar al backend.', { payload });
+        logger.registerLog('debug', 'Payload a enviar al backend.', { payload });
         await axios.post(`${apiBaseUrl}/api/partidas`, payload, {
           headers: { 'Content-Type': 'application/json' },
         });

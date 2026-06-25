@@ -1,27 +1,4 @@
 /**
- * Loguea en modo debug el nombre de la clase, el método y opcionalmente los parámetros.
- * @param {object} logger - Instancia de logger (winston).
- * @param {object} context - El objeto this de la clase (o null si no aplica).
- * @param {object} [params] - Objeto con los parámetros a loguear (clave: valor).
- */
-function logContext(logger, context, params) {
-  const stack = new Error().stack;
-  const callerLine = stack.split('\n')[2];
-
-  const methodMatch = callerLine.match(/at (\S+)/);
-  const locMatch =
-    callerLine.match(/\((.*?):(\d+):(\d+)\)/) || callerLine.match(/at (.*?):(\d+):(\d+)/);
-
-  const executionContext = {
-    file: locMatch ? `${locMatch[1]}:${locMatch[2]}` : 'desconocido',
-    method: methodMatch ? methodMatch[1] : 'desconocido',
-  };
-
-  const meta = params && Object.keys(params).length > 0 ? params : null;
-  logger.logEntry('debug', executionContext, null, meta);
-}
-
-/**
  * Maneja el error según el entorno: llama a next(error) en desarrollo, o ejecuta
  * el callback en producción.
  *
@@ -82,42 +59,9 @@ function isEmptyObject(obj) {
   );
 }
 
-/**
- * Registra un mensaje de log utilizando la instancia de logger proporcionada, el nivel
- * de log, el mensaje y los metadatos opcionales.
- *
- * @param {Object} loggerInstance - Instancia del logger a utilizar para registrar el
- * mensaje.
- * @param {string} level - Nivel de log (e.g., 'debug', 'info', 'error').
- * @param {string} message - Mensaje a registrar.
- * @param {Object} [meta={}] - Metadatos adicionales a incluir en el log.
- */
-function registerLog(loggerInstance, level, message, meta = {}) {
-  const stack = new Error().stack;
-  const callerLine = stack.split('\n')[2];
-
-  const methodMatch = callerLine.match(/at (\S+)/);
-  const locMatch =
-    callerLine.match(/\((.*?):(\d+):(\d+)\)/) || callerLine.match(/at (.*?):(\d+):(\d+)/);
-
-  const executionContext = {
-    file: locMatch ? `${locMatch[1]}:${locMatch[2]}` : 'desconocido',
-    method: methodMatch ? methodMatch[1] : 'desconocido',
-  };
-
-  loggerInstance.logEntry(
-    level,
-    executionContext,
-    message || null,
-    Object.keys(meta).length > 0 ? meta : null
-  );
-}
-
 module.exports = {
   isDevEnvConfigured,
   isEmptyObject,
   handleErrorByEnv,
   handleGenericErrorByEnv,
-  registerLog,
-  logContext,
 };

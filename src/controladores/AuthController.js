@@ -1,20 +1,18 @@
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 const NOMBRE_REGEX = /^[a-zA-Z0-9_\-áéíóúñüÁÉÍÓÚÑÜ]{3,50}$/;
 const PASSWORD_MIN = 4;
 const BCRYPT_ROUNDS = 10;
 
 class AuthController {
   constructor(persistencia) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.persistencia = persistencia;
   }
 
   async registrar(nombreUsuario, password) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     const nombre = nombreUsuario?.trim();
     const clave = password?.trim();
@@ -54,7 +52,7 @@ class AuthController {
   }
 
   async ingresar(nombreUsuario, password) {
-    logContext(logger, this);
+    logger.logContext(this);
 
     const nombre = nombreUsuario?.trim();
     const clave = password?.trim();

@@ -1,7 +1,5 @@
 const express = require('express');
 const logger = require('#infraestructura/shared/logger');
-const { logContext } = require('#infraestructura/shared/utils');
-
 /**
  * Manejador HTTP de la API REST de puntajes. Expone el endpoint para listar
  * los puntajes acumulados. Delega en PuntajesController y devuelve la lista
@@ -14,7 +12,7 @@ const { logContext } = require('#infraestructura/shared/utils');
  */
 class ManejadorPuntajes {
   constructor(controller) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.controller = controller;
 
     this.router = express.Router();
@@ -23,7 +21,7 @@ class ManejadorPuntajes {
   }
 
   async listar(req, res) {
-    logContext(logger, this);
+    logger.logContext(this);
     try {
       const puntajes = await this.controller.listarPuntajes();
       res.json(puntajes);
@@ -33,7 +31,7 @@ class ManejadorPuntajes {
   }
 
   #registrarRutas() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.router.get('/', (req, res) => this.listar(req, res));
   }

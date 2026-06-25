@@ -30,8 +30,6 @@ const {
   isEmptyObject,
   handleErrorByEnv,
   handleGenericErrorByEnv,
-  registerLog,
-  logContext,
 } = require('#infraestructura/shared/utils');
 const errorhandler = require('errorhandler');
 
@@ -40,7 +38,7 @@ class Servidor {
   wss;
 
   constructor(puerto) {
-    logContext(logger, this);
+    logger.logContext(this);
     this.puerto = puerto;
     this.app = express();
 
@@ -95,7 +93,7 @@ class Servidor {
    * Inicia el servidor HTTP y WebSocket.
    */
   iniciar() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.server.listen(this.puerto, () => {
       console.log(`Servidor escuchando en http://localhost:${this.puerto}.`);
@@ -115,7 +113,7 @@ class Servidor {
    * Sin este middleware, `req.body` sería `undefined` para las solicitudes con JSON.
    */
   #configurarMiddleware() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     this.app.use(express.json());
     this.app.use(cookieParser());
@@ -130,7 +128,7 @@ class Servidor {
    * encarga de procesar las solicitudes que llegan a esas rutas.
    */
   #configurarRutasHttp() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     /* Rutas del frontend. */
     const manejadorFront = new ManejadorFront(this.app, new PuntajesController(db), this.partidaController);
@@ -146,7 +144,7 @@ class Servidor {
   }
 
   #configurarWebSocket() {
-    logContext(logger, this);
+    logger.logContext(this);
 
     // Intercepta la solicitud HTTP de los clientes que intentan establecer una conexión
     // WebSocket. En este punto se validan los parametros requeridos y se rechazan
@@ -185,7 +183,7 @@ class Servidor {
       // colgadas.
       this.wss.handleUpgrade(req, socket, head, (ws) => {
         this.manejador.manejarConexion(ws, jugadorId, partidaId).catch((err) => {
-          registerLog(logger, 'error', `[WS] Error en conexión: ${err.message}`, { error: err });
+          logger.registerLog('error', `[WS] Error en conexión: ${err.message}`, { error: err });
 
           ws.close();
         });

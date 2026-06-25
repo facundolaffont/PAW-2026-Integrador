@@ -88,6 +88,31 @@ class Logger {
     );
   }
 
+  /**
+   * Loguea en modo debug el método caller y opcionalmente los parámetros.
+   * @param {object} context - El objeto this de la clase (o la clase en métodos estáticos).
+   * @param {object} [params] - Metadatos opcionales del mensaje.
+   */
+  logContext(context, params) {
+    const meta = params && Object.keys(params).length > 0 ? params : null;
+    this.logEntry('debug', this._captureExecutionContext(3), null, meta);
+  }
+
+  /**
+   * Registra un mensaje con nivel dinámico y contexto de ejecución del caller.
+   * @param {string} level - Nivel de log ('debug', 'info', 'warn', 'error').
+   * @param {string} message - Mensaje a registrar.
+   * @param {object} [meta={}] - Metadatos adicionales.
+   */
+  registerLog(level, message, meta = {}) {
+    this.logEntry(
+      level,
+      this._captureExecutionContext(3),
+      message || null,
+      Object.keys(meta).length > 0 ? meta : null
+    );
+  }
+
   _captureExecutionContext(frameIndex) {
     const stack = new Error().stack;
     const callerLine = stack.split('\n')[frameIndex] || '';
