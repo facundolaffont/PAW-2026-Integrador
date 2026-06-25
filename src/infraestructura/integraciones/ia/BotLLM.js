@@ -1,7 +1,14 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Carta = require('#dominio/Carta');
 const logger = require('#infraestructura/shared/logger');
-const REGLAS_UNO = `
+
+/**
+ * Bot que decide jugadas usando Gemini 1.5 Flash. Construye un prompt con las reglas del juego
+ * y el estado del turno, parsea la respuesta JSON del modelo y valida la carta elegida.
+ * Si la API falla o devuelve una jugada inválida, aplica una estrategia heurística de fallback.
+ */
+class BotLLM {
+  static REGLAS_UNO = `
 REGLAS DEL UNO ARGENTINO:
 
 - Jugada válida: podés jugar una carta si coincide en COLOR o TIPO con la carta en mesa, o si es un comodín.
@@ -22,12 +29,6 @@ ESTRATEGIA RECOMENDADA:
 - Elegí el color del que tengas más cartas al jugar un comodín.
 `.trim();
 
-/**
- * Bot que decide jugadas usando Gemini 1.5 Flash. Construye un prompt con las reglas del juego
- * y el estado del turno, parsea la respuesta JSON del modelo y valida la carta elegida.
- * Si la API falla o devuelve una jugada inválida, aplica una estrategia heurística de fallback.
- */
-class BotLLM {
   /**
    * Inicializa el cliente de Google Generative AI con `GEMINI_API_KEY` y el modelo
    * `gemini-1.5-flash` configurado para responder en JSON.
@@ -116,7 +117,7 @@ class BotLLM {
       : describir(cartaEnMesa);
 
     return `
-          ${REGLAS_UNO}
+          ${BotLLM.REGLAS_UNO}
 
           ESTADO ACTUAL:
           - Carta en mesa: ${cartaMesaDesc}
