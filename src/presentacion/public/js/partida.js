@@ -172,24 +172,9 @@ class Partida {
     this.#configurarChat();
     this.#configurarBotonUno();
     this.#configurarTurnoTimer();
-    this.#configurarScrollMano();
     this.#actualizarControlesLobby(undefined);
     const accesoOk = await this.#cargarResumen();
     if (accesoOk) this.#conectarWS();
-  }
-
-  #configurarScrollMano() {
-    this.vistaMesa.addEventListener(
-      'wheel',
-      (e) => {
-        const mano = e.target.closest('.mano-horizontal, .mano-rival-mobile');
-        if (!mano) return;
-        if (e.deltaY === 0) return;
-        e.preventDefault();
-        mano.scrollLeft += e.deltaY;
-      },
-      { passive: false }
-    );
   }
 
   #configurarTurnoTimer() {
