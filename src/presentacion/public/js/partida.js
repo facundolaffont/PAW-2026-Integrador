@@ -172,9 +172,24 @@ class Partida {
     this.#configurarChat();
     this.#configurarBotonUno();
     this.#configurarTurnoTimer();
+    this.#configurarScrollMano();
     this.#actualizarControlesLobby(undefined);
     const accesoOk = await this.#cargarResumen();
     if (accesoOk) this.#conectarWS();
+  }
+
+  #configurarScrollMano() {
+    this.vistaMesa.addEventListener(
+      'wheel',
+      (e) => {
+        const mano = e.target.closest('.area-jugador-abajo .mano-horizontal');
+        if (!mano) return;
+        if (e.deltaY === 0) return;
+        e.preventDefault();
+        mano.scrollLeft += e.deltaY;
+      },
+      { passive: false }
+    );
   }
 
   #configurarTurnoTimer() {
@@ -2074,6 +2089,11 @@ class Partida {
       }
       case 'uno-vencido': {
         this.#detenerAnimacionUno();
+        break;
+      }
+      case 'uno-falso': {
+        const nombre = this.#nombreJugador(datos.jugadorId);
+        this.#mostrarMensaje(`¡${nombre} ES PENALIZADO POR TOCAR UNO!!`, 'error');
         break;
       }
     }

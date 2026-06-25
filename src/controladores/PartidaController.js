@@ -489,6 +489,11 @@ class PartidaController {
     }
 
     if (res.penalidad) {
+      const jugador = sala.jugadores.find((j) => j.jugadorId === jugadorId);
+      this.#broadcast(sala, 'uno-falso', {
+        jugadorId,
+        nombreUsuario: jugador?.nombreUsuario || 'Un jugador',
+      });
       this.manejadorConexiones.emitirA(jugadorId, 'cartas-robadas', {
         cartasRobadas: res.cartasRobadas,
       });

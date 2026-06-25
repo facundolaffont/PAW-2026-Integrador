@@ -395,7 +395,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .area-jugador-abajo {
@@ -820,7 +820,28 @@ body {
 .mano-horizontal {
   display: flex;
   max-width: 80vw;
-  /*! overflow: hidden; */
+}
+
+.area-jugador-abajo .mano-horizontal {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-width: min(80vw, calc(100% - 32px));
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.area-jugador-abajo .mano-horizontal::-webkit-scrollbar {
+  height: 4px;
+}
+
+.area-jugador-abajo .mano-horizontal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.area-jugador-abajo .mano-horizontal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
 }
 
 .mano-horizontal .carta {
