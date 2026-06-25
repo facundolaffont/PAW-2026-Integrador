@@ -1,0 +1,25 @@
+src/presentacion/public/js/partida.js
+  s_846dc6ccbf7fd6::t_b25bfc2b575057 175,181-192
+  s_846dc6ccbf7fd6::t_9b5ed96d59636b 2094-2098
+src/controladores/PartidaController.js
+  s_846dc6ccbf7fd6::t_db79cba9adf9c6 492-496
+src/presentacion/public/css/partida.css
+  s_846dc6ccbf7fd6::t_2896f6bca5e3f2 823-844
+  s_846dc6ccbf7fd6::t_fbd9f28631787d 398
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "01937267be1c1687028797b00fcb609f34f500b4",
+  "prompts": {},
+  "sessions": {
+    "s_846dc6ccbf7fd6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "691acf29-ddbd-421d-8d7e-768e0ddbd8c4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
