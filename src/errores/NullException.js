@@ -1,6 +1,6 @@
-const AppException = require('./AppException');
-const logger = require('../infraestructura/shared/logger');
-const { logContext } = require('../infraestructura/shared/utils');
+const AppException = require('#errores/AppException');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 class NullException extends AppException {
   constructor(message) {
     logContext(logger, this);

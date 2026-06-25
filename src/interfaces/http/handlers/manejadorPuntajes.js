@@ -1,6 +1,6 @@
 const express = require('express');
-const logger = require('../../../infraestructura/shared/logger');
-const { logContext } = require('../../../infraestructura/shared/utils');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class ManejadorPuntajes {
   constructor(controller) {

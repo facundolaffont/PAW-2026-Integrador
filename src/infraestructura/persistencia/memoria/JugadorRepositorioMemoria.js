@@ -1,6 +1,6 @@
-const Usuario = require('../../../dominio/Usuario');
-const logger = require('../../shared/logger');
-const { logContext } = require('../../shared/utils');
+const Usuario = require('#dominio/Usuario');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class JugadorRepositorioMemoria {
   constructor() {

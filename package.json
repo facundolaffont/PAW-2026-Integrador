@@ -7,6 +7,13 @@
     "npm": "11.13.0"
   },
   "main": "src/app.js",
+  "imports": {
+    "#dominio/*": "./src/dominio/*.js",
+    "#infraestructura/*": "./src/infraestructura/*.js",
+    "#controladores/*": "./src/controladores/*.js",
+    "#errores/*": "./src/errores/*.js",
+    "#interfaces/*": "./src/interfaces/*.js"
+  },
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"

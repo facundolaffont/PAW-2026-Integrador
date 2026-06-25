@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
-const logger = require('../infraestructura/shared/logger');
-const { logContext } = require('../infraestructura/shared/utils');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 const NOMBRE_REGEX = /^[a-zA-Z0-9_\-áéíóúñüÁÉÍÓÚÑÜ]{3,50}$/;
 const PASSWORD_MIN = 4;

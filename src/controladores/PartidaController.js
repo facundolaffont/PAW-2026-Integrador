@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
-const SalaDeJuego = require('../dominio/SalaDeJuego');
-const BotLLM = require('../infraestructura/integraciones/ia/BotLLM');
-const ManejadorConexiones = require('../interfaces/ws/manejadorConexiones');
-const { registerLog, logContext } = require('../infraestructura/shared/utils');
-const logger = require('../infraestructura/shared/logger');
+const SalaDeJuego = require('#dominio/SalaDeJuego');
+const BotLLM = require('#infraestructura/integraciones/ia/BotLLM');
+const ManejadorConexiones = require('#interfaces/ws/manejadorConexiones');
+const { registerLog, logContext } = require('#infraestructura/shared/utils');
+const logger = require('#infraestructura/shared/logger');
 
 const NOMBRES_BOTS = ['Bot-A', 'Bot-B', 'Bot-C'];
 

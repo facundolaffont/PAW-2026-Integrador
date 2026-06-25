@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const Carta = require('../../../dominio/Carta');
-const logger = require('../../shared/logger');
-const { logContext } = require('../../shared/utils');
+const Carta = require('#dominio/Carta');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 const REGLAS_UNO = `
 REGLAS DEL UNO ARGENTINO:

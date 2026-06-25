@@ -1,7 +1,7 @@
-const pool = require('./conexion');
-const Usuario = require('../../../dominio/Usuario');
-const logger = require('../../shared/logger');
-const { logContext } = require('../../shared/utils');
+const pool = require('#infraestructura/persistencia/mysql/conexion');
+const Usuario = require('#dominio/Usuario');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class JugadorRepositorioMySQL {
   async registrarJugador(jugadorId, nombreUsuario, passwordHash) {

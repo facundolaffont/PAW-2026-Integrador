@@ -1,9 +1,9 @@
-const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('../../../infraestructura/shared/utils');
+const { isEmptyObject, logContext, registerLog, handleGenericErrorByEnv } = require('#infraestructura/shared/utils');
 const axios = require('axios');
-const logger = require('../../../infraestructura/shared/logger');
-const EmptyException = require('../../../errores/EmptyException');
-const { buildReglasLocals } = require('../seo/reglas');
-const { requireAuthWeb } = require('../middleware/middlewareAuth');
+const logger = require('#infraestructura/shared/logger');
+const EmptyException = require('#errores/EmptyException');
+const { buildReglasLocals } = require('#interfaces/http/seo/reglas');
+const { requireAuthWeb } = require('#interfaces/http/middleware/middlewareAuth');
 
 class ManejadorFront {
   #logLevel = process.env.LOG_LEVEL || 'debug';

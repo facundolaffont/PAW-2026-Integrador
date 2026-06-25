@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const logger = require('../infraestructura/shared/logger');
-const { logContext } = require('../infraestructura/shared/utils');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class Carta {
   static COLORES = ['rojo', 'amarillo', 'verde', 'azul'];

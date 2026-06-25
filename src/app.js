@@ -10,21 +10,21 @@ const { WebSocketServer } = require('ws');
 const { URL } = require('url');
 const axios = require('axios');
 
-const logger = require('./infraestructura/shared/logger');
-const db = require('./infraestructura/persistencia/Persistencia');
-const BotLLM = require('./infraestructura/integraciones/ia/BotLLM');
-const ManejadorConexiones = require('./interfaces/ws/manejadorConexiones');
-const PartidaController = require('./controladores/PartidaController');
-const AuthController = require('./controladores/AuthController');
-const PuntajesController = require('./controladores/PuntajesController');
-const ManejadorMensajes = require('./interfaces/ws/manejadorMensajes');
-const ManejadorFront = require('./interfaces/http/handlers/manejadorFront');
-const { requireAuth } = require('./interfaces/http/middleware/middlewareAuth');
-const ManejadorAuth = require('./interfaces/http/handlers/manejadorAuth');
-const ManejadorPartidas = require('./interfaces/http/handlers/manejadorPartidas');
-const ManejadorPuntajes = require('./interfaces/http/handlers/manejadorPuntajes');
-const AppException = require('./errores/AppException');
-const EmptyException = require('./errores/EmptyException');
+const logger = require('#infraestructura/shared/logger');
+const db = require('#infraestructura/persistencia/Persistencia');
+const BotLLM = require('#infraestructura/integraciones/ia/BotLLM');
+const ManejadorConexiones = require('#interfaces/ws/manejadorConexiones');
+const PartidaController = require('#controladores/PartidaController');
+const AuthController = require('#controladores/AuthController');
+const PuntajesController = require('#controladores/PuntajesController');
+const ManejadorMensajes = require('#interfaces/ws/manejadorMensajes');
+const ManejadorFront = require('#interfaces/http/handlers/manejadorFront');
+const { requireAuth } = require('#interfaces/http/middleware/middlewareAuth');
+const ManejadorAuth = require('#interfaces/http/handlers/manejadorAuth');
+const ManejadorPartidas = require('#interfaces/http/handlers/manejadorPartidas');
+const ManejadorPuntajes = require('#interfaces/http/handlers/manejadorPuntajes');
+const AppException = require('#errores/AppException');
+const EmptyException = require('#errores/EmptyException');
 const {
   isDevEnvConfigured,
   isEmptyObject,
@@ -32,7 +32,7 @@ const {
   handleGenericErrorByEnv,
   registerLog,
   logContext,
-} = require('./infraestructura/shared/utils');
+} = require('#infraestructura/shared/utils');
 const errorhandler = require('errorhandler');
 
 class Servidor {

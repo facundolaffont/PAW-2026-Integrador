@@ -1,5 +1,5 @@
-const logger = require('../shared/logger');
-const { logContext } = require('../shared/utils');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 /** @typedef {import('../../dominio/Usuario')} Usuario */
 
@@ -13,8 +13,8 @@ class Persistencia {
   constructor() {
     logContext(logger, this);
     this.repositorio = process.env.DB_HOST
-      ? require('./mysql/JugadorRepositorioMySQL')
-      : require('./memoria/JugadorRepositorioMemoria');
+      ? require('#infraestructura/persistencia/mysql/JugadorRepositorioMySQL')
+      : require('#infraestructura/persistencia/memoria/JugadorRepositorioMemoria');
     this.partidas = new Map();
   }
 

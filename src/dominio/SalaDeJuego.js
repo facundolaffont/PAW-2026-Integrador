@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
-const Mazo = require('./Mazo');
-const JugadorEnSala = require('./JugadorEnSala');
-const Carta = require('./Carta');
-const logger = require('../infraestructura/shared/logger');
-const { logContext } = require('../infraestructura/shared/utils');
+const Mazo = require('#dominio/Mazo');
+const JugadorEnSala = require('#dominio/JugadorEnSala');
+const Carta = require('#dominio/Carta');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class SalaDeJuego {
   /** @type {JugadorEnSala[]} */

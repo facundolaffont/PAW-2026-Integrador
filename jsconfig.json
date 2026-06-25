@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "#dominio/*": ["src/dominio/*"],
+      "#infraestructura/*": ["src/infraestructura/*"],
+      "#controladores/*": ["src/controladores/*"],
+      "#errores/*": ["src/errores/*"],
+      "#interfaces/*": ["src/interfaces/*"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

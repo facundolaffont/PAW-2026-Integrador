@@ -1,6 +1,6 @@
-const Carta = require('./Carta');
-const logger = require('../infraestructura/shared/logger');
-const { logContext } = require('../infraestructura/shared/utils');
+const Carta = require('#dominio/Carta');
+const logger = require('#infraestructura/shared/logger');
+const { logContext } = require('#infraestructura/shared/utils');
 
 class Mazo {
   constructor(cartas = []) {
