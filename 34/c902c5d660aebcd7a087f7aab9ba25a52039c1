@@ -1,0 +1,21 @@
+src/dominio/SalaDeJuego.js
+  s_846dc6ccbf7fd6::t_c64058d99babd6 392-396
+src/controladores/PartidaController.js
+  s_846dc6ccbf7fd6::t_74ff8b146c63d0 487-495
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "34c902c5d660aebcd7a087f7aab9ba25a52039c1",
+  "prompts": {},
+  "sessions": {
+    "s_846dc6ccbf7fd6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "691acf29-ddbd-421d-8d7e-768e0ddbd8c4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "renzrob <renzo.robles@mercadolibre.com>"
+    }
+  }
+}
