@@ -252,7 +252,7 @@ class SalaDeJuego {
 
   _aplicarEfectoPrimeraCarta(carta) {
     logger.logContext(this);
-    switch (carta.tipo) {
+    switch (carta.getTipo()) {
       case 'reversa':
         this.sentido *= -1;
         break;
@@ -275,7 +275,7 @@ class SalaDeJuego {
     const jugador = this.jugadorEnTurno();
     if (jugador.jugadorId !== jugadorId) return { error: 'No es tu turno' };
 
-    const carta = jugador.mano.find((c) => c.id === cartaId);
+    const carta = jugador.mano.find((c) => c.getId() === cartaId);
     if (!carta) return { error: 'No tenés esa carta' };
 
     const cartaEnMesa = this._cartaEnMesa();
@@ -287,9 +287,9 @@ class SalaDeJuego {
       if (!Carta.COLORES.includes(colorElegido)) {
         return { error: 'Debés elegir un color válido para el comodín' };
       }
-      carta.colorElegido = colorElegido;
+      carta.setColorElegido(colorElegido);
     } else {
-      carta.colorElegido = null;
+      carta.setColorElegido(null);
     }
 
     jugador.quitarCarta(cartaId);
@@ -327,7 +327,7 @@ class SalaDeJuego {
     logger.logContext(this);
     let saltar = false;
 
-    switch (carta.tipo) {
+    switch (carta.getTipo()) {
       case 'roba-dos':
         this.penalidad += 2;
         this.tipoPenalidad = 'roba-dos';

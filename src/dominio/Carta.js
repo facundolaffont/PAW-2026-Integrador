@@ -1,34 +1,75 @@
 const { v4: uuidv4 } = require('uuid');
 const logger = require('#infraestructura/shared/logger');
+
 class Carta {
   static COLORES = ['rojo', 'amarillo', 'verde', 'azul'];
   static ESPECIALES = ['roba-dos', 'reversa', 'salta'];
   static TIPOS_ACUMULABLES = new Set(['roba-dos', 'roba-cuatro']);
 
+  #id;
+  #color;
+  #tipo;
+  #numero;
+  #colorElegido;
+
   constructor(color, tipo, numero = null) {
     logger.logContext(this);
-    this.id = uuidv4();
-    this.color = color;
-    this.tipo = tipo;
-    this.numero = numero;
-    this.colorElegido = null;
+    this.#id = uuidv4();
+    this.#color = color;
+    this.#tipo = tipo;
+    this.#numero = numero;
+    this.#colorElegido = null;
+  }
+
+  getId() {
+    return this.#id;
+  }
+
+  getColor() {
+    return this.#color;
+  }
+
+  getTipo() {
+    return this.#tipo;
+  }
+
+  getNumero() {
+    return this.#numero;
+  }
+
+  getColorElegido() {
+    return this.#colorElegido;
+  }
+
+  setColorElegido(color) {
+    this.#colorElegido = color;
   }
 
   get valor() {
     logger.logContext(this);
-    if (this.tipo === 'numero') return this.numero;
-    if (Carta.ESPECIALES.includes(this.tipo)) return 20;
+    if (this.#tipo === 'numero') return this.#numero;
+    if (Carta.ESPECIALES.includes(this.#tipo)) return 20;
     return 50;
   }
 
   get esComodin() {
     logger.logContext(this);
-    return this.color === null;
+    return this.#color === null;
   }
 
   get esAcumulable() {
     logger.logContext(this);
-    return Carta.TIPOS_ACUMULABLES.has(this.tipo);
+    return Carta.TIPOS_ACUMULABLES.has(this.#tipo);
+  }
+
+  toJSON() {
+    return {
+      id: this.#id,
+      color: this.#color,
+      tipo: this.#tipo,
+      numero: this.#numero,
+      colorElegido: this.#colorElegido,
+    };
   }
 
   // Determina si `carta` puede jugarse sobre `enMesa`.
@@ -47,23 +88,27 @@ class Carta {
   static esJugadaValida(carta, enMesa, penalidad, tipoPenalidad) {
     logger.logContext(Carta);
     if (carta.esComodin) {
-      if (penalidad > 0) return carta.esAcumulable && carta.tipo === tipoPenalidad;
+      if (penalidad > 0) return carta.esAcumulable && carta.getTipo() === tipoPenalidad;
 
       return true;
     }
 
     if (penalidad > 0) {
-      return carta.esAcumulable && carta.tipo === tipoPenalidad;
+      return carta.esAcumulable && carta.getTipo() === tipoPenalidad;
     }
 
-    const colorMesa = enMesa.colorElegido || enMesa.color;
+    const colorMesa = enMesa.getColorElegido() || enMesa.getColor();
     const mismoTipoNoNumerico =
-      carta.tipo !== 'numero' && enMesa.tipo !== 'numero' && carta.tipo === enMesa.tipo;
+      carta.getTipo() !== 'numero' &&
+      enMesa.getTipo() !== 'numero' &&
+      carta.getTipo() === enMesa.getTipo();
 
     return (
-      carta.color === colorMesa ||
+      carta.getColor() === colorMesa ||
       mismoTipoNoNumerico ||
-      (carta.tipo === 'numero' && enMesa.tipo === 'numero' && carta.numero === enMesa.numero)
+      (carta.getTipo() === 'numero' &&
+        enMesa.getTipo() === 'numero' &&
+        carta.getNumero() === enMesa.getNumero())
     );
   }
 }

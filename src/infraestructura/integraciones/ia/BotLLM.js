@@ -30,7 +30,7 @@ ESTRATEGIA RECOMENDADA:
 
   /**
    * Inicializa el cliente de Google Generative AI con `GEMINI_API_KEY` y el modelo
-   * `gemini-1.5-flash` configurado para responder en JSON.
+   * configurado para responder en JSON.
    */
   constructor() {
     logger.logContext(this);
@@ -74,20 +74,24 @@ ESTRATEGIA RECOMENDADA:
 
     try {
       const resultado = await this.model.generateContent(prompt);
-
       const texto = resultado.response.text();
-
       const json = JSON.parse(texto);
 
-      // Validar que la carta elegida por el modelo sea realmente una carta válida de la mano
-      if (json.cartaId && cartasValidas.find((c) => c.id === json.cartaId)) {
+      // Si la carta elegida por el modelo es realmente una carta que puede jugares,
+      // devuelve la información de la jugada. Si es comodín, puede incluir colorElegido;
+      // si no, será null.
+      if (json.cartaId && cartasValidas.find((c) => c.getId() === json.cartaId)) {
         return { cartaId: json.cartaId, colorElegido: json.colorElegido || null };
       }
 
+      // Si el modelo determinó que tiene que robar, devuelve la acción de robar.
       if (json.robar) return { robar: true };
 
+      // Si no, aplica la estrategia de fallback.
       return this.#fallback(cartasValidas);
     } catch {
+      // Por cualquier error, se aplica la estrategia de fallback para garantizar que el bot
+      // siempre pueda jugar.
       return this.#fallback(cartasValidas);
     }
   }
@@ -107,12 +111,12 @@ ESTRATEGIA RECOMENDADA:
   #armarPrompt(mano, cartasValidas, cartaEnMesa, penalidad, tipoPenalidad, rivales) {
     logger.logContext(this);
     const describir = (c) =>
-      c.color
-        ? `${c.color}-${c.tipo === 'numero' ? c.numero : c.tipo} (id: ${c.id})`
-        : `${c.tipo} (id: ${c.id})`;
+      c.getColor()
+        ? `${c.getColor()}-${c.getTipo() === 'numero' ? c.getNumero() : c.getTipo()} (id: ${c.getId()})`
+        : `${c.getTipo()} (id: ${c.getId()})`;
 
-    const cartaMesaDesc = cartaEnMesa.colorElegido
-      ? `${cartaEnMesa.colorElegido}-${cartaEnMesa.tipo}`
+    const cartaMesaDesc = cartaEnMesa.getColorElegido()
+      ? `${cartaEnMesa.getColorElegido()}-${cartaEnMesa.getTipo()}`
       : describir(cartaEnMesa);
 
     return `
@@ -149,14 +153,17 @@ ESTRATEGIA RECOMENDADA:
    */
   #fallback(cartasValidas) {
     logger.logContext(this);
+
     const COLORES = ['rojo', 'azul', 'verde', 'amarillo'];
     const aleatorio = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    const elegida = cartasValidas.find((c) => c.tipo !== 'numero') ?? aleatorio(cartasValidas);
+    // Prioriza cartas de acción (no números) y elige la primera del arreglo;
+    // si no hay, elige un número al azar.
+    const elegida = cartasValidas.find((c) => c.getTipo() !== 'numero') ?? aleatorio(cartasValidas);
 
-    const colorElegido = elegida.color === null ? aleatorio(COLORES) : null;
+    const colorElegido = elegida.getColor() === null ? aleatorio(COLORES) : null;
 
-    return { cartaId: elegida.id, colorElegido };
+    return { cartaId: elegida.getId(), colorElegido };
   }
 }
 
