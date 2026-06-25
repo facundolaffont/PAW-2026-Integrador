@@ -10,7 +10,6 @@ const logger = require('#infraestructura/shared/logger');
 class BotLLM {
   static REGLAS_UNO = `
 REGLAS DEL UNO ARGENTINO:
-
 - Jugada válida: podés jugar una carta si coincide en COLOR o TIPO con la carta en mesa, o si es un comodín.
 - Comodines (comodin, roba-cuatro): se juegan sobre cualquier carta. Debés elegir el nuevo color (rojo, azul, verde, amarillo).
 - Roba Dos (+2): el siguiente jugador roba 2 cartas y pierde el turno. Se pueden apilar: si el siguiente tiene otro +2, puede jugarlo y acumular la penalidad.
