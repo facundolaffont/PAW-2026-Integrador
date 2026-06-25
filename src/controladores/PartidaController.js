@@ -29,6 +29,8 @@ class PartidaController {
     this.UNO_TIMEOUT_MS = 2000;
     this.turnoTimers = new Map();
     this.TURNO_TIMEOUT_MS = 10000;
+    this.avanceTurnoPendiente = new Map();
+    this.ANIMACIONES_TIMEOUT_MS = 45000;
   }
 
   #cancelarUnoTimer(partidaId) {
@@ -45,6 +47,57 @@ class PartidaController {
     clearTimeout(timeoutId);
     this.turnoTimers.delete(partidaId);
     return true;
+  }
+
+  #cancelarAvanceTurnoPendiente(partidaId) {
+    const pendiente = this.avanceTurnoPendiente.get(partidaId);
+    if (!pendiente) return false;
+    clearTimeout(pendiente.timeoutId);
+    this.avanceTurnoPendiente.delete(partidaId);
+    return true;
+  }
+
+  #esperarAnimacionesCliente(partidaId, jugadorId, ejecutar) {
+    this.#cancelarAvanceTurnoPendiente(partidaId);
+
+    const timeoutId = setTimeout(() => {
+      const actual = this.avanceTurnoPendiente.get(partidaId);
+      if (!actual || actual.jugadorId !== jugadorId) return;
+      this.avanceTurnoPendiente.delete(partidaId);
+      ejecutar();
+    }, this.ANIMACIONES_TIMEOUT_MS);
+
+    this.avanceTurnoPendiente.set(partidaId, { jugadorId, ejecutar, timeoutId });
+  }
+
+  #programarSiguienteTurno(partidaId, jugadorAccionId) {
+    const sala = this.persistencia.obtenerPartida(partidaId);
+    if (!sala) return;
+
+    const continuar = () => {
+      const salaActual = this.persistencia.obtenerPartida(partidaId);
+      if (!salaActual || salaActual.estado !== 'jugando') return;
+      this.#programarTurnoTimer(partidaId);
+      if (salaActual.turnoEsBot()) {
+        this.#ejecutarTurnoBot(partidaId);
+      }
+    };
+
+    const jugador = sala.jugadores.find((j) => j.jugadorId === jugadorAccionId);
+    if (!jugador || jugador.esBot) {
+      continuar();
+      return;
+    }
+
+    this.#esperarAnimacionesCliente(partidaId, jugadorAccionId, continuar);
+  }
+
+  animacionesListas(partidaId, jugadorId) {
+    const pendiente = this.avanceTurnoPendiente.get(partidaId);
+    if (!pendiente || pendiente.jugadorId !== jugadorId) return;
+    clearTimeout(pendiente.timeoutId);
+    this.avanceTurnoPendiente.delete(partidaId);
+    pendiente.ejecutar();
   }
 
   #programarTurnoTimer(partidaId) {
@@ -85,10 +138,7 @@ class PartidaController {
     });
     this.#emitirEstadoPartida(sala);
 
-    this.#programarTurnoTimer(partidaId);
-    if (sala.turnoEsBot()) {
-      this.#ejecutarTurnoBot(partidaId);
-    }
+    this.#programarSiguienteTurno(partidaId, jugadorIdEsperado);
   }
 
   #claveDesconexion(partidaId, jugadorId) {
@@ -169,10 +219,7 @@ class PartidaController {
 
     this.#emitirEstadoPartida(sala);
 
-    this.#programarTurnoTimer(partidaId);
-    if (sala.turnoEsBot()) {
-      this.#ejecutarTurnoBot(partidaId);
-    }
+    this.#programarSiguienteTurno(partidaId, jugadorId);
   }
 
   enviarMensajeChat(partidaId, jugadorId, texto) {
@@ -402,10 +449,7 @@ class PartidaController {
 
     this.#emitirEstadoPartida(sala);
 
-    this.#programarTurnoTimer(partidaId);
-    if (sala.turnoEsBot()) {
-      this.#ejecutarTurnoBot(partidaId);
-    }
+    this.#programarSiguienteTurno(partidaId, jugadorId);
   }
 
   #manejarUnoTrasJugada(partidaId, res) {

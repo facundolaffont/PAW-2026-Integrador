@@ -964,9 +964,23 @@ class Partida {
     return this.animacionesActivas > 0 || this.animacionesPendientes > 0;
   }
 
+  #notificarAnimacionesListas() {
+    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
+    this.webSocket.send(JSON.stringify({ accion: 'animaciones-listas' }));
+  }
+
+  #notificarSiAnimacionesLibres() {
+    if (this.#hayAnimacionesEnCurso()) return;
+    this.#notificarAnimacionesListas();
+  }
+
   #encolarAnimacion(ejecutar) {
     if (!this.#animacionesHabilitadas()) {
-      return Promise.resolve();
+      return Promise.resolve()
+        .then(() => ejecutar?.())
+        .finally(() => {
+          this.#notificarSiAnimacionesLibres();
+        });
     }
 
     this.animacionesPendientes += 1;
@@ -979,11 +993,22 @@ class Partida {
         this.animacionesActivas -= 1;
         this.animacionesPendientes -= 1;
         this.#aplicarEstadoPendiente();
+        this.#notificarSiAnimacionesLibres();
       }
     });
 
     this.colaAnimaciones = tarea.catch(() => {});
     return tarea;
+  }
+
+  #encolarAnimacionSiLibre(ejecutar) {
+    if (!this.#animacionesHabilitadas()) {
+      return Promise.resolve();
+    }
+    if (this.#hayAnimacionesEnCurso()) {
+      return Promise.resolve();
+    }
+    return this.#encolarAnimacion(ejecutar);
   }
 
   #encolarAccionPostAnimacion(ejecutar) {
@@ -1907,7 +1932,9 @@ class Partida {
           ? ` (elige ${this.#nombreColor(datos.carta.colorElegido)})`
           : '';
         this.#mostrarMensaje(`${nombre} jugó ${carta}${colorElegido}.`);
-        this.#encolarAnimacion(() => this.#animarCartaADescarte(datos.jugadorId, datos.carta));
+        this.#encolarAnimacionSiLibre(() =>
+          this.#animarCartaADescarte(datos.jugadorId, datos.carta)
+        );
         break;
       }
       case 'cartas-robadas': {
@@ -1939,7 +1966,7 @@ class Partida {
           this.#mostrarMensaje(`${nombre} robó ${cantidad} ${palabraCarta}${sufijo}.`);
 
           if (String(robo.jugadorId) !== String(this.jugadorId) && cantidad > 0) {
-            this.#encolarAnimacion(() =>
+            this.#encolarAnimacionSiLibre(() =>
               this.#animarCartasDesdeMazo(robo.jugadorId, [], cantidad)
             );
           }

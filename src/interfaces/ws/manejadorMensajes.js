@@ -113,6 +113,9 @@ class ManejadorMensajes {
             case 'cantar-uno':
               this.#partidaController.cantarUno(partidaId, jugadorId);
               break;
+            case 'animaciones-listas':
+              this.#partidaController.animacionesListas(partidaId, jugadorId);
+              break;
             default:
               this.#manejadorConexiones.emitirA(jugadorId, 'error', {
                 mensaje: `Acción desconocida: ${accion}`,
