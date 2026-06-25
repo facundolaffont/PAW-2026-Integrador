@@ -485,7 +485,6 @@ class Partida {
     } else if (this.webSocket) {
       this.webSocket.close();
     }
-    window.__navInterno = true;
     window.location.href = '/public/';
   }
 
@@ -821,7 +820,6 @@ class Partida {
     if (this.webSocket) {
       this.webSocket.close();
     }
-    window.__navInterno = true;
     window.location.href = '/public/';
   }
 
