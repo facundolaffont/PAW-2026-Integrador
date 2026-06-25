@@ -385,13 +385,15 @@ class SalaDeJuego {
   cantarUno(jugadorId) {
     logger.logContext(this);
 
-    if (!this.unoPendiente || this.unoPendiente.resuelto) {
-      return { error: 'No hay UNO pendiente' };
-    }
-
     const jugador = this.jugadores.find((j) => j.jugadorId === jugadorId);
     if (!jugador) return { error: 'No estás en la sala' };
     if (jugador.esBot) return { error: 'Los bots no cantan UNO' };
+
+    if (!this.unoPendiente || this.unoPendiente.resuelto) {
+      if (this.estado !== 'jugando') return { error: 'No hay UNO pendiente' };
+      const cartasRobadas = this._robarDelMazo(jugador, 1);
+      return { ok: true, penalidad: true, jugadorId, cartasRobadas };
+    }
 
     const jugadorEnUno = this.unoPendiente.jugadorId;
     this.unoPendiente.resuelto = true;

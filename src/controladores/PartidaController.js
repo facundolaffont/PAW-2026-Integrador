@@ -484,9 +484,15 @@ class PartidaController {
 
     const res = sala.cantarUno(jugadorId);
     if (res.error) {
-      if (res.error !== 'No hay UNO pendiente') {
-        this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
-      }
+      this.manejadorConexiones.emitirA(jugadorId, 'error', { mensaje: res.error });
+      return;
+    }
+
+    if (res.penalidad) {
+      this.manejadorConexiones.emitirA(jugadorId, 'cartas-robadas', {
+        cartasRobadas: res.cartasRobadas,
+      });
+      this.#emitirEstadoPartida(sala);
       return;
     }
 
